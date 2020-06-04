@@ -1,0 +1,5 @@
+{
+    "python.pythonPath": "/home/mostafa/repo/billig/.billig/bin/python2.7",
+    "python.jediEnabled": true,
+    "python.autoComplete.extraPaths": ["./.billig/bin/python2.7"]
+}
