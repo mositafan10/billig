@@ -30,6 +30,7 @@ class CommentUserAdmin(admin.ModelAdmin):
     # search_fields = ('owner','receiver','comment') with error , why ?
 
 
+
 admin.site.register(User, UserAdmin)
 admin.site.register(Social, SocialAdmin)
 admin.site.register(Profile, ProfileAdmin)

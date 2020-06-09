@@ -6,7 +6,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Packet, Travel, Offer, Bookmark, Report
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -39,6 +39,8 @@ def packet_list(request):
     elif request.method == 'POST':
         data = request.data
         serializer = PacketDeserializer(data=data)
+        print(data)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             print(serializer)
@@ -179,4 +181,16 @@ def bookmark(request, pk):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.error, status=400)
     return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
+
+
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@api_view(['POST'])
+def upload_file(request):
+    data = request.data
+    print(data)
+    
+    newdoc = PacketPicture(image_file = request.FILES.get('billig'))
+    newdoc.save()
+    return JsonResponse({"id": newdoc.id})
 

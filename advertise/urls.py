@@ -9,5 +9,5 @@ urlpatterns = [
     path('travel/', views.travel_list, name='travel_list'),
     path('travel/<int:pk>/visit/', views.visit_travel, name='travel_visit'),
     path('packet/<int:pk>/bookmark/', views.bookmark, name='packet_bookmark'),
-    # path('travel/<int:pk>', travel_detail, name='travel_detail'),
+    path('upload/', views.upload_file)
 ]

@@ -152,3 +152,6 @@ class Report(BaseModel):
 #     def __str__(self):
 #         return "%s --> %s" %(self.owner, self.airline)
 
+class PacketPicture(BaseModel):
+    image_file = models.FileField(upload_to='images/%Y/%m')
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)

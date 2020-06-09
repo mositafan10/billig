@@ -193,3 +193,6 @@ class City(BaseModel):
 
     def __str__(self):
         return self.name
+
+class PacketPicture(BaseModel):
+    image_file = models.FileField(upload_to='images/%Y/%m')

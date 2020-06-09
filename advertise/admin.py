@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Packet, Travel, Offer, Bookmark, Report
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from account.models import Country, City
+
 
 
 class PacketAdmin(admin.ModelAdmin):
@@ -13,8 +14,7 @@ class PacketAdmin(admin.ModelAdmin):
 
     def owner_user(self, obj):
         return obj.owner.user.phone_number
-
-
+    
 class CityAdmin(admin.ModelAdmin):
     list_display  = ('id','name','country')
     list_filter   = ('country',)
@@ -99,6 +99,8 @@ class BookmarkAdmin(admin.ModelAdmin):
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('owner','packet','text','create_at')
 
+class PacketPictureAdmin(admin.ModelAdmin):
+    list_display = ('id','image_file','packet')
 
 
 admin.site.register(Packet, PacketAdmin)
@@ -108,3 +110,5 @@ admin.site.register(Bookmark, BookmarkAdmin)
 admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(Report, ReportAdmin)
+admin.site.register(PacketPicture,PacketPictureAdmin)
+

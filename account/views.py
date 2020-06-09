@@ -61,8 +61,8 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login(request):
-    phone_number = request.data['phone_number'] # check to exist phone_number in DB ?!
-    password = request.data['password']
+    phone_number = request.data('phone_number', None) # check to exist phone_number in DB ?!
+    password = request.data('password', None)
     refresh = None
     # for first login
     otp = request.data.get('otp', '')
