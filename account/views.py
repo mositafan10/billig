@@ -8,13 +8,12 @@ from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError, AuthenticationFailed, APIException, NotFound
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
-from .utils import generate_otp,set_otp, verify_otp, send_sms
+from .utils import generate_otp, set_otp, verify_otp, send_sms
 from .models import Profile, Social, Score, CommentUser, City, Country, Follow, User
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
@@ -47,12 +46,14 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 def signup(request):
-    phone_number = request.GET['phone_number']
+    phone_number = request.data['phone_number']
+    password = request.data['password']
     otp = generate_otp()
-    print (otp)
     set_otp(phone_number, otp)
+    print(otp)
     # send_sms(phone_number, otp)
     return HttpResponse(status=200)
 
@@ -60,28 +61,40 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login(request):
-    phone_number = request.GET['phone_number']
-    password = request.GET.get('password', None)
+    phone_number = request.data['phone_number'] # check to exist phone_number in DB ?!
+    password = request.data['password']
     refresh = None
-    user, is_created = User.objects.get_or_create(phone_number=phone_number)
-    if is_created==False and password is not None:
-        if user.check_password(request.GET['password']):
-            refresh = RefreshToken.for_user(user)
+    otp = None
+    error = None
+    try :
+        user, is_created = User.objects.get_or_create(phone_number=phone_number)
+        # for login except frist time
+        if is_created == False:
+            if user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+            else:
+                error = "Your password is incorrect"
+
+        # for first login
+        otp = request.data['otp']
+        if otp != '':
+            if verify_otp(phone_number, otp):
+                if is_created is True:
+                    user.set_password(password)
+                    user.save()
+                refresh = RefreshToken.for_user(user)
+            else :
+                error = "The code is incorrect"
+
+        if refresh is not None:
+            return JsonResponse({"token": str(refresh.access_token),
+                                 "refresh": str(refresh)})
         else:
-            error = "Your password is incorrect"
-    otp = request.GET.get('otp', None)
-    if otp is not None:
-        if verify_otp(phone_number, otp):
-            if is_created is True:
-                user.save()
-            refresh = RefreshToken.for_user(user)
-        else :
-            error = "The code is incorrect"
-    if refresh is not None:
-        return JsonResponse({"token": str(refresh.access_token),
-                             "refresh": str(refresh)})
-    else:
-        raise ValidationError(error)
+            raise Exception(error)
+    except User.DoesNotExist:
+        error = "User Not Found"
+        raise Exception(error)
+
 
 @permission_classes([permissions.AllowAny])
 @api_view(['POST'])
@@ -147,8 +160,8 @@ def social_detail(request, pk):
 @api_view(['GET','POST'])
 def country_list(request):
     if request.method == 'GET':
-        country = Country.objects.all()
-        serializer = CountrySerializer(country, many=True)
+        countries = Country.objects.all()
+        serializer = CountrySerializer(countries, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = request.data
@@ -157,6 +170,7 @@ def country_list(request):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+ 
 
 
 @parser_classes([MultiPartParser, FormParser, JSONParser])

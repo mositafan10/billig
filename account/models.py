@@ -173,7 +173,6 @@ class Follow(BaseModel):
 
 class Country(BaseModel):
     name = models.CharField(max_length=15)
-    post_code = models.CharField(max_length=5, blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
