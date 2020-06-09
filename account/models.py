@@ -177,6 +177,9 @@ class Country(BaseModel):
 
     def __str__(self):
         return self.name
+
+    def __unicode__(self):
+        return self.name
   
     @property
     def city_list(self):

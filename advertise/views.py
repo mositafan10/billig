@@ -38,7 +38,7 @@ def packet_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = request.data
-        serializer = PacketSerializer(data=data)
+        serializer = PacketDeserializer(data=data)
         if serializer.is_valid():
             serializer.save()
             print(serializer)

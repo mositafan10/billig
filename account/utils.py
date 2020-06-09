@@ -14,7 +14,7 @@ def verify_otp(phone_number, otp):
     if cache.get(key) == otp:
         return True
     else:        
-        raise Exception("The code is incorrect")
+        return False
 
 # find attacker 
 # what happened when same time request is received ?

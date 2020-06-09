@@ -64,36 +64,27 @@ def login(request):
     phone_number = request.data['phone_number'] # check to exist phone_number in DB ?!
     password = request.data['password']
     refresh = None
-    otp = None
-    error = None
-    try :
-        user, is_created = User.objects.get_or_create(phone_number=phone_number)
-        # for login except frist time
-        if is_created == False:
-            if user.check_password(password):
-                refresh = RefreshToken.for_user(user)
-            else:
-                error = "Your password is incorrect"
-
-        # for first login
-        otp = request.data['otp']
-        if otp != '':
-            if verify_otp(phone_number, otp):
-                if is_created is True:
-                    user.set_password(password)
-                    user.save()
-                refresh = RefreshToken.for_user(user)
-            else :
-                error = "The code is incorrect"
-
-        if refresh is not None:
-            return JsonResponse({"token": str(refresh.access_token),
-                                 "refresh": str(refresh)})
-        else:
-            raise Exception(error)
+    # for first login
+    otp = request.data.get('otp', '')
+    if otp != '':
+        if verify_otp(phone_number, otp):
+            user, is_created = User.objects.get_or_create(phone_number=phone_number)                
+            if is_created is True:
+                user.set_password(password)
+                user.save()
+        else :
+            error = "One time password is incorrect"
+            raise AuthenticationFailed(detail=error)
+    # Not first time
+    try:
+        user = User.objects.get(phone_number=phone_number)
+        if not user.check_password(password):
+            raise AuthenticationFailed(detail="Password is incorrect")
+        refresh = RefreshToken.for_user(user)
+        return JsonResponse({"token": str(refresh.access_token),
+            "refresh": str(refresh)})
     except User.DoesNotExist:
-        error = "User Not Found"
-        raise Exception(error)
+        raise AuthenticationFailed(detail="User not found.")        
 
 
 @permission_classes([permissions.AllowAny])
