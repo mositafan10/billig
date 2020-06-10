@@ -34,7 +34,7 @@ from .permissions import IsOwnerPacketOrReadOnly
 def packet_list(request):
     if request.method == 'GET':
         packet = Packet.objects.all()
-        serializer = PacketSerializer(packet, many=True,)
+        serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         data = request.data

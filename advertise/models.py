@@ -60,7 +60,7 @@ class Packet(BaseModel):
     weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
-    picture = models.CharField(max_length=100 , blank=True, null=True) # need at most 3 picture TODO
+    picture = models.CharField(max_length=100 , blank=True, null=True)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)

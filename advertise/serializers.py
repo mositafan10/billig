@@ -9,8 +9,7 @@ class PacketDeserializer(serializers.ModelSerializer):
     # origin_country = serializers.StringRelatedField()
     # destination_city = serializers.StringRelatedField()
     picture = serializers.ListField()
-
-
+    
     class Meta:
         model = Packet
         fields = ['id','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description','picture']
