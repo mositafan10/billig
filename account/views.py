@@ -52,18 +52,25 @@ def signup(request):
     phone_number = request.data['phone_number']
     password = request.data['password']
     otp = generate_otp()
-    set_otp(phone_number, otp)
-    print(otp)
-    # send_sms(phone_number, otp)
-    return HttpResponse(status=200)
+    user, is_created = User.objects.get_or_create(phone_number=phone_number)
+    print(is_created)
+    if is_created is False:
+        raise AuthenticationFailed(detail="User already exist.") 
+    else:
+        set_otp(phone_number, otp)
+        print(otp)
+        # send_sms(phone_number, otp)
+        return HttpResponse(status=200)
+
 
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login(request):
-    phone_number = request.data['phone_number'] # check to exist phone_number in DB ?!
+    phone_number = request.data['phone_number']
     password = request.data['password']
     refresh = None
+
     # for first login
     otp = request.data.get('otp', '')
     if otp != '':
@@ -75,6 +82,7 @@ def login(request):
         else :
             error = "One time password is incorrect"
             raise AuthenticationFailed(detail=error)
+
     # Not first time
     try:
         user = User.objects.get(phone_number=phone_number)

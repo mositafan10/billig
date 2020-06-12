@@ -31,9 +31,9 @@ Offer = [
 
 # for other choice we need a field to be filled by user about category TODO
 PACKET_CATEGORY = [
-        ('مدارک','0'),
-        ('1', 'کتاب'),
-        ('2','سایر موارد')
+        ('مدارک','1'),
+        ('2', 'کتاب '),
+        ('3','سایر موارد')
 ]
 
 # CURRENCY = [
