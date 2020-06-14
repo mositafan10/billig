@@ -5,15 +5,15 @@ from account.models import Country, City
 
 
 class PacketAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','title','owner_user','origin_country','destination_country',
+    list_display = ('id','slug','title','origin_country','destination_country',
                     'category','buy','description','create_at','visit_count','status')
     list_editable = ('status',)
     list_filter   = ('origin_country','category','create_at')
     raw_id_fields = ("owner",) 
     search_fields = ('owner___username','category')
 
-    def owner_user(self, obj):
-        return obj.owner.user.phone_number
+    # def owner_user(self, obj):
+    #     return obj.owner.user.id
     
 class CityAdmin(admin.ModelAdmin):
     list_display  = ('id','name','country')
@@ -64,10 +64,10 @@ class CountryAdmin(admin.ModelAdmin):
     # travel_destination_country.short_description = "td"
          
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('id','Offer_owner','Offer_to','origin','destination','price','suggested_price')
+    list_display = ('id','Offer_to','origin','destination','price','suggested_price')
 
-    def Offer_owner(self, obj):
-        return obj.travel.owner.user
+    # def Offer_owner(self, obj):
+    #     return obj.travel.owner.user
 
     def Offer_to(self, obj):
         return obj.packet.owner.user

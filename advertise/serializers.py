@@ -4,15 +4,11 @@ from account.serializers import CountrySerializer, CitySerializer
 
 
 class PacketDeserializer(serializers.ModelSerializer):
-    # destination_country = serializers.StringRelatedField()
-    # origin_city = serializers.StringRelatedField()
-    # origin_country = serializers.StringRelatedField()
-    # destination_city = serializers.StringRelatedField()
     picture = serializers.ListField()
     
     class Meta:
         model = Packet
-        fields = ['id','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description','picture']
+        fields = ['id','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description','picture']
     
     def create(self, validated_data):
 
@@ -29,6 +25,9 @@ class PacketDeserializer(serializers.ModelSerializer):
                 pass
         return packet
 
+    # def perform_create(self, serializer):
+    #     serializer.save(owner=self.request.user)
+
 
 class PacketSerializer(serializers.ModelSerializer):
     destination_country = serializers.StringRelatedField()
@@ -38,13 +37,9 @@ class PacketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Packet
-        fields = ['id','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description']
+        fields = ['id','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count']
     
 class TravelSerializer(serializers.ModelSerializer):
-    # origin_country = CountrySerializer()
-    # destination_country = CountrySerializer()
-    # origin_city = CitySerializer()
-    # destination_city = CitySerializer()
 
     class Meta:
         model = Travel
@@ -54,7 +49,7 @@ class TravelSerializer(serializers.ModelSerializer):
 class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ['packet', 'travel', 'price', 'currency']
+        fields = ['id','packet', 'price', 'flight_date']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):

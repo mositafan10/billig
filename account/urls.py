@@ -20,5 +20,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('countries/', views.country_list, name='country_list'),
     path('cities/', views.city_list, name='city_list'),
+    path('checktoken/', views.CheckAuth.as_view()),
     # path('signup/user/', views.create_user, name="create_user"),
 ]

@@ -1,4 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils.timezone import now
 from account.models import User, BaseModel, Country, City, Profile
 from django.db import IntegrityError
 from django.db import models
@@ -31,9 +32,9 @@ Offer = [
 
 # for other choice we need a field to be filled by user about category TODO
 PACKET_CATEGORY = [
-        ('مدارک','1'),
-        ('2', 'کتاب '),
-        ('3','سایر موارد')
+        ('مدارک','0'),
+        ('1','کتاب'),
+        ('2','سایر موارد')
 ]
 
 # CURRENCY = [
@@ -51,7 +52,7 @@ def generate_slug():
 
 class Packet(BaseModel):
     title = models.CharField(max_length=50)
-    owner = models.ForeignKey(Profile, on_delete=models.PROTECT)
+    owner = models.ForeignKey(User, on_delete=models.PROTECT)
     origin_country = models.ForeignKey(Country, on_delete = models.PROTECT, related_name="origin_country")
     origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city")
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
@@ -106,10 +107,9 @@ class Travel(BaseModel):
 
 class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.PROTECT, related_name="packet_ads")
-    travel = models.ForeignKey(Travel, on_delete=models.PROTECT, related_name="travel_ads")
     price = models.PositiveIntegerField()
-    status = models.CharField(max_length=3, choices=Offer, default='در انتظار پاسخ')
-    # currency = models.CharField(max_length=3, choices=CURRENCY)
+    flight_date = models.DateField(default=now, blank=True, null=True)
+    status = models.CharField(max_length=3, choices=Offer, default='0')
 
     def __str__(self):
         return str(self.id)
@@ -117,10 +117,7 @@ class Offer(BaseModel):
     def save(self, *args, **kwargs):
         self.packet.offer_count += 1
         self.packet.status = '2'   
-        self.travel.offer_count += 1
-        self.travel.status = '3'
         self.packet.save()
-        self.travel.save()
 
 class Bookmark(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")

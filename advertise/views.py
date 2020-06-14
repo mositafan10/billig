@@ -7,6 +7,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from account.models import User
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -30,6 +31,7 @@ from .permissions import IsOwnerPacketOrReadOnly
 #         return JsonResponse(serializer.errors, status=400)
 
 @api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
@@ -37,13 +39,11 @@ def packet_list(request):
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
+        user = User.objects.get(pk=request.user.id)
         data = request.data
         serializer = PacketDeserializer(data=data)
-        print(data)
-        print(serializer)
         if serializer.is_valid():
-            serializer.save()
-            print(serializer)
+            serializer.save(owner=user)
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
@@ -105,7 +105,6 @@ def travel_list(request):
     elif request.method == 'POST':
         # data = JSONParser.parse(request)
         data = request.data
-        print(data)
         serializer = TravelSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -189,8 +188,20 @@ def bookmark(request, pk):
 def upload_file(request):
     data = request.data
     print(data)
-    
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save()
     return JsonResponse({"id": newdoc.id})
+
+
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@api_view(['POST'])
+def offer_list(request):
+    offer = Offer.objects.all()
+    data = request.data
+    serializer = OfferSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data)
+    return JsonResponse(serializer.errors, status=400)
 

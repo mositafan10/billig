@@ -52,16 +52,10 @@ def signup(request):
     phone_number = request.data['phone_number']
     password = request.data['password']
     otp = generate_otp()
-    user, is_created = User.objects.get_or_create(phone_number=phone_number)
-    print(is_created)
-    if is_created is False:
-        raise AuthenticationFailed(detail="User already exist.") 
-    else:
-        set_otp(phone_number, otp)
-        print(otp)
-        # send_sms(phone_number, otp)
-        return HttpResponse(status=200)
-
+    set_otp(phone_number, otp)
+    print(otp)
+    # send_sms(phone_number, otp)
+    return HttpResponse(status=200)
 
 
 @api_view(['POST'])
@@ -75,7 +69,7 @@ def login(request):
     otp = request.data.get('otp', '')
     if otp != '':
         if verify_otp(phone_number, otp):
-            user, is_created = User.objects.get_or_create(phone_number=phone_number)                
+            user, is_created = User.objects.get_or_create(phone_number=phone_number)
             if is_created is True:
                 user.set_password(password)
                 user.save()
@@ -187,3 +181,17 @@ def city_list(request):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+
+
+#for authentication test
+class CheckAuth(generics.GenericAPIView):
+
+    def post(self, request):
+        print(request.user)
+        print(request.user.id)
+        if request.user.is_authenticated:
+             content = {'message': 'Authenticated'}
+             return Response(content, status=200)
+        else:
+             content = {'message': 'Unauthenticated'}
+             return Response(content, status=401)
