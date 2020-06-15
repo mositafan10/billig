@@ -187,21 +187,22 @@ def bookmark(request, pk):
 @api_view(['POST'])
 def upload_file(request):
     data = request.data
-    print(data)
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save()
     return JsonResponse({"id": newdoc.id})
 
 
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-@api_view(['POST'])
 def offer_list(request):
     offer = Offer.objects.all()
     data = request.data
+    print(data)
     serializer = OfferSerializer(data=data)
+    user = User.objects.get(pk=request.user.id)
     if serializer.is_valid():
-        serializer.save()
-        return JsonResponse(serializer.data)
+        serializer.save(owner=user)
+        return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
 

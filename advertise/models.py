@@ -106,15 +106,17 @@ class Travel(BaseModel):
 
 
 class Offer(BaseModel):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     packet = models.ForeignKey(Packet, on_delete=models.PROTECT, related_name="packet_ads")
     price = models.PositiveIntegerField()
     flight_date = models.DateField(default=now, blank=True, null=True)
+    description = models.TextField()
     status = models.CharField(max_length=3, choices=Offer, default='0')
 
     def __str__(self):
         return str(self.id)
 
-    def save(self, *args, **kwargs):
+    def create(self, *args, **kwargs):
         self.packet.offer_count += 1
         self.packet.status = '2'   
         self.packet.save()

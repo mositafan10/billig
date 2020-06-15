@@ -64,13 +64,13 @@ class CountryAdmin(admin.ModelAdmin):
     # travel_destination_country.short_description = "td"
          
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('id','Offer_to','origin','destination','price','suggested_price')
+    list_display = ('id','origin','destination','price','suggested_price','description')
 
     # def Offer_owner(self, obj):
     #     return obj.travel.owner.user
 
-    def Offer_to(self, obj):
-        return obj.packet.owner.user
+    # def Offer_to(self, obj):
+    #     return obj.packet.owner.user
     
     def origin (self, obj):
         return obj.packet.origin_country

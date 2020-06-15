@@ -49,7 +49,7 @@ class TravelSerializer(serializers.ModelSerializer):
 class OfferSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = ['id','packet', 'price', 'flight_date']
+        fields = ['id','packet', 'price', 'flight_date','description']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
