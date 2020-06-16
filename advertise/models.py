@@ -116,10 +116,11 @@ class Offer(BaseModel):
     def __str__(self):
         return str(self.id)
 
-    def create(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         self.packet.offer_count += 1
-        self.packet.status = '2'   
+        self.packet.status = '3' 
         self.packet.save()
+        super().save(*args, **kwargs)
 
 class Bookmark(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")
