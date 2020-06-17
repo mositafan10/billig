@@ -47,6 +47,16 @@ def packet_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+def packet_list_user(request):
+    user = User.objects.get(pk=request.user.id)
+    print(user)
+    packet = Packet.objects.filter(owner=user)
+    serializer = PacketSerializer(packet, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
 
 @permission_classes([AllowAny])
 @api_view(['GET'])
@@ -192,17 +202,27 @@ def upload_file(request):
     return JsonResponse({"id": newdoc.id})
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def offer_list(request, pk):
+    try:
+        packet = Packet.objects.get(pk=pk)
+    except:
+        return HttpResponse(status=404)
+    offer = Offer.objects.filter(packet=packet)
+    serializer = OfferSerializer(offer, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-def offer_list(request):
-    offer = Offer.objects.all()
-    data = request.data
-    print(data)
-    serializer = OfferSerializer(data=data)
+def offer(request):
     user = User.objects.get(pk=request.user.id)
+    data = request.data
+    serializer = OfferSerializer(data=data)
     if serializer.is_valid():
         serializer.save(owner=user)
-        return JsonResponse(serializer.data, status=200)
+        return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
-

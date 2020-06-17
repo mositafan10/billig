@@ -107,7 +107,7 @@ class Travel(BaseModel):
 
 class Offer(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    packet = models.ForeignKey(Packet, on_delete=models.PROTECT, related_name="packet_ads")
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
     price = models.PositiveIntegerField()
     flight_date = models.DateField(default=now, blank=True, null=True)
     description = models.TextField()

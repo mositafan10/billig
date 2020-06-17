@@ -10,5 +10,7 @@ urlpatterns = [
     path('travel/<int:pk>/visit/', views.visit_travel, name='travel_visit'),
     path('packet/<int:pk>/bookmark/', views.bookmark, name='packet_bookmark'),
     path('upload/', views.upload_file),
-    path('offer/', views.offer_list, name='offer_list'),
+    path('offer/<int:pk>/', views.offer_list, name='offer_packet_list'),
+    path('offer/', views.offer, name='create_offer'),
+    path('user_packet/', views.packet_list_user, name='packet_list_user'),
 ]
