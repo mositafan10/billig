@@ -82,7 +82,7 @@ def update_packet(request, pk):
         return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
 
 
-@permission_classes([permissions.AllowAny])
+@permission_classes([IsOwnerPacketOrReadOnly])
 @api_view(['GET', 'PUT', 'DELETE'])
 def packet_detail(request, pk):
     try:

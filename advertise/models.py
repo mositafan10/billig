@@ -32,7 +32,7 @@ Offer = [
 
 # for other choice we need a field to be filled by user about category TODO
 PACKET_CATEGORY = [
-        ('مدارک','0'),
+        ('0','مدرک'),
         ('1','کتاب'),
         ('2','سایر موارد')
 ]
