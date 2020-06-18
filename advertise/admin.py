@@ -83,13 +83,13 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 class TravelAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','owner_user','departure','destination','flight_date','empty_weight','visit_count','status','create_at')
+    list_display = ('id','slug','departure','destination','flight_date','empty_weight','visit_count','status','create_at')
     list_editable = ('status',)
     list_filter = ('departure','destination',)
     search_fields = ('owner',)
     
-    def owner_user(self, obj):
-        return obj.owner.user
+    # def owner_user(self, obj):
+    #     return obj.owner.user
 
 
 class BookmarkAdmin(admin.ModelAdmin):

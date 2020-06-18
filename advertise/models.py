@@ -83,12 +83,12 @@ class Packet(BaseModel):
     
 
 class Travel(BaseModel):
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     departure = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="depar_country")
     departure_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="depar_city")
     destination = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="dest_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
-    empty_weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)]) 
+    empty_weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)], blank=True, null=True) 
     flight_date = models.DateField() 
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
     visit_count = models.PositiveIntegerField(default=0)

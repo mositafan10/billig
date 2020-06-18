@@ -43,7 +43,7 @@ class TravelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = ['id','owner', 'departure', 'departure_city', 'destination', 'destination_city', 'empty_weight', 'flight_date', 'description']
+        fields = ['id', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date', 'description']
 
 
 class OfferSerializer(serializers.ModelSerializer):

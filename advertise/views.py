@@ -105,21 +105,16 @@ def packet_detail(request, pk):
 
 
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-# @permission_classes([permissions.AllowAny])
-@api_view(['GET', 'POST'])
-def travel_list(request):
-    travel = Travel.objects.all()
-    serializer = TravelSerializer(travel, many=True)
-    if request.method == 'GET':
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
-        # data = JSONParser.parse(request)
-        data = request.data
-        serializer = TravelSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=200)
-        return JsonResponse(serializer.errors, status=400)
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def travel_add(request):
+    user = User.objects.get(pk=request.user.id)
+    data = request.data
+    serializer = TravelSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save(owner=user)
+        return JsonResponse(serializer.data, status=200)
+    return JsonResponse(serializer.errors, status=400)
 
 
 @permission_classes([permissions.AllowAny])
