@@ -9,7 +9,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError, AuthenticationFailed, APIException, NotFound
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
@@ -47,7 +47,7 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-@permission_classes([permissions.AllowAny])
+@permission_classes([AllowAny])
 def signup(request):
     phone_number = request.data['phone_number']
     password = request.data['password']
@@ -59,6 +59,7 @@ def signup(request):
 
 
 @api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 def login(request):
     phone_number = request.data['phone_number']
@@ -89,17 +90,36 @@ def login(request):
         raise AuthenticationFailed(detail="User not found.")        
 
 
-@permission_classes([permissions.AllowAny])
+@permission_classes([AllowAny])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def reset_password(request):
-    # phone_number = request.GET['phone_number']
-    # user = User.objects.get(phone_number=phone_number)
-    # if request.user == user:
-    #     otp = generate_otp()
-    #     user.set_password (otp)
-    #     # send_sms(phone_number, otp)
-    #     return HttpResponse(status=200)
-    pass
+    phone_number = request.data['phone_number']
+    try:
+        user = User.objects.get(phone_number=phone_number)
+        otp = generate_otp()
+        set_otp(phone_number, otp)
+        print(otp)
+        # send_sms(phone_number, otp)
+        return HttpResponse(status=200)
+    except User.DoesNotExist:
+        raise AuthenticationFailed(detail="User not found !")
+
+
+@permission_classes([AllowAny])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@api_view(['POST'])
+def confirm_reset_password(request):
+    phone_number = request.data['phone_number']
+    otp = request.data['otp']
+    user = User.objects.get(phone_number=phone_number)
+    if verify_otp(phone_number, otp):
+        user.set_password(otp)
+        user.save()
+        return HttpResponse(status=200)
+    else:
+        raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
+
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
