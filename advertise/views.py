@@ -52,7 +52,6 @@ def packet_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list_user(request):
     user = User.objects.get(pk=request.user.id)
-    print(user)
     packet = Packet.objects.filter(owner=user)
     serializer = PacketSerializer(packet, many=True)
     return JsonResponse(serializer.data, safe=False)
@@ -117,7 +116,16 @@ def travel_add(request):
     return JsonResponse(serializer.errors, status=400)
 
 
-@permission_classes([permissions.AllowAny])
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def travel_user_list(request):
+    user = User.objects.get(pk=request.user.id)
+    travel = Travel.objects.filter(owner=user)
+    serializer = TravelSerializer(travel, many=True)
+    return JsonResponse(serializer.data, safe=False)
+    
+
+@permission_classes([IsOwnerPacketOrReadOnly])
 @api_view(['GET', 'PUT', 'DELETE'])
 def travel_detail(request, pk):
     try:
