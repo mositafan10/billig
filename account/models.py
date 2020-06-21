@@ -12,6 +12,12 @@ from django.contrib.auth.models import PermissionsMixin
 
 # User = get_user_model()
 
+Follow_Choices = [
+    ('0','در انتظار'),
+    ('1','تایید'),
+    ('2','رد')
+]
+
 SOCIAL = [
     ('0', 'Facebook'),
     ('1', 'Instagram'),
@@ -63,12 +69,12 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True, editable=False)
-    first_name = models.CharField(max_length=10, blank=True, null=True)
-    last_name = models.CharField(max_length=10, blank=True, null=True)
     phone_number = models.CharField(max_length=15, editable=False, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    follower_count = models.PositiveIntegerField(default=0)
+    following_count = models.PositiveIntegerField(default=0)
     USERNAME_FIELD = 'phone_number'
 
     objects = UserManager()
@@ -79,7 +85,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
-    picture = models.ImageField(blank=True, null=True, validators=[validate_picture]) #need default
+    first_name = models.CharField(max_length=10, blank=True, null=True)
+    last_name = models.CharField(max_length=10, blank=True, null=True)
+    picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
     id_cart = models.ImageField(blank=True, null=True, validators=[validate_picture])
     bio = models.TextField(blank=True, null=True)
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address
@@ -91,8 +99,6 @@ class Profile (BaseModel):
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
-    follower_count = models.PositiveIntegerField(default=0)
-    following_count = models.PositiveIntegerField(default=0)
     is_approved = models.BooleanField(default=False)
 
 
@@ -146,8 +152,9 @@ class CommentUser(BaseModel):
 
 
 class Follow(BaseModel):
-    follower = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="follower")
-    following = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="following")
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
+    status = models.CharField(max_length=10 ,choices=Follow_Choices, default=0)
 
     def __str__(self):
         return "%s --> %s" % (self.follower, self.following)
@@ -195,4 +202,4 @@ class City(BaseModel):
         return self.name
 
 class PacketPicture(BaseModel):
-    image_file = models.FileField(upload_to='images/%Y/%m')
+    image_file = models.FileField(upload_to='images/Packet/%Y/%m')

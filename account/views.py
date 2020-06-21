@@ -28,6 +28,14 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def user_profile(request, pk):
+    user = User.objects.get(pk=pk)
+    profile = Profile.objects.get(user=user)
+    serializer = ProfileSerializer(profile)
+    return JsonResponse(serializer.data, safe=False)
+
 
 class ProfileListCreateView(generics.ListCreateAPIView):
     queryset = Profile.objects.all()
@@ -201,6 +209,27 @@ def city_list(request):
             serializer.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
+
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@permission_classes([IsAuthenticated])
+def friend_request(request):
+    request_by = User.objects.get(pk=request.user.id)
+    data = request.data
+    serializer = FollowSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save(follower = request_by)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def friend_list(request):
+    user = User.objects.get(pk=request.user.id)
+    friend = Follow.objects.filter(follower = user)
+    serializer = FollowSerializer(friend, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 
 #for authentication test

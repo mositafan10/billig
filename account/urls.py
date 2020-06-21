@@ -11,8 +11,8 @@ urlpatterns = [
     path('signup/', views.signup, name="signup"),
     path('login/', views.login, name="login"),
     path('login/reset_password/', views.reset_password, name="reset_password"),
-    path('users/profiles/', views.ProfileListCreateView.as_view(), name="profile"),
-    path('users/profiles/<int:pk>/', views.ProfileDetailView.as_view(), name="profile_detail"),
+    path('users/profile/', views.ProfileListCreateView.as_view(), name="profile"),
+    path('users/profile/<int:pk>/', views.user_profile, name="profile_detail"),
     path('users/', views.UserList.as_view(), name="users"),
     path('users/<int:pk>/', views.UserDetail.as_view(), name="users_detail"),
     path('users/update/', views.update_user, name="update_user"),
@@ -23,5 +23,7 @@ urlpatterns = [
     path('checktoken/', views.CheckAuth.as_view()),
     path('resetpassword/', views.reset_password, name="reset_password"),
     path('confirmresetpassword/', views.confirm_reset_password, name="confirm_reset_password"),
+    path('friend/', views.friend_request, name="friend_request"),
+    path('friend_list/', views.friend_list, name="friend_list"),
     # path('signup/user/', views.create_user, name="create_user"),
 ]

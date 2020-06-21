@@ -29,13 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    country = CountrySerializer()
-    city = CitySerializer()
+    # user = UserSerializer()
+    # country = CountrySerializer()
+    # city = CitySerializer()
     
     class Meta:
         model = Profile
-        fields =  ['id','user','bio','picture','id_cart','country','city','birthday','favorite_gift','level','score','scores_count','comment_count','follower_count','following_count','is_approved']
+        fields =  ['id','user','first_name','last_name','bio','picture','id_cart','country','city','birthday','favorite_gift','level','score','scores_count','comment_count','is_approved']
 
 
 class SocialSerializer(serializers.ModelSerializer):
@@ -57,4 +57,4 @@ class CommentUserSerializer(serializers.ModelSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
-        fields = ['id','follower', 'following']
+        fields = ['id', 'following']
