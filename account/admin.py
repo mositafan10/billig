@@ -6,8 +6,8 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('id','first_name','last_name','user','country','city','birthday')
-    list_filter = ('country','city','birthday')
+    list_display = ('id','first_name','last_name','user','country','city')
+    list_filter = ('country','city')
 
 class SocialAdmin(admin.ModelAdmin):
     list_display = ('user','title','social_id', 'is_approved')

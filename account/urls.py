@@ -16,7 +16,7 @@ urlpatterns = [
     path('users/', views.UserList.as_view(), name="users"),
     path('users/<int:pk>/', views.UserDetail.as_view(), name="users_detail"),
     path('users/update/', views.update_user, name="update_user"),
-    path('social/<int:pk>/', views.social_detail, name="social"),
+    # path('social/<int:pk>/', views.social_detail, name="social"),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('countries/', views.country_list, name='country_list'),
     path('cities/', views.city_list, name='city_list'),
@@ -25,5 +25,6 @@ urlpatterns = [
     path('confirmresetpassword/', views.confirm_reset_password, name="confirm_reset_password"),
     path('friend/', views.friend_request, name="friend_request"),
     path('friend_list/', views.friend_list, name="friend_list"),
+    path('get_user/', views.get_user, name="get_user"),
     # path('signup/user/', views.create_user, name="create_user"),
 ]

@@ -79,6 +79,7 @@ def login(request):
     if otp != '':
         if verify_otp(phone_number, otp):
             user, is_created = User.objects.get_or_create(phone_number=phone_number)
+            profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
                 user.set_password(password)
                 user.save()
@@ -129,51 +130,49 @@ def confirm_reset_password(request):
         raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
 
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def update_user(request):
-    user = User.objects.get(phone_number=request.user)
-    password = request.GET.get('password', None)
-    first_name = request.GET.get('first_name', None)
-    last_name = request.GET.get('last_name', None)
-    user.set_password(password) 
-    user.first_name = first_name
-    user.last_name = last_name
-    user.save()
-    profile, is_created = Profile.objects.get_or_create(user=request.user)
-    bio = request.GET.get('bio', None) # does not work TODO
-    country = request.GET.get('country', None)
-    city = request.GET.get('city', None)
-    birthday = request.GET.get('birthday', None)
-    favorite_gift = request.GET.get('favorite_gift', None)
-    profile.bio = bio
-    profile.country = country
-    profile.city = city
-    profile.birthday = birthday
-    profile.favorite_gift = favorite_gift
-    profile.save()
-    return JsonResponse({"Result" : True})
+    user = User.objects.get(pk=request.user.id)
+    print(user)
+    profile = Profile.objects.get(user=user)
+    print(profile)
+    data = request.data
+    serializer = ProfileSerializer(data=data)
+    if serializer.is_valid():
+        profile.bio = request.data.get("bio")
+        profile.facebook_id = request.data.get("facebook_id")
+        profile.instagram_id = request.data.get("instagram_id")
+        profile.twitter_id = request.data.get("twitter_id")
+        profile.linkdin = request.data.get("bio")
+        profile.email = request.data.get("email")
+        profile.first_name = request.data.get("first_name")
+        profile.last_name = request.data.get("last_name")
+        profile.save()
+        return JsonResponse(serializer.data, status=200)
+    return JsonResponse(serializer.errors, status=400)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def social_detail(request, pk):
-    try:
-        social = Social.object.get(pk=pk)
-    except Social.DoesNotExist:
-        return HttpResponse(status=404)
-    if request.method == 'GET':
-        serializer = SocialSerializer(social)
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'PUT':
-        data = JSONParser.parse(request)
-        serialzer = SocialSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
-    elif request.method == 'DELETE':
-        social.delete()
-        return HttpResponse(status=204)
+# @api_view(['GET', 'PUT', 'DELETE'])
+# def social_detail(request, pk):
+#     try:
+#         social = Social.object.get(pk=pk)
+#     except Social.DoesNotExist:
+#         return HttpResponse(status=404)
+#     if request.method == 'GET':
+#         serializer = SocialSerializer(social)
+#         return JsonResponse(serializer.data, safe=False)
+#     elif request.method == 'PUT':
+#         data = JSONParser.parse(request)
+#         serialzer = SocialSerializer(data=data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return JsonResponse(serializer.data)
+#         return JsonResponse(serializer.errors, status=400)
+#     elif request.method == 'DELETE':
+#         social.delete()
+#         return HttpResponse(status=204)
 
 
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -244,3 +243,12 @@ class CheckAuth(generics.GenericAPIView):
         else:
              content = {'message': 'Unauthenticated'}
              return Response(content, status=401)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_user(request):
+    user = User.objects.get(pk=request.user.id)
+    print(user)
+    profile = Profile.objects.get(user=user)
+    print(profile)
+    return JsonResponse({"user":profile.first_name})
