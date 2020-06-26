@@ -1,10 +1,12 @@
+import string
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.timezone import now
-from account.models import User, BaseModel, Country, City, Profile
 from django.db import IntegrityError
 from django.db import models
-import random
-import string
+
+from account.models import User, BaseModel, Country, City, Profile
+from .utils import generate_slug
 
 PACKET_STATUS = [
         ('0', 'در انتظار تایید'),
@@ -13,6 +15,7 @@ PACKET_STATUS = [
         ('3', 'دارای پیشنهاد'),
         ('4', 'پذیرش شده'),
         ('5', 'ارسال شده'),
+        ('6', 'حذف شده'),
 ] 
 
 TRAVEL_STATUS = [
@@ -21,6 +24,7 @@ TRAVEL_STATUS = [
         ('2', 'منتشر شده'),
         ('3', 'دارای بسته'),
         ('4', 'پرواز کرد'),
+        ('5', 'حذف شده'),
 ] 
 
 Offer = [
@@ -44,10 +48,6 @@ PACKET_CATEGORY = [
 # Weight_Unit = [
 #     ('0','گرم'),('1','کیلوگرم'),
 # ]
-
-
-def generate_slug():
-    return ''.join(str(random.randint(0,9)) for _ in range(6))
     
 
 class Packet(BaseModel):
@@ -65,7 +65,8 @@ class Packet(BaseModel):
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) # should not be send by user: this should be validate
+    # should not be send by user: this should be validate
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     status = models.CharField(max_length=20, choices=PACKET_STATUS, default=0)
     # weight_unit = models.CharField(max_length=5, choices=Weight_Unit)
     # currency = models.CharField(max_length=3, choices=CURRENCY)  
@@ -90,10 +91,10 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     empty_weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)], blank=True, null=True) 
     flight_date = models.DateField() 
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField()
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
     status = models.CharField(max_length=20, choices=TRAVEL_STATUS, default='در انتظار تایید')
     # weight_unit = models.CharField(max_length=3, choices=Weight_Unit)
     
@@ -121,6 +122,9 @@ class Offer(BaseModel):
         self.packet.status = '3' 
         self.packet.save()
         super().save(*args, **kwargs)
+        
+        
+
 
 class Bookmark(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")
@@ -141,16 +145,6 @@ class Report(BaseModel):
     def __str__(self):
         return "%s --> %s" %(self.owner,self.packet)
 
-
-# class Ticket(BaseModel):
-#     owner = models.ForeignKey(Profile, on_delete=models.PROTECT)
-#     date = models.DateTimeField()
-#     airline = models.CharField(max_length=40, choices=Airlines, blank=True,  null=True)
-#     pic = models.FileField(blank=True,  null=True) #validate TODO
-#     is_approved = models.BooleanField(default=False)
-
-#     def __str__(self):
-#         return "%s --> %s" %(self.owner, self.airline)
 
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/%Y/%m')

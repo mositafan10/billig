@@ -35,7 +35,7 @@ from .permissions import IsOwnerPacketOrReadOnly
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
-        packet = Packet.objects.all()
+        packet = Packet.objects.all().order_by('create_at')
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
@@ -83,9 +83,9 @@ def update_packet(request, pk):
 
 @permission_classes([IsOwnerPacketOrReadOnly])
 @api_view(['GET', 'PUT', 'DELETE'])
-def packet_detail(request, pk):
+def packet_detail(request, slug):
     try:
-        packet = Packet.objects.get(pk=pk)
+        packet = Packet.objects.get(slug=slug)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
     if request.method == 'GET':
@@ -223,9 +223,13 @@ def offer_list(request, pk):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
     user = User.objects.get(pk=request.user.id)
+    slug = request.data.get("packet")
+    print(slug)
+    packet = Packet.objects.get(slug=slug)
+    print(packet)
     data = request.data
     serializer = OfferSerializer(data=data)
     if serializer.is_valid():
-        serializer.save(owner=user)
+        serializer.save(owner=user, packet=packet)
         return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)

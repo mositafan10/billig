@@ -8,7 +8,10 @@ class PacketDeserializer(serializers.ModelSerializer):
     
     class Meta:
         model = Packet
-        fields = ['id','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description','picture']
+        fields = [
+            'id','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category',
+            'weight', 'suggested_price', 'description','picture'
+        ]
     
     def create(self, validated_data):
 
@@ -37,19 +40,25 @@ class PacketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Packet
-        fields = ['id','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count']
+        fields = [
+            'slug','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 
+            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count'
+        ]
     
 class TravelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = ['id', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date', 'description']
+        fields = [
+            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date', 'description'
+        ]
 
 
 class OfferSerializer(serializers.ModelSerializer):
+    packet = serializers.StringRelatedField()
     class Meta:
         model = Offer
-        fields = ['id','packet', 'price', 'flight_date','description']
+        fields = ['id', 'packet', 'price', 'flight_date', 'description']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
