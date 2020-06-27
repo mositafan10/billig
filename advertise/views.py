@@ -35,7 +35,7 @@ from .permissions import IsOwnerPacketOrReadOnly
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
-        packet = Packet.objects.all().order_by('create_at')
+        packet = Packet.objects.all().order_by('-create_at')
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
@@ -66,7 +66,7 @@ def user_packet_list(request):
         return JsonResponse(serializer.data)
 
 
-@permission_classes([permissions.AllowAny])
+@permission_classes([AllowAny])
 @api_view(['PUT'])
 def update_packet(request, pk):
     if request.method == 'PUT':
@@ -81,7 +81,7 @@ def update_packet(request, pk):
         return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
 
 
-@permission_classes([IsOwnerPacketOrReadOnly])
+@permission_classes([AllowAny])
 @api_view(['GET', 'PUT', 'DELETE'])
 def packet_detail(request, slug):
     try:
@@ -207,13 +207,13 @@ def upload_file(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def offer_list(request, pk):
+def offer_list(request, slug):
     try:
-        packet = Packet.objects.get(pk=pk)
+        packet = Packet.objects.get(slug=slug)
     except:
         return HttpResponse(status=404)
     offer = Offer.objects.filter(packet=packet)
-    serializer = OfferSerializer(offer, many=True)
+    serializer = offer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -224,11 +224,9 @@ def offer_list(request, pk):
 def offer(request):
     user = User.objects.get(pk=request.user.id)
     slug = request.data.get("packet")
-    print(slug)
     packet = Packet.objects.get(slug=slug)
-    print(packet)
     data = request.data
-    serializer = OfferSerializer(data=data)
+    serializer = OfferDeserializer(data=data)
     if serializer.is_valid():
         serializer.save(owner=user, packet=packet)
         return JsonResponse(serializer.data, status=201)

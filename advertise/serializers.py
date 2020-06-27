@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
-from account.serializers import CountrySerializer, CitySerializer
+from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
 class PacketDeserializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = [
-            'id','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category',
+            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'buy',
             'weight', 'suggested_price', 'description','picture'
         ]
     
@@ -41,8 +41,8 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = [
-            'slug','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 
-            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count'
+            'slug','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
+            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
         ]
     
 class TravelSerializer(serializers.ModelSerializer):
@@ -56,9 +56,17 @@ class TravelSerializer(serializers.ModelSerializer):
 
 class OfferSerializer(serializers.ModelSerializer):
     packet = serializers.StringRelatedField()
+    # owner = serializers.StringRelatedField()
     class Meta:
         model = Offer
-        fields = ['id', 'packet', 'price', 'flight_date', 'description']
+        fields = ['slug', 'owner', 'packet', 'price', 'flight_date', 'description']
+
+
+class OfferDeserializer(serializers.ModelSerializer):
+    packet = serializers.StringRelatedField()
+    class Meta:
+        model = Offer
+        fields = ['slug', 'packet', 'price', 'flight_date', 'description']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):

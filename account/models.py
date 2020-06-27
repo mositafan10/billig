@@ -18,22 +18,10 @@ Follow_Choices = [
     ('2','رد')
 ]
 
-SOCIAL = [
-    ('0', 'Facebook'),
-    ('1', 'Instagram'),
-    ('2', 'Twitter'),
-    ('3', 'Linkdin'),
-]
-
 Level = [
     ('1', 'Gold'),
     ('2', 'Silver'),
     ('3', 'Bronz'),
-]
-
-Gender = [
-    ('0','Male'),
-    ('1','Famale'),
 ]
 
 
@@ -109,7 +97,7 @@ class Profile (BaseModel):
     
 class Social(BaseModel):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    title = models.CharField(max_length=10, choices=SOCIAL)
+    title = models.CharField(max_length=10)
     social_id = models.CharField(max_length=20)
     is_approved = models.BooleanField(default=False)
 

@@ -5,15 +5,15 @@ from account.models import Country, City
 
 
 class PacketAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','title','origin_country','destination_country',
+    list_display  = ('slug','owner_user','title','origin_country','destination_country',
                     'category','buy','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
     list_filter   = ('origin_country','category','create_at')
     raw_id_fields = ("owner",) 
     search_fields = ('owner___username','category')
 
-    # def owner_user(self, obj):
-    #     return obj.owner.user.id
+    def owner_user(self, obj):
+        return obj.owner.phone_number
     
 class CityAdmin(admin.ModelAdmin):
     list_display  = ('id','name','country')
@@ -64,15 +64,15 @@ class CountryAdmin(admin.ModelAdmin):
     # travel_destination_country.short_description = "td"
          
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('id','origin','destination','price','suggested_price','description')
+    list_display = ('id','offer_owner','offer_to','origin','destination','price','suggested_price','description')
 
-    # def Offer_owner(self, obj):
-    #     return obj.travel.owner.user
+    def offer_owner(self, obj):
+        return obj.owner.phone_number
 
-    # def Offer_to(self, obj):
-    #     return obj.packet.owner.user
+    def offer_to(self, obj):
+        return obj.packet.owner.phone_number
     
-    def origin (self, obj):
+    def origin(self, obj):
         return obj.packet.origin_country
 
     def destination (self, obj):
@@ -83,13 +83,13 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 class TravelAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','departure','destination','flight_date','empty_weight','visit_count','status','create_at')
+    list_display = ('slug','owner_user','departure','destination','flight_date','empty_weight','visit_count','status','create_at')
     list_editable = ('status',)
     list_filter = ('departure','destination',)
     search_fields = ('owner',)
     
-    # def owner_user(self, obj):
-    #     return obj.owner.user
+    def owner_user(self, obj):
+        return obj.owner.phone_number
 
 
 class BookmarkAdmin(admin.ModelAdmin):
@@ -98,6 +98,7 @@ class BookmarkAdmin(admin.ModelAdmin):
 
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('owner','packet','text','create_at')
+
 
 class PacketPictureAdmin(admin.ModelAdmin):
     list_display = ('id','image_file','packet')

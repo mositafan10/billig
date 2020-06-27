@@ -19,7 +19,7 @@ class CitySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','phone_number','first_name']
+        fields = ['id','phone_number']
 
         # def create(self, validated_data):
         #     user = super(UserSerializer, self).create(validated_data)

@@ -33,21 +33,15 @@ Offer = [
         ('2', 'عدم تایید'),
 ] 
 
-
 # for other choice we need a field to be filled by user about category TODO
 PACKET_CATEGORY = [
-        ('0','مدرک'),
-        ('1','کتاب'),
-        ('2','سایر موارد')
+        ('0','مدارک و مستندات'),
+        ('1','کتاب و مجله'),
+        ('2','لوازم الکترونیکی'),
+        ('3','کفش و پوشاک'),
+        ('4','لوازم آرایشی و بهداشتی'),
+        ('2','سایر موارد'),
 ]
-
-# CURRENCY = [
-#         ('0','دلار'),('1','یورو'),('2','ریال'),
-# ]
-
-# Weight_Unit = [
-#     ('0','گرم'),('1','کیلوگرم'),
-# ]
     
 
 class Packet(BaseModel):
@@ -68,12 +62,6 @@ class Packet(BaseModel):
     # should not be send by user: this should be validate
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     status = models.CharField(max_length=20, choices=PACKET_STATUS, default=0)
-    # weight_unit = models.CharField(max_length=5, choices=Weight_Unit)
-    # currency = models.CharField(max_length=3, choices=CURRENCY)  
-    # place_of_get = models.CharField(max_length=20 ,choices=PLACE) 
-    # place_of_give = models.CharField(max_length=20 ,choices=PLACE)  
-    # start_date = models.DateField()
-    # end_date = models.DateField()
  
     def __str__(self):
         return str(self.id)
@@ -96,7 +84,6 @@ class Travel(BaseModel):
     description = models.TextField()
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
     status = models.CharField(max_length=20, choices=TRAVEL_STATUS, default='در انتظار تایید')
-    # weight_unit = models.CharField(max_length=3, choices=Weight_Unit)
     
     def __str__(self):
         return str(self.id)
@@ -112,6 +99,7 @@ class Offer(BaseModel):
     price = models.PositiveIntegerField()
     flight_date = models.DateField(default=now, blank=True, null=True)
     description = models.TextField()
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False)
     status = models.CharField(max_length=3, choices=Offer, default='0')
 
     def __str__(self):
@@ -124,8 +112,6 @@ class Offer(BaseModel):
         super().save(*args, **kwargs)
         
         
-
-
 class Bookmark(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")
     advertise = models.ForeignKey(Packet, on_delete=models.PROTECT, blank=True, null=True)
