@@ -213,21 +213,34 @@ def offer_list(request, slug):
     except:
         return HttpResponse(status=404)
     offer = Offer.objects.filter(packet=packet)
-    serializer = offer(offer, many=True)
+    serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@api_view(['POST','PUT'])
+@permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
     user = User.objects.get(pk=request.user.id)
-    slug = request.data.get("packet")
-    packet = Packet.objects.get(slug=slug)
-    data = request.data
-    serializer = OfferDeserializer(data=data)
-    if serializer.is_valid():
-        serializer.save(owner=user, packet=packet)
-        return JsonResponse(serializer.data, status=201)
-    return JsonResponse(serializer.errors, status=400)
+    if request.method == 'POST':
+        slug = request.data.get("packet")
+        packet = Packet.objects.get(slug=slug)
+        data = request.data
+        serializer = OfferDeserializer(data=data)
+        if serializer.is_valid():
+            serializer.save(owner=user, packet=packet)
+            packet.offer_count_inc()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+    if request.method == 'PUT':
+        slug = request.data.get("slug")
+        offer = Offer.objects.get(slug=slug)
+        if request.data.get("type") == 'ACCEPT':
+            offer.status = '1'
+            offer.save()
+            return HttpResponse(status=200)
+        if request.data.get("type") == 'REJECT':
+            offer.status = '2'
+            offer.save()
+            return HttpResponse(status=200)
+        

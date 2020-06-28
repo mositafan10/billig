@@ -31,6 +31,8 @@ Offer = [
         ('0', 'در انتظار پاسخ'),
         ('1', 'تایید '),
         ('2', 'عدم تایید'),
+        ('3', 'در انتظار پرداخت'),
+        ('4', 'پرداخت شده'),
 ] 
 
 # for other choice we need a field to be filled by user about category TODO
@@ -70,6 +72,12 @@ class Packet(BaseModel):
         self.visit_count += 1
         self.save()
     
+    def offer_count_inc(self):
+        self.offer_count += 1
+        if self.status == '2':
+            self.status == '3'
+        self.save()
+    
 
 class Travel(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -105,11 +113,15 @@ class Offer(BaseModel):
     def __str__(self):
         return str(self.id)
 
-    def save(self, *args, **kwargs):
-        self.packet.offer_count += 1
-        self.packet.status = '3' 
-        self.packet.save()
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.packet.status = '3' 
+    #     self.packet.save()
+    #     super().save(*args, **kwargs)
+    
+    # def packet_offer_count (self):
+    #     self.packet.offer_count += 1
+    #     self.packet.save()
+    #     super().save(*args, **kwargs)
         
         
 class Bookmark(BaseModel):

@@ -64,8 +64,9 @@ class CountryAdmin(admin.ModelAdmin):
     # travel_destination_country.short_description = "td"
          
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('id','offer_owner','offer_to','origin','destination','price','suggested_price','description')
-
+    list_display = ('slug','offer_owner','offer_to','origin','destination','price','suggested_price','description','status')
+    list_editable = ('status',)
+     
     def offer_owner(self, obj):
         return obj.owner.phone_number
 
