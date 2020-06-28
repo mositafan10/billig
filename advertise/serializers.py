@@ -59,14 +59,14 @@ class OfferSerializer(serializers.ModelSerializer):
     # owner = serializers.StringRelatedField()
     class Meta:
         model = Offer
-        fields = ['slug', 'owner', 'packet', 'price', 'flight_date', 'description']
+        fields = ['slug', 'owner', 'packet', 'price', 'flight_date', 'description', 'status']
 
 
 class OfferDeserializer(serializers.ModelSerializer):
     packet = serializers.StringRelatedField()
     class Meta:
         model = Offer
-        fields = ['slug', 'packet', 'price', 'flight_date', 'description']
+        fields = ['slug', 'packet', 'price', 'flight_date', 'description', 'status']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):

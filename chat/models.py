@@ -14,9 +14,8 @@ class Massage(BaseModel):
     # seperate massage in two gropy : packet and travel and different display
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    mtype = models.CharField(max_length=3, choices=MASSAGE_TYPE)
     text = models.TextField() # is that ok for saving other type in textfield ? savaing address !
-    chat_id = models.PositiveIntegerField() # for making group each conversation. is this needed ?
+    chat_id = models.PositiveIntegerField(null=True, blank=True) # for making group each conversation. is this needed ?
 
     def __str__(self):
         return "%s --> %s" %(self.sender, self.receiver)
