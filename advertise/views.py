@@ -121,7 +121,7 @@ def travel_add(request):
 def travel_user_list(request):
     user = User.objects.get(pk=request.user.id)
     travel = Travel.objects.filter(owner=user)
-    serializer = TravelSerializer(travel, many=True)
+    serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
     
 
