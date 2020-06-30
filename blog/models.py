@@ -6,6 +6,7 @@ from account.models import Profile, BaseModel, validate_picture
 
 
 class Post(BaseModel):
+    title = models.CharField(max_length=40)
     author = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="posts")
     category = models.ForeignKey('Category', on_delete=models.PROTECT, related_name="posts")
     tags = models.ManyToManyField('Tag', related_name="posts", blank=True)

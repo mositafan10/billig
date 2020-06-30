@@ -4,7 +4,7 @@ from account.serializers import CountrySerializer, CitySerializer, UserSerialize
 
 
 class PacketDeserializer(serializers.ModelSerializer):
-    picture = serializers.ListField()
+    # picture = serializers.ListField()
     
     class Meta:
         model = Packet
@@ -13,20 +13,20 @@ class PacketDeserializer(serializers.ModelSerializer):
             'weight', 'suggested_price', 'description','picture'
         ]
     
-    def create(self, validated_data):
+    # def create(self, validated_data):
 
-        images = validated_data.pop('picture')
-        packet = Packet.objects.create(**validated_data)
-        for image_id in images:
-            try:
-                print(image_id)
-                image = PacketPicture.objects.get(id=image_id)
-                image.packet = packet
-                image.save()
-            except Exception as e:
-                print('image not found with id={} , e= {}'.format(image_id, str(e)))
-                pass
-        return packet
+    #     images = validated_data.pop('picture')
+    #     packet = Packet.objects.create(**validated_data)
+    #     for image_id in images:
+    #         try:
+    #             # print(image_id)
+    #             image = PacketPicture.objects.get(id=image_id)
+    #             image.packet = packet
+    #             image.save()
+    #         except Exception as e:
+    #             print('image not found with id={} , e= {}'.format(image_id, str(e)))
+    #             pass
+    #     return packet
 
     # def perform_create(self, serializer):
     #     serializer.save(owner=self.request.user)

@@ -5,8 +5,8 @@ from account.models import Country, City
 
 
 class PacketAdmin(admin.ModelAdmin):
-    list_display  = ('slug','owner_user','title','origin_country','destination_country',
-                    'category','buy','description','create_at','offer_count','visit_count','status')
+    list_display  = ('id','slug','owner_user','title','origin_country','destination_country',
+                    'category','buy','get_pictures','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
     list_filter   = ('origin_country','category','create_at')
     raw_id_fields = ("owner",) 
@@ -14,7 +14,12 @@ class PacketAdmin(admin.ModelAdmin):
 
     def owner_user(self, obj):
         return obj.owner.phone_number
+
+    def get_pictures(self,obj):
+        return list(obj.picture.values_list('id', flat=True)) 
     
+    get_pictures.short_description  = "pictures" 
+
 class CityAdmin(admin.ModelAdmin):
     list_display  = ('id','name','country')
     list_filter   = ('country',)
@@ -102,7 +107,12 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 class PacketPictureAdmin(admin.ModelAdmin):
-    list_display = ('id','image_file','packet')
+    list_display = ('id','image_file','get_packet')
+
+    def get_packet(self, obj):
+        return list(obj.packets.values_list('id', flat=True))
+    
+    get_packet.short_description = 'packet'
 
 
 admin.site.register(Packet, PacketAdmin)

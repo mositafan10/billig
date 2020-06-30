@@ -7,7 +7,6 @@ class PostAdmin(admin.ModelAdmin):
     # search_fields = ()
 
     def get_tags(self,obj):
-        # return ','self.tags.all()
         return list(obj.tags.values_list('title', flat=True))  
     get_tags.short_description  = "tags" 
     
@@ -20,10 +19,13 @@ class PostAdmin(admin.ModelAdmin):
   
       
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('__str__','count')
+    list_display = ('__str__','get_post','count')
 
     def count(self,obj):
         return obj.posts.count()
+    
+    def get_post(self,obj):
+        return list(obj.posts.values_list('title', flat=True))  
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('title','parent','count','create_at')

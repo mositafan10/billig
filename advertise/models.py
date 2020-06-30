@@ -57,7 +57,7 @@ class Packet(BaseModel):
     weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
-    picture = models.CharField(max_length=100 , blank=True, null=True)
+    picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
@@ -147,3 +147,6 @@ class Report(BaseModel):
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/%Y/%m')
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id)
