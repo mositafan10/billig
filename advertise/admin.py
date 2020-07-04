@@ -8,7 +8,7 @@ class PacketAdmin(admin.ModelAdmin):
     list_display  = ('id','slug','owner_user','title','origin_country','destination_country',
                     'category','buy','get_pictures','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
-    list_filter   = ('origin_country','category','create_at')
+    list_filter   = ('origin_country','category','create_at', 'status')
     raw_id_fields = ("owner",) 
     search_fields = ('owner___username','category')
 

@@ -143,6 +143,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    #This lets Django's collectstatic store our bundles
+    os.path.join(BASE_DIR, 'media'), 
+    # os.path.join(BASE_DIR, 'resources'), 
+)
 
 # CORS_ORIGIN_WHITELIST = [ 
 #     "http://127.0.0.1:3000",
@@ -194,3 +199,23 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=60),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+    # for production : 
+    
+    # #to avoid transmitting the CSRF cookie over HTTP accidentally.
+    # CSRF_COOKIE_SECURE = True
+
+    # #to avoid transmitting the session cookie over HTTP accidentally.
+    # SESSION_COOKIE_SECURE = True
+
+    # SECURE_BROWSER_XSS_FILTER = True
+
+    # SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # SECURE_SSL_REDIRECT = True
+
+    # # SECURE_HSTS_SECONDS = 86400  # 1 day
+
+    # # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # # SECURE_HSTS_PRELOAD = True

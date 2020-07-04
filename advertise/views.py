@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.db.models import Q
 from django.shortcuts import HttpResponse
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
@@ -11,31 +12,13 @@ from account.models import User
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
-# @parser_classes([JSONParser, MultiPartParser, FormParser])
-# @permission_classes([permissions.AllowAny])
-# @api_view(['GET', 'POST'])
-# def packet_list(request):
-#     if request.method == 'GET':
-#         packet = Packet.objects.all()
-#         serializer = PacketSerializer(packet, many=True,)
-#         return JsonResponse(serializer.data, safe=False)
-#     elif request.method == 'POST':
-#         # data = JSONParser().parse(request)
-#         data = request.data
-#         print(data)
-#         serializer = PacketSerializer(data=data)
-#         print(serializer)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JsonResponse(serializer.data, status=201)
-#         return JsonResponse(serializer.errors, status=400)
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
-        packet = Packet.objects.all().order_by('-create_at')
+        packet = Packet.objects.filter(Q(status='2') | Q(status='3')).order_by('-create_at')
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
@@ -244,3 +227,9 @@ def offer(request):
             offer.save()
             return HttpResponse(status=200)
         
+@permission_classes([AllowAny])        
+@api_view(['GET'])
+def get_picture(request, pk):
+    picture = PacketPicture.objects.get(pk=pk)
+    serializer = PictureSerializer(picture)
+    return JsonResponse(serializer.data, safe=False)

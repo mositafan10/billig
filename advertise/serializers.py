@@ -93,3 +93,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ['owner', 'packet', 'text']
 
+class PictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PacketPicture
+        fields = ['image_file']
