@@ -112,11 +112,11 @@ def travel_user_list(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 def travel_detail(request, pk):
     try:
-        travel = Travel.objects.get(pk=pk)
+        travel = Travel.objects.get(slug=pk)
     except Travel.DoesNotExist:
         return HttpResponse(status=404)
     if request.method == 'GET':
-        serializer = TravelSerializer(travel)
+        serializer = TravelDeserializer(travel)
         return JsonResponse(serializer.data)
     elif request.method == 'PUT':
         data = JSONParser.parse(request)

@@ -196,9 +196,9 @@ def country_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 @api_view(['GET','POST'])
-def city_list(request):
+def city_list(request, pk):
     if request.method == 'GET':
-        cities = City.objects.all()
+        cities = City.objects.filter(country=pk)
         serializer = CitySerializer(cities, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
