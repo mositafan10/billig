@@ -56,7 +56,7 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([AllowAny])
-def signup(request):
+def signup(request): # check for user exsitance in DB
     phone_number = request.data['phone_number']
     password = request.data['password']
     otp = generate_otp()
@@ -84,19 +84,19 @@ def login(request):
                 user.set_password(password)
                 user.save()
         else :
-            error = "One time password is incorrect"
+            error = "کد وارد شده اشتباه است .مجدد سعی کنید "
             raise AuthenticationFailed(detail=error)
 
     # Not first time
     try:
         user = User.objects.get(phone_number=phone_number)
         if not user.check_password(password):
-            raise AuthenticationFailed(detail="Password is incorrect")
+            raise AuthenticationFailed(detail="رمز عبور اشتباه است")
         refresh = RefreshToken.for_user(user)
         return JsonResponse({"token": str(refresh.access_token),
             "refresh": str(refresh)})
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail="User not found.")        
+        raise AuthenticationFailed(detail="کاربر یافت نشد.")        
 
 
 @permission_classes([AllowAny])

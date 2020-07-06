@@ -139,15 +139,14 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_URL = '/static/'
+STATIC_URL = '/dstatic/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'dstatic/')
 STATICFILES_DIRS = (
-    #This lets Django's collectstatic store our bundles
-    os.path.join(BASE_DIR, 'media'), 
-    # os.path.join(BASE_DIR, 'resources'), 
+    os.path.join(BASE_DIR, 'dstatic/'), 
 )
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'dstatic/media/')
 
 # CORS_ORIGIN_WHITELIST = [ 
 #     "http://127.0.0.1:3000",
@@ -170,9 +169,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 SITE_ID = 1
 AUTH_USER_MODEL='account.User'
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = 'media/'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),

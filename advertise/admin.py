@@ -89,7 +89,7 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 class TravelAdmin(admin.ModelAdmin):
-    list_display = ('slug','owner_user','departure','destination','flight_date','empty_weight','visit_count','status','create_at')
+    list_display = ('slug','owner_user','departure','destination','flight_date_start','flight_date_end','empty_weight','visit_count','status','create_at')
     list_editable = ('status',)
     list_filter = ('departure','destination',)
     search_fields = ('owner',)

@@ -50,7 +50,7 @@ class TravelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Travel
         fields = [
-            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date', 'description'
+            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end', 'description'
         ]
 
 
@@ -63,7 +63,7 @@ class TravelDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Travel
         fields = [
-            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date', 'description'
+            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end', 'description'
         ]
 
 
