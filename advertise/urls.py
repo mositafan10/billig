@@ -16,4 +16,5 @@ urlpatterns = [
     path('offer/', views.offer, name='create_offer'),
     path('user_packet/', views.packet_list_user, name='packet_list_user'),
     path('get_picture/<int:pk>/', views.get_picture, name='get_picture'),
+    path('getuseroffer/', views.get_user_offer, name='get_user_offer'),
 ]

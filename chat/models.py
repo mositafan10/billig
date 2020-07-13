@@ -1,22 +1,30 @@
 from django.db import models
 from account.models import User, BaseModel
+from .utils import generate_slug
 
-MASSAGE_TYPE = [
-    ('0','text'),
-    ('1','picture'),
-    ('2','voice'),
-]
-
-class Massage(BaseModel):
-    # need exact time with second
-    # need for pic and voice upload in chat ?
-    # need voice call for future without any number 
-    # seperate massage in two gropy : packet and travel and different display
+ 
+class ChatID(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    text = models.TextField() # is that ok for saving other type in textfield ? savaing address !
-    chat_id = models.PositiveIntegerField(null=True, blank=True) # for making group each conversation. is this needed ?
+    chat_id = models.CharField(default=generate_slug(), max_length=8, editable=False, unique=True)
+    
+    def __str__(self):
+        return str(self.id)
+
+    def save(self, *args, **kwargs):
+        count = ChatID.objects.filter(sender=self.sender, receiver=self.receiver).count()
+        if count == 0 :
+             super().save(*args, **kwargs)
+        else:
+            return None
+
+
+class Massage(BaseModel):
+    text = models.TextField()
+    chat_id = models.ForeignKey(ChatID, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "%s --> %s" %(self.sender, self.receiver)
+        return str(self.id)
+
+
 

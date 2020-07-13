@@ -30,6 +30,7 @@ def packet_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -147,6 +148,7 @@ def visit_packet(request, pk):
         return HttpResponse(status=201)
     return HttpResponse(status=400)
 
+
 @permission_classes([AllowAny])
 @api_view(['GET','POST'])
 def visit_travel(request, pk):
@@ -163,6 +165,7 @@ def visit_travel(request, pk):
         travel.visit()
         return HttpResponse(status=201)
     return HttpResponse(status=400)
+
 
 @permission_classes([AllowAny])
 @api_view(['GET','POST'])
@@ -207,7 +210,9 @@ def offer(request):
     user = User.objects.get(pk=request.user.id)
     if request.method == 'POST':
         slug = request.data.get("packet")
+        travel_slug = request.data.get("travel")
         packet = Packet.objects.get(slug=slug)
+        travel = Travel.objects.get(slug=travel_slug)
         data = request.data
         serializer = OfferDeserializer(data=data)
         if serializer.is_valid():
@@ -227,9 +232,21 @@ def offer(request):
             offer.save()
             return HttpResponse(status=200)
         
+        
 @permission_classes([AllowAny])        
 @api_view(['GET'])
 def get_picture(request, pk):
     picture = PacketPicture.objects.get(pk=pk)
     serializer = PictureSerializer(picture)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])        
+def get_user_offer(request):
+    user = User.objects.get(pk=request.user.id)
+    print(user)
+    offer = Offer.objects.filter(travel__owner=user)
+    print(offer)
+    serializer = OfferSerializer(offer)
     return JsonResponse(serializer.data, safe=False)

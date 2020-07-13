@@ -9,40 +9,42 @@ from account.models import User, BaseModel, Country, City, Profile
 from .utils import generate_slug
 
 PACKET_STATUS = [
-        ('0', 'در انتظار تایید'),
-        ('1', 'عدم تایید'),
-        ('2', 'منتشر شده'),
-        ('3', 'دارای پیشنهاد'),
-        ('4', 'پذیرش شده'),
-        ('5', 'ارسال شده'),
-        ('6', 'حذف شده'),
+        (0, "در انتظار تایید"),
+        (1, "عدم تایید"),
+        (2, "منتشر شده"),
+        (3, "دارای پیشنهاد"),
+        (4, "منقضی شده"),
+        (5, "حذف شده"),
+        (6, "در انتظار پرداخت"),
+        (7, "در انتظار خرید"),
+        (8, "خریداری شده"),
+        (9, "در حال ارسال"),
+        (10, "انجام شده"),
 ] 
 
 TRAVEL_STATUS = [
-        ('0', 'در انتظار تایید'),
-        ('1', 'عدم تایید'),
-        ('2', 'منتشر شده'),
-        ('3', 'دارای بسته'),
-        ('4', 'پرواز کرد'),
-        ('5', 'حذف شده'),
+        (0, "در انتظار تایید"),
+        (1, "عدم تایید"),
+        (2, "منتشر شده"),
+        (3, "دارای بسته"),
+        (4, "انجام شده"),
+        (5, "حذف شده"),
 ] 
 
 Offer = [
-        ('0', 'در انتظار پاسخ'),
-        ('1', 'تایید '),
-        ('2', 'عدم تایید'),
-        ('3', 'در انتظار پرداخت'),
-        ('4', 'پرداخت شده'),
+        (0, "در انتظار پاسخ"),
+        (1, "تایید"),
+        (2, "عدم تایید"),
 ] 
 
 # for other choice we need a field to be filled by user about category TODO
 PACKET_CATEGORY = [
-        ('0','مدارک و مستندات'),
-        ('1','کتاب و مجله'),
-        ('2','لوازم الکترونیکی'),
-        ('3','کفش و پوشاک'),
-        ('4','لوازم آرایشی و بهداشتی'),
-        ('2','سایر موارد'),
+        (0, "مدارک و مستندات"),
+        (1, "کتاب و مجله"),
+        (2, "لوازم الکترونیکی"),
+        (3, "کفش و پوشاک"),
+        (4, "لوازم آرایشی و بهداشتی"),
+        (5, "سایر موارد"),
 ]
     
 
@@ -53,7 +55,7 @@ class Packet(BaseModel):
     origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city")
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
-    category = models.CharField(max_length=20, choices=PACKET_CATEGORY)
+    category = models.IntegerField(choices=PACKET_CATEGORY)
     weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
@@ -63,7 +65,7 @@ class Packet(BaseModel):
     description = models.TextField(blank=True, null=True)
     # should not be send by user: this should be validate
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.CharField(max_length=20, choices=PACKET_STATUS, default=0)
+    status = models.IntegerField(choices=PACKET_STATUS, default=0)
  
     def __str__(self):
         return str(self.id)
@@ -87,44 +89,43 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     empty_weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)], blank=True, null=True) 
     flight_date_start = models.CharField(max_length=40)
-    flight_date_end = models.DateField(blank=True, null=True)
+    flight_date_end = models.CharField(max_length=40)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField()
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
-    status = models.CharField(max_length=20, choices=TRAVEL_STATUS, default='در انتظار تایید')
+    status = models.IntegerField(choices=TRAVEL_STATUS, default=0)
     
     def __str__(self):
         return str(self.id)
-    
+
     def visit(self):
         self.visit_count += 1
         self.save()
 
 
 class Offer(BaseModel):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
+    travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel_ads")
     price = models.PositiveIntegerField()
-    flight_date = models.DateField(default=now, blank=True, null=True)
     description = models.TextField()
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False)
-    status = models.CharField(max_length=3, choices=Offer, default='0')
+    slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
+    status = models.IntegerField(choices=Offer, default=0)
 
     def __str__(self):
         return str(self.id)
 
-    # def save(self, *args, **kwargs):
-    #     self.packet.status = '3' 
-    #     self.packet.save()
-    #     super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        self.packet.status = '3' 
+        self.packet.save()
+        super().save(*args, **kwargs)
     
-    # def packet_offer_count (self):
-    #     self.packet.offer_count += 1
-    #     self.packet.save()
-    #     super().save(*args, **kwargs)
+    def packet_offer_count(self):
+        self.packet.offer_count += 1
+        self.packet.save()
+        super().save(*args, **kwargs)
         
-        
+      
 class Bookmark(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")
     advertise = models.ForeignKey(Packet, on_delete=models.PROTECT, blank=True, null=True)

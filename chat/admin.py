@@ -1,10 +1,15 @@
 from django.contrib import admin
-from .models import Massage
+from .models import Massage, ChatID
 
 
-class ChatAdmin(admin.ModelAdmin):
-    list_display = ('sender','receiver','text','create_at')
-    search_fields = ('sender__username','receiver__username','text')
+class MassageAdmin(admin.ModelAdmin):
+    list_display = ('chat_id','text','create_at')
 
-admin.site.register(Massage,ChatAdmin)
+
+class ChatIdAdmin(admin.ModelAdmin):
+    list_display = ('sender', 'receiver', 'chat_id')
+
+
+admin.site.register(Massage,MassageAdmin)
+admin.site.register(ChatID,ChatIdAdmin)
 
