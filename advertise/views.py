@@ -185,9 +185,9 @@ def bookmark(request, pk):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def upload_file(request):
-    data = request.data
+    data = request.data # is needed ?
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
-    newdoc.save()
+    newdoc.save() 
     return JsonResponse({"id": newdoc.id})
 
 
@@ -207,16 +207,21 @@ def offer_list(request, slug):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
-    user = User.objects.get(pk=request.user.id)
+    # user = User.objects.get(pk=request.user.id)
     if request.method == 'POST':
         slug = request.data.get("packet")
+        price = request.data.get("price")
+        description = request.data.get("description")
         travel_slug = request.data.get("travel")
         packet = Packet.objects.get(slug=slug)
+        print(packet)
         travel = Travel.objects.get(slug=travel_slug)
+        print(travel)
         data = request.data
+        print(data)
         serializer = OfferDeserializer(data=data)
         if serializer.is_valid():
-            serializer.save(owner=user, packet=packet)
+            serializer.save(packet=packet, travel=travel)
             packet.offer_count_inc()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
@@ -245,8 +250,6 @@ def get_picture(request, pk):
 @permission_classes([IsAuthenticated])        
 def get_user_offer(request):
     user = User.objects.get(pk=request.user.id)
-    print(user)
     offer = Offer.objects.filter(travel__owner=user)
-    print(offer)
-    serializer = OfferSerializer(offer)
+    serializer = OfferDeserializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)

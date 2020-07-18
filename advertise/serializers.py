@@ -47,11 +47,12 @@ class PacketSerializer(serializers.ModelSerializer):
         ]
     
 class TravelSerializer(serializers.ModelSerializer):
-
+    
     class Meta:
         model = Travel
         fields = [
-            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end', 'description'
+            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
+            'description'
         ]
 
 
@@ -64,24 +65,27 @@ class TravelDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Travel
         fields = [
-            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end', 'description'
+            'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
+            'description'
         ]
 
 
 class OfferSerializer(serializers.ModelSerializer):
+    # packet = serializers.StringRelatedField()
+    # travel = serializers.StringRelatedField()
+    status = serializers.CharField(source='get_status_display')
+    class Meta:
+        model = Offer
+        fields = ['slug', 'status']
+
+
+class OfferDeserializer(serializers.ModelSerializer):
     packet = serializers.StringRelatedField()
     travel = serializers.StringRelatedField()
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['slug', 'packet', 'price', 'travel', 'description', 'status']
-
-
-class OfferDeserializer(serializers.ModelSerializer):
-    packet = serializers.StringRelatedField()
-    class Meta:
-        model = Offer
-        fields = ['slug', 'packet', 'price', 'travel', 'description', 'status']
+        fields = ['packet', 'price', 'travel', 'description','status']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
@@ -94,6 +98,7 @@ class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ['owner', 'packet', 'text']
+
 
 class PictureSerializer(serializers.ModelSerializer):
     class Meta:

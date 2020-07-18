@@ -1,15 +1,15 @@
 from django.contrib import admin
-from .models import Massage, ChatID
+from .models import Massage, Conversation
 
 
 class MassageAdmin(admin.ModelAdmin):
     list_display = ('chat_id','text','create_at')
 
 
-class ChatIdAdmin(admin.ModelAdmin):
-    list_display = ('sender', 'receiver', 'chat_id')
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = ('id','sender', 'receiver')
 
 
 admin.site.register(Massage,MassageAdmin)
-admin.site.register(ChatID,ChatIdAdmin)
+admin.site.register(Conversation,ConversationAdmin)
 

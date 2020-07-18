@@ -73,7 +73,7 @@ class OfferAdmin(admin.ModelAdmin):
     list_editable = ('status',)
      
     def offer_owner(self, obj):
-        return obj.owner.phone_number
+        return obj.travel.owner.phone_number
 
     def offer_to(self, obj):
         return obj.packet.owner.phone_number

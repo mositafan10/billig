@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import Massage, ChatID
+from .models import Massage, Conversation
 
 
 class MassageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Massage
-        fields = ['receiver','text','chat_id']
+        fields = ['text','chat_id']
 
 
-class ChatIdSerializer(serializers.ModelSerializer):
+class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ChatID
-        fields = ['receiver']
+        model = Conversation
+        fields = ['receiver', 'sender', 'chat_id']
