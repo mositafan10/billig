@@ -2,11 +2,11 @@ from django.contrib import admin
 from .models import Profile, Social, CommentUser, Score, Follow, User
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id','phone_number','password')
+    list_display = ('id','first_name','last_name','phone_number')
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('id','first_name','last_name','user','country','city')
+    list_display = ('id','user','country','city')
     list_filter = ('country','city')
 
 class SocialAdmin(admin.ModelAdmin):

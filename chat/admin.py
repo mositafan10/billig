@@ -3,7 +3,7 @@ from .models import Massage, Conversation
 
 
 class MassageAdmin(admin.ModelAdmin):
-    list_display = ('chat_id','text','create_at')
+    list_display = ('owner','chat_id','text','create_at')
 
 
 class ConversationAdmin(admin.ModelAdmin):

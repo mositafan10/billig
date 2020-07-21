@@ -80,6 +80,10 @@ class Packet(BaseModel):
             self.status == '3'
         self.save()
     
+    @property
+    def owner_firstname(self):
+        return str(self.owner.first_name + ' ' + self.last_name)
+    
 
 class Travel(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -124,6 +128,10 @@ class Offer(BaseModel):
         self.packet.offer_count += 1
         self.packet.save()
         super().save(*args, **kwargs)
+
+    @property
+    def receiver(self):
+        return str(self.packet.owner.first_name + ' ' + self.packet.owner.last_name)
         
       
 class Bookmark(BaseModel):

@@ -42,7 +42,7 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = [
-            'slug','title', 'owner', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
+            'slug','title', 'owner_firstname', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
         ]
     
@@ -71,21 +71,19 @@ class TravelDeserializer(serializers.ModelSerializer):
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    # packet = serializers.StringRelatedField()
-    # travel = serializers.StringRelatedField()
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['slug', 'status']
+        fields = ['slug','price','status','description','receiver']
 
 
 class OfferDeserializer(serializers.ModelSerializer):
     packet = serializers.StringRelatedField()
     travel = serializers.StringRelatedField()
-    status = serializers.CharField(source='get_status_display')
+    # status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['packet', 'price', 'travel', 'description','status']
+        fields = ['packet', 'price', 'travel', 'description']
 
 
 class BookmarkSerializer(serializers.ModelSerializer):

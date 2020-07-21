@@ -147,8 +147,6 @@ def update_user(request):
         profile.twitter_id = request.data.get("twitter_id")
         profile.linkdin = request.data.get("bio")
         profile.email = request.data.get("email")
-        profile.first_name = request.data.get("first_name")
-        profile.last_name = request.data.get("last_name")
         profile.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)

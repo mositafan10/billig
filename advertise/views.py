@@ -251,5 +251,5 @@ def get_picture(request, pk):
 def get_user_offer(request):
     user = User.objects.get(pk=request.user.id)
     offer = Offer.objects.filter(travel__owner=user)
-    serializer = OfferDeserializer(offer, many=True)
+    serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)

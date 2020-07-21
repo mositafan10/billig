@@ -9,7 +9,6 @@ from .utils import validate_picture
 from django.contrib.auth.models import PermissionsMixin
 
 
-
 # User = get_user_model()
 
 Follow_Choices = [
@@ -58,6 +57,8 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True, editable=False)
     phone_number = models.CharField(max_length=15, editable=False, unique=True)
+    first_name = models.CharField(max_length=20, blank=True, null=True)
+    last_name = models.CharField(max_length=20, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -73,8 +74,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
-    first_name = models.CharField(max_length=10, blank=True, null=True)
-    last_name = models.CharField(max_length=10, blank=True, null=True)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
     bio = models.TextField(blank=True, null=True)
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address
@@ -189,6 +188,7 @@ class City(BaseModel):
 
     def __str__(self):
         return self.name
+
 
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/Packet/%Y/%m')

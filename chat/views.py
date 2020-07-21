@@ -40,3 +40,13 @@ def chat_list(request):
     print(chats)
     serializer = ConversationSerializer(chats, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def massage_list(request, chatid):
+    massages = Massage.objects.filter(chat_id=chatid)
+    serializer = MassageSerializer(massages, many=True)
+    return JsonResponse(serializer.data, safe=False)
+    
+    
