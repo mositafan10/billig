@@ -1,20 +1,15 @@
 from django.db import models
 from django.db.models import Q
 from account.models import User, BaseModel
+from advertise.models import Offer
 from .utils import generate_slug
 
-
-
-class ConversationManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(sender='1')
  
  
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    objects = models.Manager()
-    chatlist = ConversationManager()
+    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer")
 
     def __str__(self):
         return str(self.id)
@@ -27,6 +22,22 @@ class Conversation(BaseModel):
         else:
             return None
 
+    @property
+    def receiver_name(self):
+        return str(self.receiver.first_name + ' ' + self.receiver.last_name)
+
+    @property
+    def sender_name(self):
+        return str(self.sender.first_name + ' ' + self.sender.last_name)
+    
+    @property
+    def offer_state(self):
+        return self.offer.get_status_display
+
+    @property
+    def sender_username(self):
+        return str(self.sender.username)
+
 
 class Massage(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="massage")
@@ -36,6 +47,12 @@ class Massage(BaseModel):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def owner_name(self):
+        return str(self.owner.first_name + ' ' + self.owner.last_name)
 
+    @property
+    def ownerid(self):
+        return self.owner.id
 
 

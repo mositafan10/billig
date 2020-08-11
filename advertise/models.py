@@ -35,6 +35,12 @@ Offer = [
         (0, "در انتظار پاسخ"),
         (1, "تایید"),
         (2, "عدم تایید"),
+        (3, "در انتظار پرداخت"),
+        (4, "در انتظار خرید"),
+        (5, "خریداری شده"),
+        (6, "در حال ارسال"),
+        (7, "انجام شده"),
+        (8, "در حال مذاکره")
 ] 
 
 # for other choice we need a field to be filled by user about category TODO
@@ -132,6 +138,18 @@ class Offer(BaseModel):
     @property
     def receiver(self):
         return str(self.packet.owner.first_name + ' ' + self.packet.owner.last_name)
+    
+    @property
+    def sender(self):
+        return str(self.travel.owner.first_name + ' ' + self.travel.owner.last_name)
+
+    @property
+    def sender_id(self):
+        return self.travel.owner.id
+
+    @property
+    def packet_slug(self):
+        return self.packet.slug
         
       
 class Bookmark(BaseModel):

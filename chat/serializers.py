@@ -4,15 +4,24 @@ from account.serializers import UserSerializer
 
 
 class MassageSerializer(serializers.ModelSerializer):
-    owner = UserSerializer()
     class Meta:
         model = Massage
-        fields = ['text', 'owner']
+        fields = ['text', 'owner_name','ownerid','create_at']
+
+
+class MassageDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Massage
+        fields = ['text', 'owner', 'chat_id']
 
 
 class ConversationSerializer(serializers.ModelSerializer):
-    receiver = UserSerializer()
-    sender = UserSerializer()
     class Meta:
         model = Conversation
-        fields = ['receiver', 'sender','id']
+        fields = ['receiver_name', 'sender_name','id','sender', 'offer_state']
+
+
+class ConversationDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Conversation
+        fields = ['id','receiver']

@@ -94,7 +94,7 @@ def login(request):
             raise AuthenticationFailed(detail="رمز عبور اشتباه است")
         refresh = RefreshToken.for_user(user)
         return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh)})
+            "refresh": str(refresh), "user": user.id})
     except User.DoesNotExist:
         raise AuthenticationFailed(detail="کاربر یافت نشد.")        
 
