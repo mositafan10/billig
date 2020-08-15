@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('packet/', views.packet_list, name='packet_list'),
-    path('packet/update/<int:slug>/', views.update_packet, name='packet_list'),
+    # path('packet/update/<int:slug>/', views.update_packet, name='packet_list'),
     path('packet/<int:slug>/', views.packet_detail, name='packet_detail'),
     path('packet/<int:slug>/visit/', views.visit_packet, name='packet_visit'),
     path('travel/', views.travel_add, name='travel_add'),

@@ -94,8 +94,8 @@ class Packet(BaseModel):
         self.save()
     
     @property
-    def owner_firstname(self):
-        return str(self.owner.first_name + ' ' + self.last_name)
+    def owner_name(self):
+        return str(self.owner.first_name + ' ' + self.owner.last_name)
     
 
 class Travel(BaseModel):
