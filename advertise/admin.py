@@ -6,9 +6,9 @@ from account.models import Country, City
 
 class PacketAdmin(admin.ModelAdmin):
     list_display  = ('id','slug','owner_user','title','origin_country','destination_country',
-                    'category','buy','get_pictures','description','create_at','offer_count','visit_count','status')
+                    'category','buy','get_pictures','weight','dimension','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
-    list_filter   = ('origin_country','category','create_at', 'status')
+    list_filter   = ('origin_country','category','create_at', 'status','dimension')
     raw_id_fields = ("owner",) 
     search_fields = ('owner___username','category')
 

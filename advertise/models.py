@@ -52,6 +52,12 @@ PACKET_CATEGORY = [
         (4, "لوازم آرایشی و بهداشتی"),
         (5, "سایر موارد"),
 ]
+
+DIMENSION = [
+        (0, "کوچک"),
+        (1, "متوسط"),
+        (2, "بزرگ"),
+]
     
 
 class Packet(BaseModel):
@@ -63,6 +69,7 @@ class Packet(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
     weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
+    dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
     picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")

@@ -76,12 +76,13 @@ def packet_detail(request, slug):
         serilaizer = PacketSerializer(packet)
         return JsonResponse(serilaizer.data, safe=False)
     elif request.method == 'PUT':
-        data = JSONParser.parse(request)
-        serializer = PacketSerializer(data=data)
+        data = request.data
+        serializer = PacketSerializer1(data=data)
+        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data)
-        return JsonResponse(serialzier.errors, status=400)
+        return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
         packet.delete()
         return HttpResponse(status=204)

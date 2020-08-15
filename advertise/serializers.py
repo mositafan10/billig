@@ -3,6 +3,15 @@ from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
+PACKET_CATEGORY = [
+        (0, "مدارک و مستندات"),
+        (1, "کتاب و مجله"),
+        (2, "لوازم الکترونیکی"),
+        (3, "کفش و پوشاک"),
+        (4, "لوازم آرایشی و بهداشتی"),
+        (5, "سایر موارد"),
+]
+
 class PacketDeserializer(serializers.ModelSerializer):
     # picture = serializers.ListField()
     
@@ -45,6 +54,21 @@ class PacketSerializer(serializers.ModelSerializer):
             'slug','title', 'owner_firstname', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
         ]
+
+class PacketSerializer1(serializers.ModelSerializer):
+    destination_country = serializers.StringRelatedField()
+    origin_city = serializers.StringRelatedField()
+    origin_country = serializers.StringRelatedField()
+    destination_city = serializers.StringRelatedField()
+    # category = serializers.StringRelatedField()
+    status = serializers.StringRelatedField()
+    class Meta:
+        model = Packet
+        fields = [
+            'slug','title', 'owner_firstname', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
+            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
+        ]
+
     
 class TravelSerializer(serializers.ModelSerializer):
     
