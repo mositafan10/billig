@@ -168,20 +168,27 @@ def visit_travel(request, pk):
     return HttpResponse(status=400)
 
 
-@permission_classes([AllowAny])
-@api_view(['GET','POST'])
-def bookmark(request, pk):
+@permission_classes([IsAuthenticated])
+@api_view(['POST','GET'])
+def bookmark(request, slug):
+    user = User.objects.get(pk=request.user.id)
+    packet = Packet.objects.get(slug=slug)
+    if request.method == 'GET':
+        count = Bookmark.objects.filter(owner=user, advertise=packet).count()
+        print(count)
+        if (count == 0):
+            return JsonResponse(True, safe=False)
+        else:
+            return JsonResponse(False, safe=False)
     if request.method == 'POST':
-        packet = Packet.objects.get(pk=pk)
-        data = JSONParser().parse(request)
-        serializer = PacketSerializer(data=data)
-        if serialzier.is_valid():
-            serializer.save()
+        data = request.data
+        serializer = BookmarkSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(owner=user, advertise=packet)
             return JsonResponse(serializer.data)
-        return JsonResponse(serializer.error, status=400)
-    return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
+        return JsonResponse(serializer.errors, status=400)
 
-
+ 
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
@@ -210,16 +217,13 @@ def offer_list(request, slug):
 def offer(request):
     # user = User.objects.get(pk=request.user.id)
     if request.method == 'POST':
-        slug = request.data.get("packet")
         price = request.data.get("price")
         description = request.data.get("description")
         travel_slug = request.data.get("travel")
+        slug = request.data.get("packet")
         packet = Packet.objects.get(slug=slug)
-        print(packet)
         travel = Travel.objects.get(slug=travel_slug)
-        print(travel)
         data = request.data
-        print(data)
         serializer = OfferDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(packet=packet, travel=travel)

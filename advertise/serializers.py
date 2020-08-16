@@ -114,7 +114,7 @@ class OfferDeserializer(serializers.ModelSerializer):
 class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ['owner', 'advertise']
+        fields = ['advertise']
 
 
 class ReportSerializer(serializers.ModelSerializer):

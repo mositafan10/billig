@@ -160,7 +160,7 @@ class Offer(BaseModel):
         
       
 class Bookmark(BaseModel):
-    owner = models.ForeignKey(Profile, on_delete=models.PROTECT, related_name="bookmark_owner")
+    owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
     advertise = models.ForeignKey(Packet, on_delete=models.PROTECT, blank=True, null=True)
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, blank=True, null=True)
 
@@ -169,7 +169,7 @@ class Bookmark(BaseModel):
 
 
 class Report(BaseModel):
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="reporter")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE)
     title = models.CharField(max_length=15)
     text = models.TextField()
