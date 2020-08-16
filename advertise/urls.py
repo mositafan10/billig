@@ -7,6 +7,7 @@ urlpatterns = [
     path('packet/<int:slug>/', views.packet_detail, name='packet_detail'),
     path('packet/<int:slug>/visit/', views.visit_packet, name='packet_visit'),
     path('packet/bookmark/<int:slug>/', views.bookmark, name='bookmark'),
+    path('packet/bookmark/list/', views.bookmark_list, name='bookmark_list'),
     path('travel/', views.travel_add, name='travel_add'),
     path('travel/<int:pk>/', views.travel_detail, name='travel'),
     path('travellist/', views.travel_user_list, name='travel_user_list'),

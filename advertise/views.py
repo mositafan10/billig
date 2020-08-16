@@ -169,7 +169,7 @@ def visit_travel(request, pk):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['POST','GET'])
+@api_view(['POST','GET','DELETE'])
 def bookmark(request, slug):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=slug)
@@ -180,15 +180,28 @@ def bookmark(request, slug):
             return JsonResponse(True, safe=False)
         else:
             return JsonResponse(False, safe=False)
-    if request.method == 'POST':
+    elif request.method == 'POST':
         data = request.data
         serializer = BookmarkSerializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, advertise=packet)
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
+    elif request.method == 'DELETE':
+        bookmark = Bookmark.objects.filter(owner=user, advertise=packet)
+        bookmark.delete()
+        return HttpResponse(status=204)
 
- 
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def bookmark_list(request):
+    user = User.objects.get(pk=request.user.id)
+    bookmark = Bookmark.objects.filter(owner=user)
+    serializer = BookmarkDeserializer(bookmark, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])

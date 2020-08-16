@@ -167,6 +167,14 @@ class Bookmark(BaseModel):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def packet_title(self):
+        return str(self.advertise.title)
+    
+    @property
+    def packet_slug(self):
+        return self.advertise.slug
+
 
 class Report(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")

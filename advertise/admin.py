@@ -99,11 +99,11 @@ class TravelAdmin(admin.ModelAdmin):
 
 
 class BookmarkAdmin(admin.ModelAdmin):
-    list_display = ('owner','advertise','travel')
+    list_display = ('id','owner','advertise','travel')
 
 
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('owner','packet','text','create_at')
+    list_display = ('id','owner','packet','text','create_at')
 
 
 class PacketPictureAdmin(admin.ModelAdmin):

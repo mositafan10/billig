@@ -116,6 +116,11 @@ class BookmarkSerializer(serializers.ModelSerializer):
         model = Bookmark
         fields = ['advertise']
 
+class BookmarkDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bookmark
+        fields = ['id','packet_slug','advertise','packet_title']
+
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
