@@ -26,5 +26,6 @@ urlpatterns = [
     path('friend/', views.friend_request, name="friend_request"),
     path('friend_list/', views.friend_list, name="friend_list"),
     path('get_user/', views.get_user, name="get_user"),
+    path('upload/', views.upload_file),
     # path('signup/user/', views.create_user, name="create_user"),
 ]

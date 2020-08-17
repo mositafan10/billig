@@ -135,9 +135,9 @@ def confirm_reset_password(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def update_user(request):
     user = User.objects.get(pk=request.user.id)
-    print(user)
     profile = Profile.objects.get(user=user)
-    print(profile)
+    country = Country.objects.get(pk=request.data.get("country"))
+    city = City.objects.get(pk=request.data.get("city"))
     data = request.data
     serializer = ProfileSerializer(data=data)
     if serializer.is_valid():
@@ -147,6 +147,8 @@ def update_user(request):
         profile.twitter_id = request.data.get("twitter_id")
         profile.linkdin = request.data.get("bio")
         profile.email = request.data.get("email")
+        profile.country = country
+        profile.city = city
         profile.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
@@ -250,3 +252,19 @@ def get_user(request):
     profile = Profile.objects.get(user=user)
     print(profile)
     return JsonResponse({"user":profile.first_name})
+
+
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@api_view(['POST'])
+def upload_file(request):
+    user = User.objects.get(pk=request.user.id)
+    data = request.data # is needed ?
+    profile = Profile.objects.get(user=user) 
+    serializer = ProfileSerializer(data=data)
+    if serializer.is_valid():
+        profile.picture = request.FILES.get('avatar')
+        profile.save()
+        return JsonResponse(str(profile.picture), safe=False)
+    return JsonResponse(serializer.errors, status=400)
+ 

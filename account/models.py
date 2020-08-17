@@ -93,6 +93,10 @@ class Profile (BaseModel):
     def __str__(self):
         return str(self.id)
     
+    @property
+    def name(self):
+        return str(self.user.first_name + ' ' + self.user.last_name )
+    
     
 class Social(BaseModel):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
