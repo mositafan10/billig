@@ -18,6 +18,8 @@ from .models import Profile, Social, Score, CommentUser, City, Country, Follow, 
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
 
+from datetime import datetime
+
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
@@ -91,12 +93,14 @@ def login(request):
     try:
         user = User.objects.get(phone_number=phone_number)
         if not user.check_password(password):
-            raise AuthenticationFailed(detail="رمز عبور اشتباه است")
+            raise AuthenticationFailed(detail=".رمز عبور اشتباه است. مجدد تلاش کنید")
+        user.last_login = datetime.now()
+        user.save()
         refresh = RefreshToken.for_user(user)
         return JsonResponse({"token": str(refresh.access_token),
             "refresh": str(refresh), "user": user.id})
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail="کاربر یافت نشد.")        
+        raise AuthenticationFailed(detail=".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید")        
 
 
 @permission_classes([AllowAny])
@@ -268,3 +272,10 @@ def upload_file(request):
         return JsonResponse(str(profile.picture), safe=False)
     return JsonResponse(serializer.errors, status=400)
  
+@permission_classes([IsAuthenticated]) 
+@api_view(['GET'])
+def logout(request):
+    user = User.objects.get(pk=request.user.id)
+    user.last_logout = datetime.now()
+    user.save()
+    return HttpResponse(status=200)

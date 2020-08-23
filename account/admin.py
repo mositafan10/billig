@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import Profile, Social, CommentUser, Score, Follow, User
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id','first_name','last_name','phone_number')
+    list_display = ('id','first_name','last_name','phone_number', 'last_login', 'last_logout')
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -27,6 +27,7 @@ class FollowAdmin(admin.ModelAdmin):
 class CommentUserAdmin(admin.ModelAdmin):
     list_display = ('owner','receiver','comment','is_approved','create_at')
     list_filter = ('create_at',)
+    list_editable = ('is_approved',)
     # search_fields = ('owner','receiver','comment') with error , why ?
 
 

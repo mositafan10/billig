@@ -65,6 +65,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     follower_count = models.PositiveIntegerField(default=0)
     following_count = models.PositiveIntegerField(default=0)
     USERNAME_FIELD = 'phone_number'
+    last_logout = models.DateTimeField(_('last logout'), blank=True, null=True)
 
     objects = UserManager()
     
@@ -97,7 +98,7 @@ class Profile (BaseModel):
     def name(self):
         return str(self.user.first_name + ' ' + self.user.last_name )
     
-    
+# can be removed
 class Social(BaseModel):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     title = models.CharField(max_length=10)
@@ -140,7 +141,8 @@ class CommentUser(BaseModel):
             self.owner.save()
             super().save(*args, **kwargs)
         else:
-            raise ValidationError("It's done before. thank you again") # should be changed
+            super().save(*args, **kwargs)
+            raise ValidationError("It's done before. thank you again") #???? TODO
 
 
 class Follow(BaseModel):

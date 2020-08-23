@@ -14,6 +14,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 
+from datetime import datetime
 
 
 @api_view(['GET'])
@@ -38,8 +39,15 @@ def get_id(request):
 @permission_classes([permissions.IsAuthenticated])
 def chat_list(request):
     user = User.objects.get(pk=request.user.id)
-    chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user))
-    print(chats)
+    chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-updated_at')
+
+    #for count new massages
+    massages = Massage.objects.filter(chat_id=chatid)
+    last_login = user.last_login
+    last_logout = user.last_logout
+    new_massages_count = massages.filter(create_at__range=(last_logout, last_login )).count()
+
+    conversation = Conversation.objects.get(id=chatid)
     serializer = ConversationSerializer(chats, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -47,7 +55,9 @@ def chat_list(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def massage_list(request, chatid):
+    user = User.objects.get(pk=request.user.id)
     massages = Massage.objects.filter(chat_id=chatid)
+
     serializer = MassageSerializer(massages, many=True)
     return JsonResponse(serializer.data, safe=False)
     
@@ -70,14 +80,24 @@ def create_conversation(request):
         return JsonResponse({"id":conversation.id})
 
    
-
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def add_massage(request):
     user = User.objects.get(pk=request.user.id)
+    chat_id = request.data.get('chat_id')
+    conversation = Conversation.objects.get(id=chat_id)
+
     data = request.data
     serializer = MassageDeserializer(data=data)
     if serializer.is_valid():
         serializer.save(owner=user)
         return JsonResponse(serializer.data, safe=False)
     return JsonResponse(serializer.errors, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_lastlogin(request):
+    user = User.objects.get(pk=request.user.id)
+    print(user)
+    return JsonResponse(user.last_login, safe=False)

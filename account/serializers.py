@@ -32,7 +32,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Profile
-        fields =  ['id','name','email','bio','facebook_id','instagram_id','linkdin_id','twitter_id','picture','country','city','favorite_gift','level','score','scores_count','comment_count','is_approved']
+        fields =  ['id','name','email','bio','facebook_id','instagram_id','linkdin_id','twitter_id','picture','country','city','favorite_gift','level','score','is_approved']
 
 
 class SocialSerializer(serializers.ModelSerializer):

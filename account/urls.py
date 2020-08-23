@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('signup/', views.signup, name="signup"),
     path('login/', views.login, name="login"),
+    path('logout/', views.logout, name="logout"),
     path('login/reset_password/', views.reset_password, name="reset_password"),
     path('users/profile/', views.ProfileListCreateView.as_view(), name="profile"),
     path('users/profile/<int:pk>/', views.user_profile, name="profile_detail"),

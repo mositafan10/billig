@@ -1,26 +1,31 @@
 from django.db import models
 from django.db.models import Q
-from account.models import User, BaseModel
+from account.models import User, BaseModel, Profile
 from advertise.models import Offer
 from .utils import generate_slug
+from datetime import datetime
 
- 
  
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer")
-
+    
     def __str__(self):
         return str(self.id)
 
     def save(self, *args, **kwargs):
-        count = Conversation.objects.filter(sender=self.sender, receiver=self.receiver).count()
-        count1 = Conversation.objects.filter(sender=self.receiver, receiver=self.sender).count()
-        if count == 0 and count1 == 0:
-             super().save(*args, **kwargs)
+        if not self.id:
+            print ( " not exist ")
+            count = Conversation.objects.filter(sender=self.sender, receiver=self.receiver).count()
+            count1 = Conversation.objects.filter(sender=self.receiver, receiver=self.sender).count()
+            if (count == 0 and count1 == 0):
+                super().save(*args, **kwargs)
+            else:
+                return None
         else:
-            return None
+            print( "exist")
+            super().save(*args, **kwargs)
 
     @property
     def receiver_name(self):
@@ -38,11 +43,23 @@ class Conversation(BaseModel):
     def sender_username(self):
         return str(self.sender.username)
 
+    @property
+    def sender_avatar(self):
+        user = self.sender
+        profile = Profile.objects.get(user=user)
+        return str(profile.picture)
+
+    @property
+    def receiver_avatar(self):
+        user = self.receiver
+        profile = Profile.objects.get(user=user)
+        return str(profile.picture)
+
 
 class Massage(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="massage")
     text = models.TextField()
-    chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE, db_index=True)
+    chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id)
@@ -54,5 +71,11 @@ class Massage(BaseModel):
     @property
     def ownerid(self):
         return self.owner.id
+
+    def save(self, *args, **kwargs):
+        self.chat_id.updated_at = datetime.now()
+        self.chat_id.save()
+        super().save(*args, **kwargs)
+
 
 

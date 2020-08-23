@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'corsheaders',
+    'channels',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_auth',
@@ -48,7 +49,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTTokenUserAuthentication',
         ),
     'DEFAULT_PERMISSION_CLASSES': (
-        #  'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
         ),
         'DEFAULT_PARSER_CLASSES': (
@@ -88,6 +89,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Basteh.wsgi.application'
+ASGI_APPLICATION = 'Basteh.routing.application'
+
+CHANNEL_LAYERS = {
+            'default': {
+                'BACKEND': 'channels_redis.core.RedisChannelLayer',
+                'CONFIG': {
+                    "hosts": [('127.0.0.1', 6379)],
+                },
+            },  
+        }
 
 
 # Database

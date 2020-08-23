@@ -19,7 +19,7 @@ class PacketDeserializer(serializers.ModelSerializer):
         model = Packet
         fields = [
             'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'buy',
-            'weight', 'suggested_price', 'description','picture', 'status', 'owner_name'
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name'
         ]
     
     # def create(self, validated_data):
