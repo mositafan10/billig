@@ -76,6 +76,13 @@ class Massage(BaseModel):
         self.chat_id.updated_at = datetime.now()
         self.chat_id.save()
         super().save(*args, **kwargs)
+    
+    @property
+    def owner_avatar(self):
+        user = self.owner
+        profile = Profile.objects.get(user=user)
+        return str(profile.picture)
+
 
 
 

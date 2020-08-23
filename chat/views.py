@@ -23,13 +23,10 @@ def get_id(request):
     user = User.objects.get(pk=request.user.id)
     receiver = request.data.get("receiver")
     chats = Conversation.objects.all()
-    print(chats)
     serializer = ConversationSerializer(chats)
     if chats is not None:
-        print("exist")
         return JsonResponse(serializer.data)
     else:
-        print("new")
         new_chat = Conversation(receiver=receiver, sender=user)
         new_chat.save()
         return JsonResponse({"id": new_chat.chat_id})
@@ -41,13 +38,13 @@ def chat_list(request):
     user = User.objects.get(pk=request.user.id)
     chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-updated_at')
 
-    #for count new massages
-    massages = Massage.objects.filter(chat_id=chatid)
-    last_login = user.last_login
-    last_logout = user.last_logout
-    new_massages_count = massages.filter(create_at__range=(last_logout, last_login )).count()
+    # #for count new massages
+    # massages = Massage.objects.filter(chat_id=chatid)
+    # last_login = user.last_login
+    # last_logout = user.last_logout
+    # new_massages_count = massages.filter(create_at__range=(last_logout, last_login )).count()
+    # conversation = Conversation.objects.get(id=chatid)
 
-    conversation = Conversation.objects.get(id=chatid)
     serializer = ConversationSerializer(chats, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -57,7 +54,6 @@ def chat_list(request):
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
     massages = Massage.objects.filter(chat_id=chatid)
-
     serializer = MassageSerializer(massages, many=True)
     return JsonResponse(serializer.data, safe=False)
     
@@ -79,7 +75,7 @@ def create_conversation(request):
     else:
         return JsonResponse({"id":conversation.id})
 
-   
+
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def add_massage(request):
@@ -99,5 +95,4 @@ def add_massage(request):
 @permission_classes([permissions.IsAuthenticated])
 def get_lastlogin(request):
     user = User.objects.get(pk=request.user.id)
-    print(user)
     return JsonResponse(user.last_login, safe=False)

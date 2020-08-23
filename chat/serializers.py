@@ -4,9 +4,10 @@ from account.serializers import UserSerializer
 
 
 class MassageSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Massage
-        fields = ['text', 'owner_name','ownerid','create_at']
+        fields = ['text', 'owner_name','ownerid','create_at','owner_avatar']
 
 
 class MassageDeserializer(serializers.ModelSerializer):

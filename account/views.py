@@ -279,3 +279,16 @@ def logout(request):
     user.last_logout = datetime.now()
     user.save()
     return HttpResponse(status=200)
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def change_password(request):
+    user = User.objects.get(pk=request.user.id)
+    current_password = request.data.get('current_password')
+    if not user.check_password(current_password):
+        raise AuthenticationFailed(detail=".رمز عبور فغلی اشتباه است. مجدد تلاش کنید")
+    else:
+        new_password = request.data.get('new_password')
+        user.set_password(new_password)
+        user.save()
+        return HttpResponse(status=200)

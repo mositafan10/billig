@@ -28,5 +28,6 @@ urlpatterns = [
     path('friend_list/', views.friend_list, name="friend_list"),
     path('get_user/', views.get_user, name="get_user"),
     path('upload/', views.upload_file),
+    path('changepassword/', views.change_password, name="change_password"),
     # path('signup/user/', views.create_user, name="create_user"),
 ]
