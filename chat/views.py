@@ -53,7 +53,7 @@ def chat_list(request):
 @permission_classes([permissions.IsAuthenticated])
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    massages = Massage.objects.filter(chat_id=chatid)
+    massages = Massage.objects.filter(chat_id=chatid).order_by('create_at')
     serializer = MassageSerializer(massages, many=True)
     return JsonResponse(serializer.data, safe=False)
     

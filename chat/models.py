@@ -60,6 +60,7 @@ class Massage(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="massage")
     text = models.TextField()
     chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    first_day = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
@@ -76,6 +77,13 @@ class Massage(BaseModel):
         self.chat_id.updated_at = datetime.now()
         self.chat_id.save()
         super().save(*args, **kwargs)
+
+        #set first day massage 
+        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
+        last_massage_date = massages[0].create_at
+        if (last_massage_date.date() != self.create_at.date()):
+            self.first_day = True
+
     
     @property
     def owner_avatar(self):
