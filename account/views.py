@@ -286,7 +286,7 @@ def change_password(request):
     user = User.objects.get(pk=request.user.id)
     current_password = request.data.get('current_password')
     if not user.check_password(current_password):
-        raise AuthenticationFailed(detail=".رمز عبور فغلی اشتباه است. مجدد تلاش کنید")
+        raise AuthenticationFailed(detail=".رمز عبور فعلی اشتباه است. مجدد تلاش کنید")
     else:
         new_password = request.data.get('new_password')
         user.set_password(new_password)

@@ -77,7 +77,7 @@ class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
     bio = models.TextField(blank=True, null=True)
-    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address
+    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     favorite_gift = models.CharField(max_length=50, blank=True, null=True)
@@ -174,6 +174,7 @@ class Follow(BaseModel):
 
 class Country(BaseModel):
     name = models.CharField(max_length=15)
+    icon = models.ImageField(blank=True, null=True, upload_to='images/country')
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

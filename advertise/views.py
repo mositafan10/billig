@@ -70,6 +70,8 @@ def update_packet(request, pk):
 def packet_detail(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
+        print("hi")
+        print(packet)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
     if request.method == 'GET':

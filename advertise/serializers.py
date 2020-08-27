@@ -42,9 +42,9 @@ class PacketDeserializer(serializers.ModelSerializer):
 
 
 class PacketSerializer(serializers.ModelSerializer):
-    destination_country = serializers.StringRelatedField()
+    destination_country = CountrySerializer()
     origin_city = serializers.StringRelatedField()
-    origin_country = serializers.StringRelatedField()
+    origin_country = CountrySerializer()
     destination_city = serializers.StringRelatedField()
     status = serializers.CharField(source='get_status_display')
     category = serializers.CharField(source='get_category_display')

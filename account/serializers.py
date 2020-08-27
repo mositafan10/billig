@@ -5,7 +5,7 @@ from .models import Profile, Social, Score, CommentUser, Country, City, Follow, 
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = ['id','name']
+        fields = ['id','name','icon']
 
 
 class CitySerializer(serializers.ModelSerializer):

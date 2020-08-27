@@ -16,7 +16,6 @@ class Conversation(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            print ( " not exist ")
             count = Conversation.objects.filter(sender=self.sender, receiver=self.receiver).count()
             count1 = Conversation.objects.filter(sender=self.receiver, receiver=self.sender).count()
             if (count == 0 and count1 == 0):
@@ -24,7 +23,6 @@ class Conversation(BaseModel):
             else:
                 return None
         else:
-            print( "exist")
             super().save(*args, **kwargs)
 
     @property
@@ -74,16 +72,18 @@ class Massage(BaseModel):
         return self.owner.id
 
     def save(self, *args, **kwargs):
+        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
+        last_massage_date = massages[0].create_at
         self.chat_id.updated_at = datetime.now()
         self.chat_id.save()
         super().save(*args, **kwargs)
 
         #set first day massage 
-        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
-        last_massage_date = massages[0].create_at
+        print(last_massage_date, last_massage_date.date())
+        print(self.create_at, self.create_at.date())
         if (last_massage_date.date() != self.create_at.date()):
             self.first_day = True
-
+            self.save()
     
     @property
     def owner_avatar(self):

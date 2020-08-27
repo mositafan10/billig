@@ -13,13 +13,13 @@ class MassageSerializer(serializers.ModelSerializer):
 class MassageDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Massage
-        fields = ['text', 'owner', 'chat_id']
+        fields = ['text','chat_id']
 
 
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fields = ['receiver_name', 'sender_name','id','sender', 'offer_state', 'receiver_avatar', 'sender_avatar']
+        fields = ['receiver_name', 'sender_name','id','sender', 'receiver', 'offer_state', 'receiver_avatar', 'sender_avatar']
 
 
 class ConversationDeserializer(serializers.ModelSerializer):
