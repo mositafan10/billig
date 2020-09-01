@@ -82,16 +82,16 @@ class TravelSerializer(serializers.ModelSerializer):
 
 
 class TravelDeserializer(serializers.ModelSerializer):
-    departure = serializers.StringRelatedField()
-    departure_city = serializers.StringRelatedField()
-    destination = serializers.StringRelatedField()
-    destination_city = serializers.StringRelatedField()
+    departure = CountrySerializer()
+    departure_city = CitySerializer()
+    destination = CountrySerializer()
+    destination_city = CitySerializer()
 
     class Meta:
         model = Travel
         fields = [
             'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
-            'description'
+            'description', 'approved_packet', 'income'
         ]
 
 

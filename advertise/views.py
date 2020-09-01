@@ -8,7 +8,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
-from account.models import User
+from account.models import User, Country, City
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -80,7 +80,6 @@ def packet_detail(request, slug):
     elif request.method == 'PUT':
         data = request.data
         serializer = PacketSerializer1(data=data)
-        print(serializer)
         if serializer.is_valid():
             serializer.save()
             return JsonResponse(serializer.data)
@@ -95,19 +94,34 @@ def packet_detail(request, slug):
 @api_view(['POST'])
 def travel_add(request):
     user = User.objects.get(pk=request.user.id)
+    flight_date_end = request.data.get("flight_date_end")
+    flight_date_start = request.data.get("flight_date_start")
+    departure = Country.objects.get(pk=request.data.get("departure"))
+    departure_city = City.objects.get(pk=request.data.get("departure_city"))
+    destination = Country.objects.get(pk=request.data.get("destination"))
+    destination_city = City.objects.get(pk=request.data.get("destination_city"))
     data = request.data
     serializer = TravelSerializer(data=data)
     if serializer.is_valid():
         serializer.save(owner=user)
+        if flight_date_end != None:
+            Travel.objects.create(
+                owner=user,
+                flight_date_start=flight_date_end,
+                departure=destination,
+                departure_city=destination_city,
+                destination=departure,
+                destination_city=departure_city
+                )
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
-
-
+   
+        
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def travel_user_list(request):
     user = User.objects.get(pk=request.user.id)
-    travel = Travel.objects.filter(owner=user)
+    travel = Travel.objects.filter(owner=user).order_by('create_at')
     serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
     
@@ -123,10 +137,16 @@ def travel_detail(request, pk):
         serializer = TravelDeserializer(travel)
         return JsonResponse(serializer.data)
     elif request.method == 'PUT':
-        data = JSONParser.parse(request)
+        user = User.objects.get(pk=request.user.id)
+        data = request.data
         serializer = TravelSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            travel.departure = Country.objects.get(pk=request.data.get('departure'))
+            travel.departure_city = City.objects.get(pk=request.data.get('departure_city'))
+            travel.destination = Country.objects.get(pk=request.data.get('destination'))
+            travel.destination_city = City.objects.get(pk=request.data.get('destination_city'))
+            travel.flight_date_start = request.data.get('flight_date_start')
+            travel.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':

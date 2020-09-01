@@ -140,7 +140,7 @@ def confirm_reset_password(request):
 def update_user(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user)
-    country = Country.objects.get(pk=request.data.get("country"))
+    country = Country.objects.get(pk=request.data.get("country"))   
     city = City.objects.get(pk=request.data.get("city"))
     data = request.data
     serializer = ProfileSerializer(data=data)
@@ -153,7 +153,10 @@ def update_user(request):
         profile.email = request.data.get("email")
         profile.country = country
         profile.city = city
+        user.first_name = request.data.get("first_name")
+        user.last_name = request.data.get("last_name")
         profile.save()
+        user.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
 

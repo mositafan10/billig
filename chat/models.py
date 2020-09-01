@@ -9,7 +9,7 @@ from datetime import datetime
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer")
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer")
     
     def __str__(self):
         return str(self.id)

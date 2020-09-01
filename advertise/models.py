@@ -68,10 +68,14 @@ class Packet(BaseModel):
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
+
+    #need float or not ?
     weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
+
+    # foreignkey is ok !
     picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
@@ -110,6 +114,8 @@ class Travel(BaseModel):
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
+    income = models.PositiveIntegerField(default=0)
+    approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
     status = models.IntegerField(choices=TRAVEL_STATUS, default=0)
     
