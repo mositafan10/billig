@@ -36,7 +36,7 @@ def packet_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list_user(request):
     user = User.objects.get(pk=request.user.id)
-    packet = Packet.objects.filter(owner=user)
+    packet = Packet.objects.filter(owner=user).order_by('-create_at')
     serializer = PacketSerializer(packet, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -50,19 +50,19 @@ def user_packet_list(request):
         return JsonResponse(serializer.data)
 
 
-@permission_classes([AllowAny])
-@api_view(['PUT'])
-def update_packet(request, pk):
-    if request.method == 'PUT':
-        packet = Packet.objects.get(pk=pk)
-        if request.user == packet.owner.user :
-            data = JSONParser.parse(request)
-            serializer = PacketSerializer(data=data)
-            if serialzier.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data)
-            return JsonResponse(serializer.error, status=400)
-        return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
+# @permission_classes([AllowAny])
+# @api_view(['PUT'])
+# def update_packet(request, pk):
+#     if request.method == 'PUT':
+#         packet = Packet.objects.get(pk=pk)
+#         if request.user == packet.owner.user :
+#             data = JSONParser.parse(request)
+#             serializer = PacketSerializer(data=data)
+#             if serialzier.is_valid():
+#                 serializer.save()
+#                 return JsonResponse(serializer.data)
+#             return JsonResponse(serializer.error, status=400)
+#         return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
 
 
 @permission_classes([AllowAny])
@@ -70,8 +70,6 @@ def update_packet(request, pk):
 def packet_detail(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
-        print("hi")
-        print(packet)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
     if request.method == 'GET':
@@ -81,7 +79,17 @@ def packet_detail(request, slug):
         data = request.data
         serializer = PacketSerializer1(data=data)
         if serializer.is_valid():
-            serializer.save()
+            packet.title = request.data.get('title')
+            packet.origin_country = Country.objects.get(id=request.data.get('origin_country'))
+            packet.origin_city = City.objects.get(id=request.data.get('origin_city'))
+            packet.destination_country = Country.objects.get(id=request.data.get('destination_country'))
+            packet.destination_city = City.objects.get(id=request.data.get('destination_city'))
+            packet.category = request.data.get('category')
+            packet.weight = request.data.get('weight')
+            packet.dimension = request.data.get('dimension')
+            packet.suggested_price = request.data.get('suggested_price')
+            packet.buy = request.data.get('buy')
+            packet.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':

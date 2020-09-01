@@ -42,32 +42,33 @@ class PacketDeserializer(serializers.ModelSerializer):
 
 
 class PacketSerializer(serializers.ModelSerializer):
-    destination_country = CountrySerializer()
-    origin_city = serializers.StringRelatedField()
     origin_country = CountrySerializer()
-    destination_city = serializers.StringRelatedField()
+    origin_city = CitySerializer()
+    destination_country = CountrySerializer()
+    destination_city = CitySerializer()
     status = serializers.CharField(source='get_status_display')
     category = serializers.CharField(source='get_category_display')
+    dimension = serializers.CharField(source='get_dimension_display')
     
     class Meta:
         model = Packet
         fields = [
             'slug','title','owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
-            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
+            'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
         ]
 
 class PacketSerializer1(serializers.ModelSerializer):
     destination_country = serializers.StringRelatedField()
     origin_city = serializers.StringRelatedField()
     origin_country = serializers.StringRelatedField()
-    destination_city = serializers.StringRelatedField()
+    destination_city = serializers.IntegerField()
     # category = serializers.StringRelatedField()
     status = serializers.StringRelatedField()
     class Meta:
         model = Packet
         fields = [
             'slug','title', 'owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
-            'category', 'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status',
+            'category', 'weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status',
         ]
 
     
