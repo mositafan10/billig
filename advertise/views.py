@@ -93,7 +93,8 @@ def packet_detail(request, slug):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
-        packet.delete()
+        packet.status = '5'
+        packet.save()
         return HttpResponse(status=204)
 
 
@@ -249,7 +250,7 @@ def offer_list(request, slug):
         packet = Packet.objects.get(slug=slug)
     except:
         return HttpResponse(status=404)
-    offer = Offer.objects.filter(packet=packet)
+    offer = Offer.objects.filter(packet=packet).order_by('-create_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -258,13 +259,12 @@ def offer_list(request, slug):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
-    # user = User.objects.get(pk=request.user.id)
+    slug = request.data.get("slug")
+    packet = Packet.objects.get(slug=request.data.get("packet"))
     if request.method == 'POST':
         price = request.data.get("price")
         description = request.data.get("description")
         travel_slug = request.data.get("travel")
-        slug = request.data.get("packet")
-        packet = Packet.objects.get(slug=slug)
         travel = Travel.objects.get(slug=travel_slug)
         data = request.data
         serializer = OfferDeserializer(data=data)
@@ -274,18 +274,42 @@ def offer(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
     if request.method == 'PUT':
-        slug = request.data.get("slug")
         offer = Offer.objects.get(slug=slug)
+        print(offer)
+        offers = Offer.objects.filter(packet=packet)
         if request.data.get("type") == 'ACCEPT':
-            offer.status = '1'
+            for off in offers :
+                off.status = '2'
+                off.save()    
+            offer.status = '3'
             offer.save()
+            packet.status = '6'
+            packet.save()            
             return HttpResponse(status=200)
-        if request.data.get("type") == 'REJECT':
+        elif request.data.get("type") == 'REJECT':
             offer.status = '2'
             offer.save()
             return HttpResponse(status=200)
-        
-        
+        elif request.data.get("type") == 'CANCLE':
+            for offer in offers :
+                offer.status = '0'
+                offer.save()
+            packet.status = '3'
+            packet.save()
+            return HttpResponse(status=200)
+  
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def offer_update(request):
+    slug = request.data.get('slug')
+    offer = Offer.objects.get(slug=slug)
+    price = request.data.get('price')
+    offer.price = price
+    offer.status = '4'
+    offer.save()
+    return HttpResponse(status=200)
+
+
 @permission_classes([AllowAny])        
 @api_view(['GET'])
 def get_picture(request, pk):

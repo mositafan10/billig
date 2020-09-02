@@ -16,10 +16,9 @@ PACKET_STATUS = [
         (4, "منقضی شده"),
         (5, "حذف شده"),
         (6, "در انتظار پرداخت"),
-        (7, "در انتظار خرید"),
-        (8, "خریداری شده"),
-        (9, "در حال ارسال"),
-        (10, "انجام شده"),
+        (7, "در حال انجام"),
+        (8, "در حال ارسال"),
+        (9, "انجام شده"),
 ] 
 
 TRAVEL_STATUS = [
@@ -35,12 +34,8 @@ Offer = [
         (0, "در انتظار پاسخ"),
         (1, "تایید"),
         (2, "عدم تایید"),
-        (3, "در انتظار پرداخت"),
-        (4, "در انتظار خرید"),
-        (5, "خریداری شده"),
-        (6, "در حال ارسال"),
-        (7, "انجام شده"),
-        (8, "در حال مذاکره")
+        (3, "نهایی‌کردن مبلغ"),
+        (4, "تایید مبلغ"),
 ] 
 
 # for other choice we need a field to be filled by user about category TODO
@@ -159,10 +154,18 @@ class Offer(BaseModel):
     @property
     def sender_id(self):
         return self.travel.owner.id
+    
+    @property
+    def receiver_id(self):
+        return self.packet.owner.id
 
     @property
     def packet_slug(self):
         return self.packet.slug
+
+    @property
+    def packet_title(self):
+        return self.packet.title
         
       
 class Bookmark(BaseModel):
