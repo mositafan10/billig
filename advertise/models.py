@@ -36,6 +36,7 @@ Offer = [
         (2, "عدم تایید"),
         (3, "نهایی‌کردن مبلغ"),
         (4, "تایید مبلغ"),
+        (5, "حذف شده"),
 ] 
 
 # for other choice we need a field to be filled by user about category TODO

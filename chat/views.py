@@ -64,12 +64,14 @@ def create_conversation(request):
     sender = User.objects.get(pk=request.user.id)
     offer_slug = request.data.get('offer')
     offer = Offer.objects.get(slug=offer_slug)
-    conversation, is_created = Conversation.objects.get_or_create(offer=offer)
+    receiver_id = request.data.get('receiver')
+    receiver = User.objects.get(pk=receiver_id)
+    conversation, is_created = Conversation.objects.get_or_create(offer=offer, receiver=receiver, sender=sender)
     if is_created:
         data = request.data
         serializer = ConversationDeserializer(data=data)
         if serializer.is_valid():
-            serializer.save(sender=sender)
+            serializer.save(sender=sender, offer=offer)
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     else:
@@ -80,9 +82,8 @@ def create_conversation(request):
 @permission_classes([permissions.IsAuthenticated])
 def add_massage(request):
     user = User.objects.get(pk=request.user.id)
-    chat_id = request.data.get('chat_id')
-    conversation = Conversation.objects.get(id=chat_id)
-
+    # chat_id = request.data.get('chat_id')
+    # conversation = Conversation.objects.get(id=chat_id)
     data = request.data
     serializer = MassageDeserializer(data=data)
     if serializer.is_valid():

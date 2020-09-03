@@ -250,12 +250,12 @@ def offer_list(request, slug):
         packet = Packet.objects.get(slug=slug)
     except:
         return HttpResponse(status=404)
-    offer = Offer.objects.filter(packet=packet).order_by('-create_at')
+    offer = Offer.objects.filter(packet=packet).exclude(status="5").order_by('-create_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
-@api_view(['POST','PUT'])
+@api_view(['POST','PUT','DELETE'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
@@ -275,7 +275,6 @@ def offer(request):
         return JsonResponse(serializer.errors, status=400)
     if request.method == 'PUT':
         offer = Offer.objects.get(slug=slug)
-        print(offer)
         offers = Offer.objects.filter(packet=packet)
         if request.data.get("type") == 'ACCEPT':
             for off in offers :
@@ -297,6 +296,12 @@ def offer(request):
             packet.status = '3'
             packet.save()
             return HttpResponse(status=200)
+    if request.method == 'DELETE':
+        offer.status = '5'
+        offer.save()
+        return HttpResponse(status=204)
+
+        
   
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -306,6 +311,15 @@ def offer_update(request):
     price = request.data.get('price')
     offer.price = price
     offer.status = '4'
+    offer.save()
+    return HttpResponse(status=200)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def offer_delete(request, slug):
+    offer = Offer.objects.get(slug=slug)
+    offer.status = '5'
     offer.save()
     return HttpResponse(status=200)
 

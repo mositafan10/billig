@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'advertise',
     'blog',
     'chat',
+    'payment',
 ]
 
 

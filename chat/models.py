@@ -16,14 +16,14 @@ class Conversation(BaseModel):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            count = Conversation.objects.filter(sender=self.sender, receiver=self.receiver).count()
-            count1 = Conversation.objects.filter(sender=self.receiver, receiver=self.sender).count()
-            if (count == 0 and count1 == 0):
+            count = Conversation.objects.filter(offer=self.offer).count()
+            if (count == 0): 
                 super().save(*args, **kwargs)
             else:
                 return None
         else:
             super().save(*args, **kwargs)
+            return self.id
 
     @property
     def receiver_name(self):
@@ -71,25 +71,29 @@ class Massage(BaseModel):
     def ownerid(self):
         return self.owner.id
 
-    def save(self, *args, **kwargs):
-        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
-        last_massage_date = massages[0].create_at
-        self.chat_id.updated_at = datetime.now()
-        self.chat_id.save()
-        super().save(*args, **kwargs)
-
-        #set first day massage 
-        print(last_massage_date, last_massage_date.date())
-        print(self.create_at, self.create_at.date())
-        if (last_massage_date.date() != self.create_at.date()):
-            self.first_day = True
-            self.save()
-    
     @property
-    def owner_avatar(self):
+    def owner_avatar(self): 
         user = self.owner
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
+
+    def save(self, *args, **kwargs):
+        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
+        count = massages.count()
+        if count != 0 :
+            last_massage_date = massages[0].create_at
+        else :
+            self.first_day = True
+
+        self.chat_id.updated_at = datetime.now()
+        self.chat_id.save()
+        super().save(*args, **kwargs)
+        if ( count != 0):
+            if (last_massage_date.date() != self.create_at.date()):
+                self.first_day = True
+                self.save() 
+    
+  
 
 
 
