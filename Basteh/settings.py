@@ -48,16 +48,19 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
          'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTTokenUserAuthentication',
-        ),
+    ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
-        ),
-        'DEFAULT_PARSER_CLASSES': (
+    ),
+    'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.MultiPartParser',
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
-    )
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',  #TODO
+        'user': '1000/day'
+    }
 }
 
 MIDDLEWARE = [
@@ -90,7 +93,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Basteh.wsgi.application'
-ASGI_APPLICATION = 'Basteh.routing.application'
+# ASGI_APPLICATION = 'Basteh.routing.application'
 
 CHANNEL_LAYERS = {
             'default': {
@@ -102,24 +105,17 @@ CHANNEL_LAYERS = {
         }
 
 
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'CONN_MAX_AGE': 600,
         'NAME': 'basteh',
         'USER': 'admin',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'admin',  # TODO : should be hided
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -179,7 +175,7 @@ CACHES = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
 
-SITE_ID = 1
+SITE_ID = 1 # what is this ?
 AUTH_USER_MODEL='account.User'
 
 SIMPLE_JWT = {
