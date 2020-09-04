@@ -95,7 +95,7 @@ class Packet(BaseModel):
     
     @property
     def owner_name(self):
-        return str(self.owner.first_name + ' ' + self.owner.last_name)
+        return str(self.owner.name)
     
 
 class Travel(BaseModel):
@@ -146,11 +146,11 @@ class Offer(BaseModel):
 
     @property
     def receiver(self):
-        return str(self.packet.owner.first_name + ' ' + self.packet.owner.last_name)
+        return str(self.packet.owner.name)
     
     @property
     def sender(self):
-        return str(self.travel.owner.first_name + ' ' + self.travel.owner.last_name)
+        return str(self.travel.owner.name)
 
     @property
     def sender_id(self):

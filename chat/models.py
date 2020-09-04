@@ -27,12 +27,12 @@ class Conversation(BaseModel):
 
     @property
     def receiver_name(self):
-        return str(self.receiver.first_name + ' ' + self.receiver.last_name)
+        return str(self.receiver.name)
 
     @property
     def sender_name(self):
-        return str(self.sender.first_name + ' ' + self.sender.last_name)
-    
+        return str(self.sender.name)
+        
     @property
     def offer_state(self):
         return self.offer.get_status_display
@@ -65,7 +65,7 @@ class Massage(BaseModel):
 
     @property
     def owner_name(self):
-        return str(self.owner.first_name + ' ' + self.owner.last_name)
+        return str(self.owner.name)
 
     @property
     def ownerid(self):

@@ -259,7 +259,7 @@ def get_user(request):
     print(user)
     profile = Profile.objects.get(user=user)
     print(profile)
-    return JsonResponse({"user":profile.first_name})
+    return JsonResponse({"user":profile.user.name})
 
 
 @permission_classes([IsAuthenticated])

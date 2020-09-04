@@ -93,12 +93,8 @@ class Profile (BaseModel):
         return str(self.id)
     
     @property
-    def first_name(self):
-        return str(self.user.first_name)
-
-    @property
-    def last_name(self):
-        return str(self.user.last_name )
+    def name(self):
+        return str(self.user.name)
     
 # can be removed
 class Social(BaseModel):
