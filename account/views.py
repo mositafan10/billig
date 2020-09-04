@@ -58,9 +58,10 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([AllowAny])
-def signup(request): # check for user exsitance in DB
-    phone_number = request.data['phone_number']
-    password = request.data['password']
+def signup(request): 
+    phone_number = request.data.get('phone_number')
+    password = request.data.get('password')
+    name = request.data.get('name')
     otp = generate_otp()
     set_otp(phone_number, otp)
     print(otp)
@@ -72,8 +73,9 @@ def signup(request): # check for user exsitance in DB
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 def login(request):
-    phone_number = request.data['phone_number']
-    password = request.data['password']
+    phone_number = request.data.get('phone_number')
+    password = request.data.get('password')
+    name = request.data.get('name', '')
     refresh = None
 
     # for first login
@@ -84,6 +86,7 @@ def login(request):
             profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
                 user.set_password(password)
+                user.name = name
                 user.save()
         else :
             error = "کد وارد شده اشتباه است .مجدد سعی کنید "
@@ -153,8 +156,6 @@ def update_user(request):
         profile.email = request.data.get("email")
         profile.country = country
         profile.city = city
-        user.first_name = request.data.get("first_name")
-        user.last_name = request.data.get("last_name")
         profile.save()
         user.save()
         return JsonResponse(serializer.data, status=200)

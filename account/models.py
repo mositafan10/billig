@@ -44,9 +44,8 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, phone_number, password=None):
-        print(phone_number)
         if password is None :
-            raise TypeError("ایمیل وارد کن")
+            raise TypeError("ایمیل خود را وارد کنید")
         user = self.create_user(phone_number, password)
         user.is_superuser = True
         user.is_staff = True
@@ -57,15 +56,14 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True, editable=False)
     phone_number = models.CharField(max_length=15, unique=True)
-    first_name = models.CharField(max_length=20, blank=True, null=True, default="کاربر")
-    last_name = models.CharField(max_length=20, blank=True, null=True, default="جدید")
+    name = models.CharField(max_length=40, blank=True, null=True, default="کاربر جدید")
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     follower_count = models.PositiveIntegerField(default=0)
     following_count = models.PositiveIntegerField(default=0)
-    USERNAME_FIELD = 'phone_number'
     last_logout = models.DateTimeField(_('last logout'), blank=True, null=True)
+    USERNAME_FIELD = 'phone_number'
 
     objects = UserManager()
     
