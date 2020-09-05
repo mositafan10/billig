@@ -17,7 +17,10 @@ SECRET_KEY = '*^jek(z*7f)7^z&hw=-6_!9vzwx@q6(04z)=13(2os+=gki_cd'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['193.141.64.9']
+ALLOWED_HOSTS = [
+    '193.141.64.9',
+    '127.0.0.1'
+    ]
 
 
 # Application definition
