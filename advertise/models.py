@@ -5,20 +5,21 @@ from django.utils.timezone import now
 from django.db import IntegrityError
 from django.db import models
 
+from rest_framework.exceptions import PermissionDenied
+
 from account.models import User, BaseModel, Country, City, Profile
 from .utils import generate_slug
 
 PACKET_STATUS = [
         (0, "در انتظار تایید"),
-        (1, "عدم تایید"),
+        (1, "عدم تایید"),   
         (2, "منتشر شده"),
         (3, "دارای پیشنهاد"),
         (4, "منقضی شده"),
         (5, "حذف شده"),
         (6, "در انتظار پرداخت"),
         (7, "در حال انجام"),
-        (8, "در حال ارسال"),
-        (9, "انجام شده"),
+        (8, "انجام شده"),
 ] 
 
 TRAVEL_STATUS = [
@@ -28,13 +29,14 @@ TRAVEL_STATUS = [
         (3, "دارای بسته"),
         (4, "انجام شده"),
         (5, "حذف شده"),
+        (6, "تسویه شده"),
 ] 
 
 Offer = [
         (0, "در انتظار پاسخ"),
         (1, "تایید"),
         (2, "عدم تایید"),
-        (3, "نهایی‌کردن مبلغ"),
+        (3, "نهایی‌شدن مبلغ"),
         (4, "تایید مبلغ"),
         (5, "حذف شده"),
 ] 
@@ -46,7 +48,8 @@ PACKET_CATEGORY = [
         (2, "لوازم الکترونیکی"),
         (3, "کفش و پوشاک"),
         (4, "لوازم آرایشی و بهداشتی"),
-        (5, "سایر موارد"),
+        (5, "دارو"),
+        (6, "سایر موارد"),
 ]
 
 DIMENSION = [
@@ -89,8 +92,8 @@ class Packet(BaseModel):
     
     def offer_count_inc(self):
         self.offer_count += 1
-        if self.status == '2':
-            self.status == '3'
+        if self.status == 2:
+            self.status == 3
         self.save()
     
     @property
@@ -134,10 +137,16 @@ class Offer(BaseModel):
     def __str__(self):
         return str(self.id)
 
-    def save(self, *args, **kwargs):
-        self.packet.status = '3' 
-        self.packet.save()
-        super().save(*args, **kwargs)
+        # def save(self, *args, **kwargs):
+        #     if(self.packet.status == 2 or self.packet.status == 3 or self.status == 3):
+        #         self.packet.status = 3
+        #         self.travel.status = 3
+        #         self.packet.save()
+        #         self.travel.save()
+        #         super().save(*args, **kwargs)
+        #     else:
+        #         raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")
+        
     
     def packet_offer_count(self):
         self.packet.offer_count += 1

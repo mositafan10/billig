@@ -49,7 +49,6 @@ def user_packet_list(request):
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data)
 
-
 # @permission_classes([AllowAny])
 # @api_view(['PUT'])
 # def update_packet(request, pk):
@@ -301,7 +300,6 @@ def offer(request):
         offer.save()
         return HttpResponse(status=204)
 
-        
   
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -310,7 +308,7 @@ def offer_update(request):
     offer = Offer.objects.get(slug=slug)
     price = request.data.get('price')
     offer.price = price
-    offer.status = '4'
+    offer.status = 4
     offer.save()
     return HttpResponse(status=200)
 
@@ -319,8 +317,8 @@ def offer_update(request):
 @permission_classes([IsAuthenticated])
 def offer_delete(request, slug):
     offer = Offer.objects.get(slug=slug)
-    offer.status = '5'
-    offer.save()
+    offer.status = 5
+    offer.save()    
     return HttpResponse(status=200)
 
 
