@@ -7,7 +7,7 @@ from .models import TransactionReceive
 from .serializer import TransactionReceiveSerializer
 
 from rest_framework.decorators import api_view , permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 import requests
 
@@ -31,15 +31,30 @@ def send(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def verify(request):
-    user = User.objects.get(pk=request.user.id)
-    token = request.data.get('token')
-    data = {
-        "api_key": api_key,
-        "token" : token
+    user = User.objects.get(pk=1)
+    # token = request.data.get('token')
+    # data = {
+    #     "api_key": api_key,
+    #     "token" : token
+    # }
+    # r = requests.post('https://ipg.vandar.io/api/v3/verify', data=data).json()
+    r = {
+    "status": 1,
+    "amount": "1000.00",
+    "realAmount": 500,
+    "wage": "500",
+    "transId": 159178352177,
+    "factorNumber": "032247",
+    "mobile": "09123456789",
+    "description": "description",
+    "cardNumber": "603799******7999",
+    "paymentDate": "2020-06-10 14:36:30",
+    "cid": None,
+    "message": "ok"
     }
-    r = requests.post('https://ipg.vandar.io/api/v3/verify', data=data).json()
+
     if r['status'] == 1:
         factorNumber = r['factorNumber']
         offer = Offer.objects.get(slug=factorNumber)
@@ -52,6 +67,7 @@ def verify(request):
             "factorNumber": factorNumber,
             "status" : True
         }
+        print(data)
         transaction = TransactionReceive.objects.create(**data) 
         transaction.save()
         return HttpResponse(status=201)

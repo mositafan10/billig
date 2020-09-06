@@ -18,6 +18,7 @@ SECRET_KEY = '*^jek(z*7f)7^z&hw=-6_!9vzwx@q6(04z)=13(2os+=gki_cd'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'billlig.com',
     '193.141.64.9',
     '127.0.0.1',
     'localhost' 

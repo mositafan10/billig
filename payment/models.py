@@ -6,7 +6,7 @@ from advertise.models import Packet, Travel
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
     packet = models.ForeignKey(Packet, on_delete=models.PROTECT, related_name="travel")
-    transId = models.IntegerField()
+    transId = models.BigIntegerField()
     amount = models.FloatField()
     status = models.BooleanField()
     factorNumber = models.IntegerField()
@@ -15,7 +15,7 @@ class TransactionReceive(BaseModel):
         return str(self.id)
 
     def save(self, *args, **kwargs):
-        self.packet.status = '7'   # Change state to doing
+        self.packet.status = 7   # Change state to doing
         self.packet.save()
         super().save(*args, **kwargs)
 
