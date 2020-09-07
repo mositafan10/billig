@@ -272,29 +272,6 @@ def offer(request):
             packet.offer_count_inc()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
-    if request.method == 'PUT':
-        offer = Offer.objects.get(slug=slug)
-        offers = Offer.objects.filter(packet=packet)
-        if request.data.get("type") == 'ACCEPT':
-            for off in offers :
-                off.status = '2'
-                off.save()    
-            offer.status = '3'
-            offer.save()
-            packet.status = '6'
-            packet.save()            
-            return HttpResponse(status=200)
-        elif request.data.get("type") == 'REJECT':
-            offer.status = '2'
-            offer.save()
-            return HttpResponse(status=200)
-        elif request.data.get("type") == 'CANCLE':
-            for offer in offers :
-                offer.status = '0'
-                offer.save()
-            packet.status = '3'
-            packet.save()
-            return HttpResponse(status=200)
     if request.method == 'DELETE':
         offer.status = '5'
         offer.save()
