@@ -31,7 +31,7 @@ def send(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def verify(request):
     user = User.objects.get(pk=1)
     token = request.data.get('token')
