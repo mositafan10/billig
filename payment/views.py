@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
-from account.models import User
+from account.models import User, Profile
 from advertise.models import Offer
 from .models import TransactionReceive
 from .serializer import TransactionReceiveSerializer
@@ -52,7 +52,6 @@ def verify(request):
             "factorNumber": factorNumber,
             "status" : True
         }
-        print(data)
         transaction = TransactionReceive.objects.create(**data) 
         transaction.save()
         return HttpResponse(status=201)
@@ -73,16 +72,29 @@ def transactions_list(request):
 @permission_classes([IsAuthenticated])
 def pay_to_traveler(request):
     user = User.objects.get(pk=request.user.id)
+    iban = Profile.objects.get(user=user).account_number
     amount = request.data.get('amount')
-    iban = request.data.get('iban')
+    payment_number = request.data.get('payment_number')
     data = {
         "amount": amount,
         "iban": iban,
+        "payment_number": payment_number
     }
     r = requests.post('https://api.vandar.io/v2.1/business/{business}/settlement/store', data=data).json()
+    print(r)
     if r['status'] == 1:
+        offer = Offer.objects.get(slug=payment_number)
+        travel = offer.travel
         data = {
             "user" : user,
+            "travel": travel,
             "amount" : r['amount'],
-            "transaction_id": r['transaction_id']
+            "status": True
         }
+        transaction = TransactionSend.objects.create(**data) 
+        transaction.save()
+        return JsonResponse(r, safe=False)
+    else:
+        return JsonResponse(r, status=400 ,safe=False)
+
+    
