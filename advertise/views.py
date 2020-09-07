@@ -249,7 +249,7 @@ def offer_list(request, slug):
         packet = Packet.objects.get(slug=slug)
     except:
         return HttpResponse(status=404)
-    offer = Offer.objects.filter(packet=packet).exclude(status="5").order_by('-create_at')
+    offer = Offer.objects.filter(packet=packet).exclude(status="7").order_by('-create_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -302,13 +302,16 @@ def offer(request):
 
   
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated]) # TODO is need owner of object
 def offer_update(request):
     slug = request.data.get('slug')
     offer = Offer.objects.get(slug=slug)
-    price = request.data.get('price')
-    offer.price = price
-    offer.status = 4
+    if (request.data.get('price')):
+        price = request.data.get('price')
+        offer.price = price
+    if (request.data.get('status')):
+        status = request.data.get('status')
+        offer.status = status
     offer.save()
     return HttpResponse(status=200)
 

@@ -33,7 +33,7 @@ def send(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify(request):
-    user = User.objects.get(pk=1)
+    user = User.objects.get(pk=request.user.id)
     token = request.data.get('token')
     data = {
         "api_key": api_key,
@@ -56,7 +56,7 @@ def verify(request):
         transaction.save()
         return HttpResponse(status=201)
     else :
-        return JsonResponse(r['errors'], safe=False)
+        return JsonResponse(r['errors'], status=400, safe=False)
 
 
 @api_view(['GET'])
