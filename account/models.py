@@ -97,21 +97,12 @@ class Profile (BaseModel):
     def name(self):
         return str(self.user.name)
     
-# can be removed
-class Social(BaseModel):
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    title = models.CharField(max_length=10)
-    social_id = models.CharField(max_length=20)
-    is_approved = models.BooleanField(default=False)
-
-    def __str__(self):
-        return str(self.id)
-        
-
+    
 class Score(BaseModel):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owner')
     reciever = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='score_receiver')
     score = models.PositiveIntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])
+    text = models.TextField()
 
     def __str__(self):
         return "%s --> %s" % (self.owner, self.reciever)
@@ -122,53 +113,6 @@ class Score(BaseModel):
         self.reciever.scores_count += 1
         self.reciever.save()
         super().save(*args, **kwargs)
-
-
-class CommentUser(BaseModel):
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="user_give_comment")
-    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="user_receive_comment")
-    comment = models.TextField()
-    is_approved = models.BooleanField(default=False)
-
-    def __str__(self):
-        return "%s --> %s" % (self.owner, self.receiver)
-    
-    def save(self, *args, **kwargs):
-        check_duplicate = CommentUser.objects.filter(owner=self.owner, receiver=self.receiver)
-        if not check_duplicate:
-            self.owner.comment_count += 1
-            self.owner.save()
-            super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
-            raise ValidationError("It's done before. thank you again") #???? TODO
-
-
-class Follow(BaseModel):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="follower")
-    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
-    status = models.CharField(max_length=10 ,choices=Follow_Choices, default=0)
-
-    def __str__(self):
-        return "%s --> %s" % (self.follower, self.following)
-
-    def save(self, *args, **kwargs):
-        # if self.follower != self.following:
-        self.follower.following_count += 1
-        self.follower.save()
-        self.following.refresh_from_db()
-        self.following.follower_count += 1
-        self.following.save()
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        # if self.follower != self.following:
-        self.follower.following_count -= 1
-        self.follower.save()
-        self.following.refresh_from_db()
-        self.following.follower_count -= 1
-        self.following.save()
-        super().delete(*args, **kwargs)
 
 
 class Country(BaseModel):

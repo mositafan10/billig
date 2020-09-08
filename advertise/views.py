@@ -49,20 +49,6 @@ def user_packet_list(request):
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data)
 
-# @permission_classes([AllowAny])
-# @api_view(['PUT'])
-# def update_packet(request, pk):
-#     if request.method == 'PUT':
-#         packet = Packet.objects.get(pk=pk)
-#         if request.user == packet.owner.user :
-#             data = JSONParser.parse(request)
-#             serializer = PacketSerializer(data=data)
-#             if serialzier.is_valid():
-#                 serializer.save()
-#                 return JsonResponse(serializer.data)
-#             return JsonResponse(serializer.error, status=400)
-#         return JsonResponse({"Access Deneid" : "You have not permision to edit this packet"}, status=400)
-
 
 @permission_classes([AllowAny])
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -92,7 +78,7 @@ def packet_detail(request, slug):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
-        packet.status = '5'
+        packet.status = '8'
         packet.save()
         return HttpResponse(status=204)
 
@@ -169,7 +155,6 @@ def visit_packet(request, pk):
         packet = Packet.objects.get(pk=pk)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
-    packet = Packet.objects.get(pk=pk)
     model_name = "visit_packet"
     ip = request.META.get("HTTP_REMOTE_ADDR")
     key = "%s_%s" % (model_name, ip)
@@ -249,33 +234,27 @@ def offer_list(request, slug):
         packet = Packet.objects.get(slug=slug)
     except:
         return HttpResponse(status=404)
-    offer = Offer.objects.filter(packet=packet).exclude(status="7").order_by('-create_at')
+    offer = Offer.objects.filter(packet=packet).exclude(status="7").exclude(status="8").order_by('-create_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
-@api_view(['POST','PUT','DELETE'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
     slug = request.data.get("slug")
     packet = Packet.objects.get(slug=request.data.get("packet"))
-    if request.method == 'POST':
-        price = request.data.get("price")
-        description = request.data.get("description")
-        travel_slug = request.data.get("travel")
-        travel = Travel.objects.get(slug=travel_slug)
-        data = request.data
-        serializer = OfferDeserializer(data=data)
-        if serializer.is_valid():
-            serializer.save(packet=packet, travel=travel)
-            packet.offer_count_inc()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-    if request.method == 'DELETE':
-        offer.status = '5'
-        offer.save()
-        return HttpResponse(status=204)
+    price = request.data.get("price")
+    description = request.data.get("description")
+    travel_slug = request.data.get("travel")
+    travel = Travel.objects.get(slug=travel_slug)
+    data = request.data
+    serializer = OfferDeserializer(data=data)
+    if serializer.is_valid():
+        serializer.save(packet=packet, travel=travel)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
 
   
 @api_view(['POST'])
@@ -286,21 +265,16 @@ def offer_update(request):
     if (request.data.get('price')):
         price = request.data.get('price')
         offer.price = price
+        offer.save()
     if (request.data.get('status')):
         status = request.data.get('status')
         offer.status = status
-    offer.save()
+        offer.save()
+        if(status == 8):
+            offer.packet.offer_count -= 1
+            offer.save()
+    
     return HttpResponse(status=200)
-
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def offer_delete(request, slug):
-    offer = Offer.objects.get(slug=slug)
-    offer.status = 5
-    offer.save()    
-    return HttpResponse(status=200)
-
 
 @permission_classes([AllowAny])        
 @api_view(['GET'])

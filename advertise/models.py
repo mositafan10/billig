@@ -10,18 +10,6 @@ from rest_framework.exceptions import PermissionDenied
 from account.models import User, BaseModel, Country, City, Profile
 from .utils import generate_slug
 
-PACKET_STATUS = [
-        (0, "در انتظار تایید"),
-        (1, "عدم تایید"),   
-        (2, "منتشر شده"),
-        (3, "دارای پیشنهاد"),
-        (4, "منقضی شده"),
-        (5, "حذف شده"),
-        (6, "در انتظار پرداخت"),
-        (7, "در حال انجام"),
-        (8, "انجام شده"),
-] 
-
 TRAVEL_STATUS = [
         (0, "در انتظار تایید"),
         (1, "عدم تایید"),
@@ -32,15 +20,31 @@ TRAVEL_STATUS = [
         (6, "تسویه شده"),
 ] 
 
-Offer = [
-        (0, "در انتظار پاسخ"),
-        (1, "در انتظار تایید مسافر"),
+PACKET_STATUS = [
+        (0, "منتشر شده"),
+        (1, "دارای پیشنهاد"),
         (2, "در انتظار پرداخت"),
         (3, "در انتظار خرید"),
         (4, "در انتظار تحویل"),
         (5, "در انتظار تایید خریدار"),
         (6, "انجام شده"),
-        (7, "حذف شده"),
+        (7, "تمام شده"),
+        (8, "حذف شده"),
+        (9, "منقضی شده"),
+        (10, "در انتظار تایید"),
+        (11, "عدم تایید"),
+] 
+
+Offer = [
+        (0, "در انتظار پاسخ"), # default state
+        (1, "در انتظار تایید مسافر"),# done by packet owner when accept offer : offer_update in advertise.view
+        (2, "در انتظار پرداخت"), # done by traveler after confirm the price : offer_update in advertise.view
+        (3, "در انتظار خرید"), # done after payment : verify function in payment.view
+        (4, "در انتظار تحویل"),# done by traveler after buy parcel : offer_update function in advertise.view
+        (5, "در انتظار تایید خریدار"), # done by traveler after get parcel in destination : offer_update function in advertise.view
+        (6, "انجام شده"),# done by packet owner when receive parcel in destination : offer_update in advertise.view
+        (7, "تمام شده"), # done after rating by packet owner in account.view
+        (8, "حذف شده"), # done by offer owner : offer_update in advertise.view
 ] 
 
 # for other choice we need a field to be filled by user about category TODO
@@ -83,19 +87,13 @@ class Packet(BaseModel):
     description = models.TextField(blank=True, null=True)
     # should not be send by user: this should be validate
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.IntegerField(choices=PACKET_STATUS, default=0)
+    status = models.IntegerField(choices=PACKET_STATUS, default=10)
  
     def __str__(self):
         return str(self.id)
 
     def visit(self):
         self.visit_count += 1
-        self.save()
-    
-    def offer_count_inc(self):
-        self.offer_count += 1
-        if self.status == 2:
-            self.status == 3
         self.save()
     
     @property
@@ -139,21 +137,34 @@ class Offer(BaseModel):
     def __str__(self):
         return str(self.id)
 
-        # def save(self, *args, **kwargs):
-        #     if(self.packet.status == 2 or self.packet.status == 3 or self.status == 3):
-        #         self.packet.status = 3
-        #         self.travel.status = 3
-        #         self.packet.save()
-        #         self.travel.save()
-        #         super().save(*args, **kwargs)
-        #     else:
-        #         raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")
+    def save(self, *args, **kwargs):
+        #first offer for packet
+        if self.packet.status == 0 :
+            self.packet.status = 1
+            self.packet.offer_count += 1
+            self.packet.save()
+            super().save(*args, **kwargs)
+
+        #increase offer count of the packet
+        elif self.packet.status == 1:
+            self.packet.offer_count += 1
+
+            #update packet state due to offer state
+            if (self.status > 1 and self.status != 8): 
+                self.packet.status = self.status
+            self.packet.save()
+            super().save(*args, **kwargs)
         
-    
-    def packet_offer_count(self):
-        self.packet.offer_count += 1
-        self.packet.save()
-        super().save(*args, **kwargs)
+        elif (self.packet.status > 1):
+            if self.status == 0:
+                raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")
+            elif (self.status > 1 and self.status != 8): 
+                self.packet.status = self.status
+                self.packet.save()
+                super().save(*args, **kwargs)
+            else:
+                return None
+
 
     @property
     def receiver(self):

@@ -43,6 +43,7 @@ def verify(request):
     if r['status'] == 1:
         factorNumber = r['factorNumber']
         offer = Offer.objects.get(slug=factorNumber)
+        offer.status = 3
         packet = offer.packet
         data = {
             "user" : user,

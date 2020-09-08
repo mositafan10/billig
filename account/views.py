@@ -14,9 +14,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
 from .utils import generate_otp, set_otp, verify_otp, send_sms
-from .models import Profile, Social, Score, CommentUser, City, Country, Follow, User
+from .models import Profile, Score, City, Country, User
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
+from advertise.models import Offer 
 
 from datetime import datetime
 
@@ -296,3 +297,23 @@ def change_password(request):
         user.set_password(new_password)
         user.save()
         return HttpResponse(status=200)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def rating(request):
+    owner_user = User.objects.get(pk=request.user.id)
+    owner = Profile.objects.get(user=owner_user)
+    receiver_user = User.objects.get(pk=request.data.get('receiver'))
+    receiver = Profile.objects.get(user=receiver_user)
+    slug = request.data.get('slug')
+    offer = Offer.objects.get(slug=slug)
+    score = request.data.get('score')
+    text = request.data.get('comment')
+    receiver = Profile.objects.get(user=receiver_user)
+    serializer = ScoreSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(owner=owner, reciever=receiver)
+        offer.status = '7'
+        offer.save()
+        return HttpResponse(status=200)
+    return JsonResponse(serializer.errors, status=400)
