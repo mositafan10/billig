@@ -81,7 +81,7 @@ class Packet(BaseModel):
     buy = models.BooleanField(default=False)
 
     # foreignkey is ok !
-    picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
+    picture = models.ManyToManyField('PacketPicture', blank=True, null= True, related_name="packets")
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
