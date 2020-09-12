@@ -317,3 +317,15 @@ def rating(request):
         offer.save()
         return HttpResponse(status=200)
     return JsonResponse(serializer.errors, status=400)
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def newsletter(request):
+    data = request.data
+    serializer = NewsletterSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, safe=False)
+    return JsonResponse(serializers.errors, status=400)

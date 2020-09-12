@@ -133,3 +133,5 @@ class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = PacketPicture
         fields = ['image_file']
+
+

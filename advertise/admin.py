@@ -25,23 +25,6 @@ class CityAdmin(admin.ModelAdmin):
     list_filter   = ('country',)
     search_fields = ('name','country')
 
-    # def packet_origin_city(self,obj):
-    #     return obj.origin_city.count()
-
-    # def packet_destination_city(self,obj):
-    #     return obj.destination_city.count()
-
-    # def travel_origin_city(self,obj):
-    #     return obj.depar_city.count()
-
-    # def travel_destination_city(self,obj):
-    #     return obj.dest_city.count()
-
-    # packet_origin_city.short_description = "po"
-    # packet_destination_city.short_description = "pd"
-    # travel_origin_city.short_description = "to"
-    # travel_destination_city.short_description = "td"
-
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('id','name','city')
     
@@ -50,23 +33,7 @@ class CountryAdmin(admin.ModelAdmin):
         for c in obj.city.all():
             cities.append(c)
         return cities
-
-    # def packet_origin_country(self,obj):
-    #     return obj.origin_country.count()
-
-    # def packet_destination_country(self,obj):
-    #     return obj.destination_country.count()
-
-    # def travel_origin_country(self,obj):
-    #     return obj.depar_country.count()
-
-    # def travel_destination_country(self,obj):
-    #     return obj.dest_country.count()
-
-    # packet_origin_country.short_description = "po"
-    # packet_destination_country.short_description = "pd"
-    # travel_origin_country.short_description = "to"
-    # travel_destination_country.short_description = "td"
+        
          
 class OfferAdmin(admin.ModelAdmin):
     list_display = ('id','slug','packet','offer_owner','offer_to','origin','destination','price','suggested_price','description','status')

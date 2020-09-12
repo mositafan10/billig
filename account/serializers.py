@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Score, Country, City, User
+from .models import Profile, Score, Country, City, User, Newsletter
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -33,3 +33,8 @@ class ScoreSerializer(serializers.ModelSerializer):
         model = Score 
         fields = ['score','text']
 
+
+class NewsletterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Newsletter
+        fields = ['email']

@@ -29,4 +29,5 @@ urlpatterns = [
     path('upload/', views.upload_file),
     path('rating/', views.rating),
     path('changepassword/', views.change_password, name="change_password"),
+    path('newsletter/', views.newsletter, name='newsletter'),
 ]

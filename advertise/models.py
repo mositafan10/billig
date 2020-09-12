@@ -81,7 +81,7 @@ class Packet(BaseModel):
     buy = models.BooleanField(default=False)
 
     # foreignkey is ok !
-    picture = models.ManyToManyField('PacketPicture', blank=True, null= True, related_name="packets")
+    picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
@@ -138,15 +138,8 @@ class Offer(BaseModel):
         return str(self.id)
 
     def save(self, *args, **kwargs):
-        #first offer for packet
-        if self.packet.status == 0 :
-            self.packet.status = 1
-            self.packet.offer_count += 1
-            self.packet.save()
-            super().save(*args, **kwargs)
-
         #increase offer count of the packet
-        elif self.packet.status == 1:
+        if self.packet.status == 1:
             self.packet.offer_count += 1
 
             #update packet state due to offer state
@@ -154,7 +147,14 @@ class Offer(BaseModel):
                 self.packet.status = self.status
             self.packet.save()
             super().save(*args, **kwargs)
-        
+
+        #first offer for packet
+        elif self.packet.status == 0 :
+            self.packet.status = 1
+            self.packet.offer_count += 1
+            self.packet.save()
+            super().save(*args, **kwargs)
+
         elif (self.packet.status > 1):
             if self.status == 0:
                 raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")

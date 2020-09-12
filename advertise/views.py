@@ -18,7 +18,7 @@ from .permissions import IsOwnerPacketOrReadOnly
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
-        packet = Packet.objects.filter(Q(status='2') | Q(status='3')).order_by('-create_at')
+        packet = Packet.objects.filter(Q(status='0') | Q(status='1')).order_by('-create_at')
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
@@ -221,7 +221,6 @@ def bookmark_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def upload_file(request):
-    data = request.data # is needed ?
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save() 
     return JsonResponse({"id": newdoc.id})
@@ -291,3 +290,4 @@ def get_user_offer(request):
     offer = Offer.objects.filter(travel__owner=user)
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
+

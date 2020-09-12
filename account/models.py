@@ -142,3 +142,10 @@ class City(BaseModel):
 
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/Packet/%Y/%m')
+
+
+class Newsletter(BaseModel):
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.email
