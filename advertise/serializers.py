@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
 from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
@@ -9,7 +9,8 @@ PACKET_CATEGORY = [
         (2, "لوازم الکترونیکی"),
         (3, "کفش و پوشاک"),
         (4, "لوازم آرایشی و بهداشتی"),
-        (5, "سایر موارد"),
+        (5, "دارو"),
+        (6, "سایر موارد"),
 ]
 
 class PacketDeserializer(serializers.ModelSerializer):
@@ -18,7 +19,7 @@ class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = [
-            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'buy',
+            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other ', 'buy',
             'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name'
         ]
     
@@ -134,4 +135,9 @@ class PictureSerializer(serializers.ModelSerializer):
         model = PacketPicture
         fields = ['image_file']
 
+
+class BuyinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Buyinfo
+        fields = ['link','price','packet']
 

@@ -18,15 +18,27 @@ from .permissions import IsOwnerPacketOrReadOnly
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request):
     if request.method == 'GET':
-        packet = Packet.objects.filter(Q(status='0') | Q(status='1')).order_by('-create_at')
+        packet = Packet.objects.all().exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
         serializer = PacketSerializer(packet, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         user = User.objects.get(pk=request.user.id)
         data = request.data
         serializer = PacketDeserializer(data=data)
+        buy = request.data.get('buy')
         if serializer.is_valid():
             serializer.save(owner=user)
+            if buy:
+                link = request.data.get('link')
+                price = request.data.get('price')
+                data1 = {
+                    "link" : link,
+                    "price" : price,
+                    "packet": serializer
+                }
+                serializer1 = BuyinfoSerializer(data=data1)
+                if serializer1.is_valid():
+                    serializer1.save()
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 

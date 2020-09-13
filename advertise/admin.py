@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
 from account.models import Country, City
 
 
@@ -56,7 +56,7 @@ class OfferAdmin(admin.ModelAdmin):
 
 
 class TravelAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','owner_user','departure','destination','flight_date_start','flight_date_end','empty_weight','visit_count','status','create_at')
+    list_display = ('id','slug','owner_user','departure','destination','flight_date_start','flight_date_end','visit_count','status','create_at')
     list_editable = ('status',)
     list_filter = ('departure','destination',)
     search_fields = ('owner',)
@@ -81,6 +81,9 @@ class PacketPictureAdmin(admin.ModelAdmin):
     
     get_packet.short_description = 'packet'
 
+class BuyinfoAdmin(admin.ModelAdmin):
+    list_display = ( 'id', 'packet', 'link', 'price')
+
 
 admin.site.register(Packet, PacketAdmin)
 admin.site.register(Travel, TravelAdmin)
@@ -90,4 +93,5 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(Report, ReportAdmin)
 admin.site.register(PacketPicture,PacketPictureAdmin)
+admin.site.register(Buyinfo,BuyinfoAdmin)
 

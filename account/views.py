@@ -163,27 +163,6 @@ def update_user(request):
     return JsonResponse(serializer.errors, status=400)
 
 
-# @api_view(['GET', 'PUT', 'DELETE'])
-# def social_detail(request, pk):
-#     try:
-#         social = Social.object.get(pk=pk)
-#     except Social.DoesNotExist:
-#         return HttpResponse(status=404)
-#     if request.method == 'GET':
-#         serializer = SocialSerializer(social)
-#         return JsonResponse(serializer.data, safe=False)
-#     elif request.method == 'PUT':
-#         data = JSONParser.parse(request)
-#         serialzer = SocialSerializer(data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JsonResponse(serializer.data)
-#         return JsonResponse(serializer.errors, status=400)
-#     elif request.method == 'DELETE':
-#         social.delete()
-#         return HttpResponse(status=204)
-
-
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 @api_view(['GET','POST'])
@@ -277,6 +256,7 @@ def upload_file(request):
         return JsonResponse(str(profile.picture), safe=False)
     return JsonResponse(serializer.errors, status=400)
  
+
 @permission_classes([IsAuthenticated]) 
 @api_view(['GET'])
 def logout(request):
@@ -323,9 +303,12 @@ def rating(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def newsletter(request):
-    data = request.data
-    serializer = NewsletterSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return JsonResponse(serializer.data, safe=False)
-    return JsonResponse(serializers.errors, status=400)
+    if not Newsletter.objects.filter(email=request.data.get('email')).exists():
+        data = request.data
+        serializer = NewsletterSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, safe=False)
+        return JsonResponse(serializers.errors, status=400)
+    else:
+        raise APIException(detail="ایمیل شما قبلا ثبت شده است")

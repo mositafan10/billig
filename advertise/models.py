@@ -59,9 +59,11 @@ PACKET_CATEGORY = [
 ]
 
 DIMENSION = [
-        (0, "کوچک"),
-        (1, "متوسط"),
-        (2, "بزرگ"),
+        (0, "حیلی کوچک"),
+        (1, "کوچک"),
+        (2, "متوسط"),
+        (3, "بزرگ"),
+        (4, "خیلی بزرگ"),
 ]
     
 
@@ -73,13 +75,14 @@ class Packet(BaseModel):
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
-
+    category_other = models.CharField(max_length=50, blank=True, null=True)
+    
     #need float or not ?
-    weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)])
+    weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(1.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
-
+    
     # foreignkey is ok !
     picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
     visit_count = models.PositiveIntegerField(default=0)
@@ -107,7 +110,6 @@ class Travel(BaseModel):
     departure_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="depar_city")
     destination = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="dest_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
-    empty_weight = models.PositiveIntegerField(validators=[MaxValueValidator(30),MinValueValidator(1)], blank=True, null=True) 
     flight_date_start = models.DateField()
     flight_date_end = models.DateField(blank=True, null=True)
     visit_count = models.PositiveIntegerField(default=0)
@@ -130,7 +132,7 @@ class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel_ads")
     price = models.PositiveIntegerField()
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
     status = models.IntegerField(choices=Offer, default=0)
 
@@ -193,7 +195,7 @@ class Offer(BaseModel):
       
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
-    advertise = models.ForeignKey(Packet, on_delete=models.PROTECT, blank=True, null=True)
+    advertise = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
@@ -222,6 +224,15 @@ class Report(BaseModel):
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/%Y/%m')
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Buyinfo(BaseModel):
+    packet = models.ForeignKey('Packet', on_delete=models.CASCADE, related_name="packet_info")
+    link = models.CharField(max_length=100)
+    price = models.PositiveIntegerField()
 
     def __str__(self):
         return str(self.id)
