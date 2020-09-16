@@ -23,9 +23,9 @@ def packet_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         user = User.objects.get(pk=request.user.id)
+        buy = request.data.get('buy')
         data = request.data
         serializer = PacketDeserializer(data=data)
-        buy = request.data.get('buy')
         if serializer.is_valid():
             serializer.save(owner=user)
             if buy:

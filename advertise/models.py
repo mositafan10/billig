@@ -76,8 +76,6 @@ class Packet(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
     category_other = models.CharField(max_length=50, blank=True, null=True)
-    
-    #need float or not ?
     weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(1.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
@@ -166,7 +164,6 @@ class Offer(BaseModel):
                 super().save(*args, **kwargs)
             else:
                 return None
-
 
     @property
     def receiver(self):

@@ -14,32 +14,11 @@ PACKET_CATEGORY = [
 ]
 
 class PacketDeserializer(serializers.ModelSerializer):
-    # picture = serializers.ListField()
-
     class Meta:
         model = Packet
         fields = [
-            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other ', 'buy',
-            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name'
-        ]
-    
-    # def create(self, validated_data):
-
-    #     images = validated_data.pop('picture')
-    #     packet = Packet.objects.create(**validated_data)
-    #     for image_id in images:
-    #         try:
-    #             # print(image_id)
-    #             image = PacketPicture.objects.get(id=image_id)
-    #             image.packet = packet
-    #             image.save()
-    #         except Exception as e:
-    #             print('image not found with id={} , e= {}'.format(image_id, str(e)))
-    #             pass
-    #     return packet
-
-    # def perform_create(self, serializer):
-    #     serializer.save(owner=self.request.user)
+            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other', 'buy',
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name']
 
 
 class PacketSerializer(serializers.ModelSerializer):
