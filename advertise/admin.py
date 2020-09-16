@@ -16,7 +16,7 @@ class PacketAdmin(admin.ModelAdmin):
         return obj.owner.phone_number
 
     def get_pictures(self,obj):
-        return list(obj.picture.values_list('id', flat=True)) 
+        return obj.picture
     
     get_pictures.short_description  = "pictures" 
 
@@ -74,12 +74,8 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 class PacketPictureAdmin(admin.ModelAdmin):
-    list_display = ('id','image_file','get_packet')
-
-    def get_packet(self, obj):
-        return list(obj.packets.values_list('id', flat=True))
+    list_display = ('id','image_file','packet')
     
-    get_packet.short_description = 'packet'
 
 class BuyinfoAdmin(admin.ModelAdmin):
     list_display = ( 'id', 'packet', 'link', 'price')

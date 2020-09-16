@@ -76,13 +76,13 @@ class Packet(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
     category_other = models.CharField(max_length=50, blank=True, null=True)
-    weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(1.0)], max_digits=3, decimal_places=1)
+    weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
     
     # foreignkey is ok !
-    picture = models.ManyToManyField('PacketPicture', blank=True, related_name="packets")
+    picture = models.IntegerField()
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
