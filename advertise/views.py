@@ -7,6 +7,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import MethodNotAllowed, NotAcceptable
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from account.models import User, Country, City
 from .serializers import *
@@ -196,37 +197,38 @@ def visit_travel(request, pk):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['POST','GET','DELETE'])
+@api_view(['DELETE'])
 def bookmark(request, slug):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=slug)
-    if request.method == 'GET':
-        count = Bookmark.objects.filter(owner=user, advertise=packet).count()
-        print(count)
-        if (count == 0):
-            return JsonResponse(True, safe=False)
-        else:
-            return JsonResponse(False, safe=False)
-    elif request.method == 'POST':
-        data = request.data
-        serializer = BookmarkSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save(owner=user, advertise=packet)
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
-    elif request.method == 'DELETE':
-        bookmark = Bookmark.objects.filter(owner=user, advertise=packet)
-        bookmark.delete()
-        return HttpResponse(status=204)
+    bookmark = Bookmark.objects.filter(owner=user, packet=packet)
+    bookmark.delete()
+    return HttpResponse(status=204)
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['GET'])
+@api_view(['GET','POST'])
 def bookmark_list(request):
     user = User.objects.get(pk=request.user.id)
-    bookmark = Bookmark.objects.filter(owner=user)
-    serializer = BookmarkDeserializer(bookmark, many=True)
-    return JsonResponse(serializer.data, safe=False)
+    if request.method ==  'GET':
+        bookmark = Bookmark.objects.filter(owner=user)
+        serializer = BookmarkDeserializer(bookmark, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    elif request.method == 'POST':
+        packet = Packet.objects.get(slug=request.data.get('packet'))
+        print(packet)
+        count = Bookmark.objects.filter(owner=user, packet=packet).count()
+        if count == 0 :
+            data = {
+                "packet": packet.id
+            }
+            serializer = BookmarkSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save(owner=user)
+                return JsonResponse(serializer.data, status=201)
+            return JsonResponse(serializer.errors, status=400)
+        else:
+            raise NotAcceptable(detail="قبلا نشان شده است")
 
 
 @permission_classes([IsAuthenticated])

@@ -66,7 +66,7 @@ class TravelAdmin(admin.ModelAdmin):
 
 
 class BookmarkAdmin(admin.ModelAdmin):
-    list_display = ('id','owner','advertise','travel')
+    list_display = ('id','owner','packet')
 
 
 class ReportAdmin(admin.ModelAdmin):

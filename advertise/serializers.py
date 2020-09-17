@@ -95,12 +95,12 @@ class OfferDeserializer(serializers.ModelSerializer):
 class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ['advertise']
+        fields = ['packet']
 
 class BookmarkDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ['id','packet_slug','advertise','packet_title']
+        fields = ['id','packet_slug','packet','packet_title']
 
 
 class ReportSerializer(serializers.ModelSerializer):

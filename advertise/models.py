@@ -82,7 +82,7 @@ class Packet(BaseModel):
     buy = models.BooleanField(default=False)
     
     # foreignkey is ok !
-    picture = models.IntegerField()
+    picture = models.IntegerField(blank=True, null=True)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
@@ -192,19 +192,18 @@ class Offer(BaseModel):
       
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
-    advertise = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
-    travel = models.ForeignKey(Travel, on_delete=models.CASCADE, blank=True, null=True)
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.id)
 
     @property
     def packet_title(self):
-        return str(self.advertise.title)
+        return str(self.packet.title)
     
     @property
     def packet_slug(self):
-        return self.advertise.slug
+        return self.packet.slug
 
 
 class Report(BaseModel):
