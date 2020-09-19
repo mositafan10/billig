@@ -80,13 +80,10 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField()
     buy = models.BooleanField(default=False)
-    
-    # foreignkey is ok !
     picture = models.IntegerField(blank=True, null=True)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
-    # should not be send by user: this should be validate
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     status = models.IntegerField(choices=PACKET_STATUS, default=10)
  
@@ -192,7 +189,7 @@ class Offer(BaseModel):
       
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
-    packet = models.ForeignKey(Packet, on_delete=models.CASCADE)
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="bookmark_packet")
 
     def __str__(self):
         return str(self.id)

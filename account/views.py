@@ -78,6 +78,7 @@ def login(request):
     password = request.data.get('password')
     name = request.data.get('name', '')
     refresh = None
+    first_time = False
 
     # for first login
     otp = request.data.get('otp', '')
@@ -89,6 +90,7 @@ def login(request):
                 user.set_password(password)
                 user.name = name
                 user.save()
+                first_time = True
         else :
             error = "کد وارد شده اشتباه است .مجدد سعی کنید "
             raise AuthenticationFailed(detail=error)
@@ -102,7 +104,7 @@ def login(request):
         user.save()
         refresh = RefreshToken.for_user(user)
         return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh), "user": user.id})
+            "refresh": str(refresh), "user": user.id, "first_time": first_time})
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید")        
 

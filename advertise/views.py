@@ -216,8 +216,7 @@ def bookmark_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         packet = Packet.objects.get(slug=request.data.get('packet'))
-        print(packet)
-        count = Bookmark.objects.filter(owner=user, packet=packet).count()
+        count = Bookmark.objects.filter(owner=user).exclude(packet=packet).count()
         if count == 0 :
             data = {
                 "packet": packet.id
