@@ -175,6 +175,11 @@ class Offer(BaseModel):
         return self.travel.owner.id
     
     @property
+    def sender_avatar(self):
+        profile = Profile.objects.get(pk=self.travel.owner.id)
+        return str(profile.picture)
+    
+    @property
     def receiver_id(self):
         return self.packet.owner.id
 
@@ -185,6 +190,8 @@ class Offer(BaseModel):
     @property
     def packet_title(self):
         return self.packet.title
+    
+
         
       
 class Bookmark(BaseModel):

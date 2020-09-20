@@ -75,7 +75,7 @@ class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
     bio = models.TextField(blank=True, null=True)
-    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip
+    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip or mobile number
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     favorite_gift = models.CharField(max_length=50, blank=True, null=True)
@@ -83,12 +83,12 @@ class Profile (BaseModel):
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
-    is_approved = models.BooleanField(default=False)
     facebook_id = models.CharField(max_length=50, blank=True, null=True)
     instagram_id = models.CharField(max_length=50, blank=True, null=True)
     twitter_id = models.CharField(max_length=50, blank=True, null=True)
     linkdin_id = models.CharField(max_length=50, blank=True, null=True)
     account_number = models.CharField(max_length=20, blank=True, null=True)
+    is_approved = models.BooleanField(default=False) # some where should be used
 
     def __str__(self):
         return str(self.id)
@@ -142,6 +142,9 @@ class City(BaseModel):
 
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/Packet/%Y/%m')
+
+    def __str__(self):
+        return self.id
 
 
 class Newsletter(BaseModel):

@@ -235,13 +235,12 @@ class CheckAuth(generics.GenericAPIView):
              return Response(content, status=401)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def get_user(request):
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
     user = User.objects.get(pk=request.user.id)
-    print(user)
     profile = Profile.objects.get(user=user)
-    print(profile)
-    return JsonResponse({"user":profile.user.name})
+    serializer = LimitedProfileSerializer(profile)
+    return JsonResponse(serializer.data)
 
 
 @permission_classes([IsAuthenticated])
@@ -266,6 +265,7 @@ def logout(request):
     user.last_logout = datetime.now()
     user.save()
     return HttpResponse(status=200)
+
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])

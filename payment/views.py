@@ -27,7 +27,10 @@ def send(request):
         "factorNumber": factorNumber
     }
     r = requests.post('https://ipg.vandar.io/api/v3/send', data=data).json()
-    return JsonResponse(r, safe=False)
+    if r['status'] == 1:
+        return JsonResponse(r, safe=False)
+    else :
+        return JsonResponse(r, safe=False, status=400)
 
 
 @api_view(['POST'])

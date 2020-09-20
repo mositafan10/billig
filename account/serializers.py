@@ -27,6 +27,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = '__all__'
 
+class LimitedProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = Profile
+        fields = [ 'user', 'picture', 'country', 'score']
+
 
 class ScoreSerializer(serializers.ModelSerializer):
     class Meta:

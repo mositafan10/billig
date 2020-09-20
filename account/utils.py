@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from rest_framework.exceptions import APIException
 from kavenegar import *
 import random
 
@@ -27,11 +28,10 @@ def send_sms(phone_number, otp):
             'message' : text,
         } 
         response = api.sms_send(params)
-        print(response)
     except APIException as e: 
-        print(e)
+        raise APIException(detail=e)
     except HTTPException as e: 
-        print(e)
+        raise APIException(detail=e)
     
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size
