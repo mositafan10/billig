@@ -7,13 +7,13 @@ class MassageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Massage
-        fields = ['text', 'owner_name','ownerid','create_at','owner_avatar','first_day']
+        fields = ['text', 'owner_name','ownerid','create_at','owner_avatar','first_day','picture']
 
 
 class MassageDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Massage
-        fields = ['text','chat_id']
+        fields = ['text','picture']
 
 
 class ConversationSerializer(serializers.ModelSerializer):

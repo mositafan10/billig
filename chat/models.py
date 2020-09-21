@@ -56,7 +56,8 @@ class Conversation(BaseModel):
 
 class Massage(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="massage")
-    text = models.TextField()
+    text = models.TextField(blank=True, null=True)
+    picture = models.FileField(blank=True, null=True, upload_to='images/chat/%Y/%m')
     chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     first_day = models.BooleanField(default=False)
 

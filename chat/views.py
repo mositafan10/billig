@@ -80,16 +80,22 @@ def create_conversation(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-def add_massage(request):
+def add_massage(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    # chat_id = request.data.get('chat_id')
-    # conversation = Conversation.objects.get(id=chat_id)
+    conversation = Conversation.objects.get(pk=chatid)
     data = request.data
-    serializer = MassageDeserializer(data=data)
-    if serializer.is_valid():
-        serializer.save(owner=user)
-        return JsonResponse(serializer.data, safe=False)
-    return JsonResponse(serializer.errors, status=400)
+    print(request.FILES.get('billig'))
+    if request.FILES.get('billig') != None:
+        print("hi")
+        newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
+        newdoc.save()
+        return JsonResponse({"id": newdoc.id})
+    else :
+        serializer = MassageDeserializer(data=data)
+        if serializer.is_valid():
+            serializer.save(owner=user, chat_id=conversation)
+            return JsonResponse(serializer.data, safe=False)
+        return JsonResponse(serializer.errors, status=400)
 
 
 @api_view(['GET'])
