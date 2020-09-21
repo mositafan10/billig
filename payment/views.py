@@ -85,7 +85,6 @@ def pay_to_traveler(request):
         "payment_number": payment_number
     }
     r = requests.post('https://api.vandar.io/v2.1/business/{business}/settlement/store', data=data).json()
-    print(r)
     if r['status'] == 1:
         offer = Offer.objects.get(slug=payment_number)
         travel = offer.travel
