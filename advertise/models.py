@@ -78,7 +78,7 @@ class Packet(BaseModel):
     category_other = models.CharField(max_length=50, blank=True, null=True)
     weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=DIMENSION)
-    suggested_price = models.PositiveIntegerField()
+    suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
     picture = models.IntegerField(blank=True, null=True)
     visit_count = models.PositiveIntegerField(default=0)
@@ -155,12 +155,17 @@ class Offer(BaseModel):
         elif (self.packet.status > 1):
             if self.status == 0:
                 raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")
-            elif (self.status > 1 and self.status != 8): 
+            elif (self.status != 1 and self.status != 8): 
                 self.packet.status = self.status
                 self.packet.save()
                 super().save(*args, **kwargs)
             else:
                 return None
+        
+        if self.status == 3 :
+            self.travel.approved_packet += 1
+            self.travel.income += self.price
+            self.travel.save()
 
     @property
     def receiver(self):
@@ -190,10 +195,12 @@ class Offer(BaseModel):
     @property
     def packet_title(self):
         return self.packet.title
+
+    @property
+    def parcel_price(self):
+        return self.packet.packet_info.get().price
     
 
-        
-      
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="bookmark_packet")
@@ -232,7 +239,7 @@ class PacketPicture(BaseModel):
 class Buyinfo(BaseModel):
     packet = models.ForeignKey('Packet', on_delete=models.CASCADE, related_name="packet_info")
     link = models.CharField(max_length=100)
-    price = models.PositiveIntegerField()
+    price = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return str(self.id)

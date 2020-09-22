@@ -65,8 +65,7 @@ def signup(request):
     name = request.data.get('name')
     otp = generate_otp()
     set_otp(phone_number, otp)
-    print(otp)
-    # send_sms(phone_number, otp)
+    send_sms(phone_number, otp)
     return HttpResponse(status=200)
 
 

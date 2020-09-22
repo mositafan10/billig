@@ -80,7 +80,7 @@ class OfferSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['slug','price','status','description','sender','sender_id','sender_avatar','receiver','receiver_id','packet_slug', 'packet_title']
+        fields = ['slug','price','parcel_price','status','description','sender','sender_id','sender_avatar','receiver','receiver_id','packet_slug', 'packet_title']
 
 
 class OfferDeserializer(serializers.ModelSerializer):

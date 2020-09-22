@@ -2,6 +2,7 @@ from django.core.cache import cache
 from rest_framework.exceptions import APIException
 from kavenegar import *
 import random
+import Basteh.settings.prod import kavenegar_api
 
 def generate_otp():
     return ''.join(str(random.randint(0,9)) for _ in range(5))
@@ -22,7 +23,7 @@ def verify_otp(phone_number, otp):
 def send_sms(phone_number, otp):
     text = "کد تایید بیلیگ: {}".format(otp)
     try:
-        api = KavenegarAPI("77465546766556367A4E724C6575763535386B5971764D473430415857347A33727A396F506130443366493D")
+        api = KavenegarAPI(kavenegar_api)
         params = {
             'receptor': phone_number,
             'message' : text,
