@@ -31,6 +31,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def user_profile(request, pk):
@@ -117,8 +118,6 @@ def reset_password(request):
         user = User.objects.get(phone_number=phone_number)
         otp = generate_otp()
         set_otp(phone_number, otp)
-        print(otp)
-        # send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
         raise AuthenticationFailed(detail="User not found !")
@@ -233,6 +232,7 @@ class CheckAuth(generics.GenericAPIView):
              content = {'message': 'Unauthenticated'}
              return Response(content, status=401)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_info(request):
@@ -247,14 +247,10 @@ def get_user_info(request):
 @api_view(['POST'])
 def upload_file(request):
     user = User.objects.get(pk=request.user.id)
-    data = request.data # is needed ?
     profile = Profile.objects.get(user=user) 
-    serializer = ProfileSerializer(data=data)
-    if serializer.is_valid():
-        profile.picture = request.FILES.get('avatar')
-        profile.save()
-        return JsonResponse(str(profile.picture), safe=False)
-    return JsonResponse(serializer.errors, status=400)
+    profile.picture = request.FILES.get('avatar')
+    profile.save()
+    return JsonResponse(str(profile.picture), safe=False)
  
 
 @permission_classes([IsAuthenticated]) 

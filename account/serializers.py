@@ -25,7 +25,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     city = CitySerializer()
     class Meta:
         model = Profile
-        fields = '__all__'
+        fields = ['bio' ,'country','city','email','favorite_gift','level','score','scores_count','comment_count','facebook_id','instagram_id','twitter_id','linkdin_id','account_number',]
+
 
 class LimitedProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()

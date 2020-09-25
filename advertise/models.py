@@ -97,6 +97,19 @@ class Packet(BaseModel):
     @property
     def owner_name(self):
         return str(self.owner.name)
+
+    @property
+    def parcel_price(self):
+        return self.packet_info.get().price   
+         
+    @property
+    def parcel_link(self):
+        return self.packet_info.get().link   
+
+    def create(self):
+        self.save()
+        super().save(*args, **kwargs)
+        return self.id 
     
 
 class Travel(BaseModel):

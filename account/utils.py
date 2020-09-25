@@ -2,7 +2,7 @@ from django.core.cache import cache
 from rest_framework.exceptions import APIException
 from kavenegar import *
 import random
-import Basteh.settings.prod import kavenegar_api
+from Basteh.settings.prod import kavenegar_api
 
 def generate_otp():
     return ''.join(str(random.randint(0,9)) for _ in range(5))
@@ -15,7 +15,7 @@ def verify_otp(phone_number, otp):
     key = '%s' % (phone_number)
     if cache.get(key) == otp:
         return True
-    else:        
+    else:      
         return False
 
 # find attacker 
@@ -30,9 +30,9 @@ def send_sms(phone_number, otp):
         } 
         response = api.sms_send(params)
     except APIException as e: 
-        raise APIException(detail=e)
+        pass
     except HTTPException as e: 
-        raise APIException(detail=e)
+        pass
     
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size

@@ -28,18 +28,22 @@ def packet_list(request):
         data = request.data
         serializer = PacketDeserializer(data=data)
         if serializer.is_valid():
-            serializer.save(owner=user)
+            packet_id = serializer.save(owner=user)
             if buy:
                 link = request.data.get('link')
                 price = request.data.get('price')
                 data1 = {
                     "link" : link,
                     "price" : price,
-                    "packet": serializer
+                    "packet": packet_id.id
                 }
                 serializer1 = BuyinfoSerializer(data=data1)
-                if serializer1.is_valid():
+                print(serializer1)
+                if serializer1.is_valid():  
+                    print("ok")
                     serializer1.save()
+                    return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
+                return JsonResponse(serializer1.errors, status=400)
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
