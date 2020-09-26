@@ -84,9 +84,7 @@ def add_massage(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(pk=chatid)
     data = request.data
-    print(request.FILES.get('billig'))
     if request.FILES.get('billig') != None:
-        print("hi")
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
         return JsonResponse({"id": newdoc.id})
