@@ -66,6 +66,7 @@ def signup(request):
     name = request.data.get('name')
     otp = generate_otp()
     set_otp(phone_number, otp)
+    print(otp)
     send_sms(phone_number, otp)
     return HttpResponse(status=200)
 
@@ -83,7 +84,8 @@ def login(request):
     # for first login
     otp = request.data.get('otp', '')
     if otp != '':
-        if verify_otp(phone_number, otp):
+        otps = str(otp)
+        if verify_otp(phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=phone_number)
             profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
@@ -144,8 +146,11 @@ def confirm_reset_password(request):
 def update_user(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user)
-    country = Country.objects.get(pk=request.data.get("country"))   
-    city = City.objects.get(pk=request.data.get("city"))
+    try:
+        country = Country.objects.get(pk=request.data.get("country"))   
+        city = City.objects.get(pk=request.data.get("city"))
+    except:
+        pass
     data = request.data
     serializer = ProfileSerializer(data=data)
     if serializer.is_valid():
@@ -248,7 +253,7 @@ def get_user_info(request):
 def upload_file(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user) 
-    profile.picture = request.FILES.get('avatar')
+    profile.picture = request.FILES.get('billlig')
     profile.save()
     return JsonResponse(str(profile.picture), safe=False)
  

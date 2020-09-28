@@ -1,8 +1,7 @@
 from django.core.cache import cache
 from rest_framework.exceptions import APIException
-from kavenegar import *
-import random
 from Basteh.settings.prod import kavenegar_api
+import random, requests
 
 def generate_otp():
     return ''.join(str(random.randint(0,9)) for _ in range(5))
@@ -23,12 +22,12 @@ def verify_otp(phone_number, otp):
 def send_sms(phone_number, otp):
     text = "کد تایید بیلیگ: {}".format(otp)
     try:
-        api = KavenegarAPI(kavenegar_api)
-        params = {
+        data = {
             'receptor': phone_number,
-            'message' : text,
-        } 
-        response = api.sms_send(params)
+            'token' : otp,
+            'template' : "verify"
+        }
+        r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
     except APIException as e: 
         pass
     except HTTPException as e: 
