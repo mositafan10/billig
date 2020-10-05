@@ -21,11 +21,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    # country = CountrySerializer()
-    # city = CitySerializer()
+    country = CountrySerializer()
+    city = CitySerializer()
     class Meta:
         model = Profile
-        fields = ['bio','country','city','email','favorite_gift','level','score','scores_count','comment_count','facebook_id','instagram_id','twitter_id','linkdin_id','account_number','picture']
+        fields = ['bio','country','city','email','favorite_gift','level','score','scores_count','comment_count','facebook_id','instagram_id','twitter_id','linkdin_id','account_number','picture','name']
 
 
 class LimitedProfileSerializer(serializers.ModelSerializer):

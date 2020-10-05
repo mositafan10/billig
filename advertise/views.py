@@ -7,7 +7,7 @@ from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import MethodNotAllowed, NotAcceptable
+from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotAcceptable
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from account.models import User, Country, City
 from .serializers import *
@@ -53,7 +53,7 @@ def packet_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list_user(request):
     user = User.objects.get(pk=request.user.id)
-    packet = Packet.objects.filter(owner=user).order_by('-create_at')
+    packet = Packet.objects.filter(owner=user).exclude(status=8).order_by('-create_at')
     serializer = PacketSerializer(packet, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -220,18 +220,22 @@ def bookmark_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         packet = Packet.objects.get(slug=request.data.get('packet'))
-        count = Bookmark.objects.filter(owner=user).exclude(packet=packet).count()
-        if count == 0 :
-            data = {
-                "packet": packet.id
-            }
-            serializer = BookmarkSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save(owner=user)
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
+        if packet.owner == user :
+            count = Bookmark.objects.filter(owner=user).exclude(packet=packet).count()
+            if count == 0 :
+                data = {
+                    "packet": packet.id
+                }
+                serializer = BookmarkSerializer(data=data)
+                if serializer.is_valid():
+                    serializer.save(owner=user)
+                    return JsonResponse(serializer.data, status=201)
+                return JsonResponse(serializer.errors, status=400)
+            else:
+                raise NotAcceptable(detail="قبلا نشان شده است")
         else:
-            raise NotAcceptable(detail="قبلا نشان شده است")
+            detail = "این آگهی برای خودتان است. امکان ثبت پیشنهاد وجود ندارد"
+            return JsonResponse(str(detail), status=401, safe=False)
 
 
 @permission_classes([IsAuthenticated])
@@ -260,21 +264,26 @@ def offer_list(request, slug):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
     slug = request.data.get("slug")
+    user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get("packet"))
-    price = request.data.get("price")
-    description = request.data.get("description")
-    travel_slug = request.data.get("travel")
-    travel = Travel.objects.get(slug=travel_slug)
-    data = request.data
-    serializer = OfferDeserializer(data=data)
-    if serializer.is_valid():
-        serializer.save(packet=packet, travel=travel)
-        return JsonResponse(serializer.data, status=201)
-    return JsonResponse(serializer.errors, status=400)
+    if packet.owner != user :
+        price = request.data.get("price")
+        description = request.data.get("description")
+        travel_slug = request.data.get("travel")
+        travel = Travel.objects.get(slug=travel_slug)
+        data = request.data
+        serializer = OfferDeserializer(data=data)
+        if serializer.is_valid():
+            serializer.save(packet=packet, travel=travel)
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+    else:
+        detail = "این آگهی برای خودتان است. امکان ثبت پیشنهاد وجود ندارد"
+        return JsonResponse(str(detail), status=401, safe=False)
 
   
-@api_view(['POST'])
 @permission_classes([IsAuthenticated]) # TODO is need owner of object
+@api_view(['POST'])
 def offer_update(request):
     slug = request.data.get('slug')
     offer = Offer.objects.get(slug=slug)
@@ -289,8 +298,8 @@ def offer_update(request):
         if(status == 8):
             offer.packet.offer_count -= 1
             offer.save()
-    
     return HttpResponse(status=200)
+
 
 @permission_classes([AllowAny])        
 @api_view(['GET'])
@@ -304,7 +313,7 @@ def get_picture(request, pk):
 @permission_classes([IsAuthenticated])        
 def get_user_offer(request):
     user = User.objects.get(pk=request.user.id)
-    offer = Offer.objects.filter(travel__owner=user)
+    offer = Offer.objects.filter(travel__owner=user).exclude(status=8)
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 

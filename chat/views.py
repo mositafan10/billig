@@ -77,6 +77,12 @@ def create_conversation(request):
     else:
         return JsonResponse({"id":conversation.id})
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def conversation_info(request, pk):
+    conversation = Conversation.objects.get(pk=pk)
+    serializer = ConversationSerializer(conversation)
+    return JsonResponse(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

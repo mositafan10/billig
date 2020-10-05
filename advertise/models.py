@@ -80,7 +80,7 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
-    picture = models.IntegerField(blank=True, null=True)
+    picture = models.IntegerField(blank=True, null=True, default=1)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
@@ -111,6 +111,14 @@ class Packet(BaseModel):
         super().save(*args, **kwargs)
         return self.id 
     
+    def save(self, *args, **kwargs):
+        if self.origin_country == self.destination_country:
+            if self.origin_city == self.destination_city:
+                raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
+        else:
+            super().save(*args, **kwargs)
+
+    
 
 class Travel(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -134,6 +142,16 @@ class Travel(BaseModel):
     def visit(self):
         self.visit_count += 1
         self.save()
+
+    def save(self, *args, **kwargs):
+        if self.departure == self.destination:
+            if self.departure_city == self.destination_city:
+                raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
+            else:
+                super().save(*args, **kwargs)
+        else:
+            super().save(*args, **kwargs)
+    
 
 
 class Offer(BaseModel):

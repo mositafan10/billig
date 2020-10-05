@@ -4,7 +4,7 @@ from Basteh.settings.prod import kavenegar_api
 import random, requests
 
 def generate_otp():
-    return ''.join(str(random.randint(0,9)) for _ in range(5))
+    return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
 
 def set_otp(phone_number, otp):
     key = '%s' % (phone_number)
@@ -39,3 +39,12 @@ def validate_picture(fieldfile_obj):
         if KB_limit < filesize:
             raise ValidationError("Max File Size is 500kb")
             # should be translated TODO
+
+def validate_phonenumber(phone_number):
+    new_phone_number = str(phone_number)
+    if phone_number[0] == '9' and phone_number[1] == '8':
+        if phone_number[2] == '0' :
+            new_phone_number = phone_number.replace('0','',1)
+    else:
+        new_phone_number = '0' + '0' + phone_number
+    return new_phone_number

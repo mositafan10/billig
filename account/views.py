@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
-from .utils import generate_otp, set_otp, verify_otp, send_sms
+from .utils import generate_otp, set_otp, verify_otp, send_sms, validate_phonenumber
 from .models import Profile, Score, City, Country, User
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
@@ -62,13 +62,50 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 @permission_classes([AllowAny])
 def signup(request): 
     phone_number = request.data.get('phone_number')
-    password = request.data.get('password')
-    name = request.data.get('name')
+    new_phone_number = validate_phonenumber(phone_number)
     otp = generate_otp()
-    set_otp(phone_number, otp)
     print(otp)
-    send_sms(phone_number, otp)
+    set_otp(new_phone_number, otp)
+    # send_sms(phone_number, otp)
     return HttpResponse(status=200)
+
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+@permission_classes([AllowAny])
+def signup_complete(request): 
+    phone_number = request.data.get('phone_number')
+    new_phone_number = validate_phonenumber(phone_number)
+    password = request.data.get('password')
+    name = request.data.get('name', '')
+    first_time = False
+    refresh = None
+    otp = request.data.get('otp', '')
+    if otp != '':
+        print("1")
+        otps = str(otp)
+        if verify_otp(new_phone_number, otps):
+            print("2")
+            user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
+            profile, is_created = Profile.objects.get_or_create(user=user)
+            if is_created is True:
+                print("3")
+                user.set_password(password)
+                user.name = name
+                user.save()
+                first_time = True
+                refresh = RefreshToken.for_user(user)
+                return JsonResponse({"token": str(refresh.access_token),
+            "refresh": str(refresh), "user": user.id, "first_time": first_time})
+            else:
+                raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
+        else :
+            print("4")
+            error = "کد وارد شده اشتباه است .مجدد سعی کنید "
+            raise AuthenticationFailed(detail=error)
+    else :
+        print("5")
+        raise ValidationError(detail="کد وارد نشده است")
 
 
 @api_view(['POST'])
@@ -76,28 +113,10 @@ def signup(request):
 @permission_classes([permissions.AllowAny])
 def login(request):
     phone_number = request.data.get('phone_number')
+    new_phone_number = validate_phonenumber(phone_number)
     password = request.data.get('password')
-    name = request.data.get('name', '')
     refresh = None
     first_time = False
-
-    # for first login
-    otp = request.data.get('otp', '')
-    if otp != '':
-        otps = str(otp)
-        if verify_otp(phone_number, otps):
-            user, is_created = User.objects.get_or_create(phone_number=phone_number)
-            profile, is_created = Profile.objects.get_or_create(user=user)
-            if is_created is True:
-                user.set_password(password)
-                user.name = name
-                user.save()
-                first_time = True
-        else :
-            error = "کد وارد شده اشتباه است .مجدد سعی کنید "
-            raise AuthenticationFailed(detail=error)
-
-    # Not first time
     try:
         user = User.objects.get(phone_number=phone_number)
         if not user.check_password(password):
@@ -112,30 +131,29 @@ def login(request):
 
 
 @permission_classes([AllowAny])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def reset_password(request):
-    phone_number = request.data['phone_number']
+    phone_number = request.data.get('phone_number')
     try:
         user = User.objects.get(phone_number=phone_number)
         otp = generate_otp()
         set_otp(phone_number, otp)
+        send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail="User not found !")
+        raise AuthenticationFailed(detail="این شماره موبایل در سایت موجود نیست")
 
 
 @permission_classes([AllowAny])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def confirm_reset_password(request):
-    phone_number = request.data['phone_number']
-    otp = request.data['otp']
+    phone_number = request.data.get('phone_number')
+    otp = request.data.get('otp')
     user = User.objects.get(phone_number=phone_number)
     if verify_otp(phone_number, otp):
         user.set_password(otp)
         user.save()
-        return HttpResponse(status=200)
+        return JsonResponse({"detail":"رمز عبور به کد ارسال شده به شما تغییر پیدا کرد."},status=200)
     else:
         raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
 
@@ -160,8 +178,11 @@ def update_user(request):
         profile.twitter_id = request.data.get("twitter_id")
         profile.linkdin = request.data.get("bio")
         profile.email = request.data.get("email")
-        profile.country = country
-        profile.city = city
+        try:
+            profile.country = country
+            profile.city = city
+        except:
+            pass
         profile.save()
         user.save()
         return JsonResponse(serializer.data, status=200)
@@ -222,20 +243,6 @@ def friend_list(request):
     friend = Follow.objects.filter(follower = user)
     serializer = FollowSerializer(friend, many=True)
     return JsonResponse(serializer.data, safe=False)
-
-
-#for authentication test
-class CheckAuth(generics.GenericAPIView):
-
-    def post(self, request):
-        print(request.user)
-        print(request.user.id)
-        if request.user.is_authenticated:
-             content = {'message': 'Authenticated'}
-             return Response(content, status=200)
-        else:
-             content = {'message': 'Unauthenticated'}
-             return Response(content, status=401)
 
 
 @api_view(['GET'])
