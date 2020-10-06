@@ -10,8 +10,9 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 import requests
+from Basteh.settings.prod import vandar_api
 
-api_key = "f0261280cdc145b4e1e2a7c23a8088d0901ca8c4"
+api_key  = vandar_api
 business = "Billlig"
 
 @api_view(['POST'])

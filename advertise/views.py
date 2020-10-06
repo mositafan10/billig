@@ -132,7 +132,7 @@ def travel_add(request):
 @api_view(['GET'])
 def travel_user_list(request):
     user = User.objects.get(pk=request.user.id)
-    travel = Travel.objects.filter(owner=user).order_by('create_at')
+    travel = Travel.objects.filter(owner=user).order_by('-create_at')
     serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
     

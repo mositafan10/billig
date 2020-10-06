@@ -168,7 +168,8 @@ class Offer(BaseModel):
     def save(self, *args, **kwargs):
         #increase offer count of the packet
         if self.packet.status == 1:
-            self.packet.offer_count += 1
+            if self.status == 0:
+                self.packet.offer_count += 1
 
             #update packet state due to offer state
             if (self.status > 1 and self.status != 8): 

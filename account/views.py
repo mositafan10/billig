@@ -64,9 +64,8 @@ def signup(request):
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
     otp = generate_otp()
-    print(otp)
     set_otp(new_phone_number, otp)
-    # send_sms(phone_number, otp)
+    send_sms(phone_number, otp)
     return HttpResponse(status=200)
 
 
@@ -82,14 +81,11 @@ def signup_complete(request):
     refresh = None
     otp = request.data.get('otp', '')
     if otp != '':
-        print("1")
         otps = str(otp)
         if verify_otp(new_phone_number, otps):
-            print("2")
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
             profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
-                print("3")
                 user.set_password(password)
                 user.name = name
                 user.save()
@@ -100,11 +96,9 @@ def signup_complete(request):
             else:
                 raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
         else :
-            print("4")
             error = "کد وارد شده اشتباه است .مجدد سعی کنید "
             raise AuthenticationFailed(detail=error)
     else :
-        print("5")
         raise ValidationError(detail="کد وارد نشده است")
 
 
