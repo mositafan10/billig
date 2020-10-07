@@ -67,15 +67,8 @@ def create_conversation(request):
     receiver_id = request.data.get('receiver')
     receiver = User.objects.get(pk=receiver_id)
     conversation, is_created = Conversation.objects.get_or_create(offer=offer, receiver=receiver, sender=sender)
-    if is_created:
-        data = request.data
-        serializer = ConversationDeserializer(data=data)
-        if serializer.is_valid():
-            serializer.save(sender=sender, offer=offer)
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
-    else:
-        return JsonResponse({"id":conversation.id})
+    return JsonResponse({"id":conversation.id})
+
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
@@ -83,6 +76,7 @@ def conversation_info(request, pk):
     conversation = Conversation.objects.get(pk=pk)
     serializer = ConversationSerializer(conversation)
     return JsonResponse(serializer.data)
+
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

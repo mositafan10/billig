@@ -19,6 +19,7 @@ class Conversation(BaseModel):
             count = Conversation.objects.filter(offer=self.offer).count()
             if (count == 0): 
                 super().save(*args, **kwargs)
+                return self.id
             else:
                 return None
         else:
