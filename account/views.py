@@ -281,6 +281,7 @@ def change_password(request):
         user.save()
         return HttpResponse(status=200)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def rating(request):

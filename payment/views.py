@@ -48,6 +48,7 @@ def verify(request):
         factorNumber = r['factorNumber']
         offer = Offer.objects.get(slug=factorNumber)
         offer.status = 3
+        offer.save()
         packet = offer.packet
         data = {
             "user" : user,
@@ -59,7 +60,8 @@ def verify(request):
         }
         transaction = TransactionReceive.objects.create(**data) 
         transaction.save()
-        return HttpResponse(status=201)
+        serializer = TransactionReceiveSerializer(transaction)
+        return JsonResponse(serializer.data)
     else :
         return JsonResponse(r['errors'], status=400, safe=False)
 
