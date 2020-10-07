@@ -67,7 +67,12 @@ def create_conversation(request):
     receiver_id = request.data.get('receiver')
     receiver = User.objects.get(pk=receiver_id)
     conversation, is_created = Conversation.objects.get_or_create(offer=offer, receiver=receiver, sender=sender)
-    return JsonResponse({"id":conversation.id})
+    if conversation.id :
+        return JsonResponse({"id":conversation.id})
+    else:
+        conversation = Conversation.objects.get_or_create(offer=offer, receiver=sender, sender=receiver)
+        return JsonResponse({"id":conversation.id})
+
 
 
 @api_view(['GET'])
