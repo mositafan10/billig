@@ -19,7 +19,7 @@ class MassageDeserializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fields = ['receiver_name', 'sender_name','id','sender', 'receiver', 'offer_state', 'receiver_avatar', 'sender_avatar']
+        fields = ['receiver_name', 'sender_name','id','sender', 'receiver', 'offer_state', 'receiver_avatar', 'sender_avatar','packet_id','packet_title']
 
 
 class ConversationDeserializer(serializers.ModelSerializer):

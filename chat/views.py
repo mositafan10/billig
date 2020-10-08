@@ -59,6 +59,10 @@ def create_conversation(request):
     receiver_id = request.data.get('receiver')
     receiver = User.objects.get(pk=receiver_id)
     conversation, is_created = Conversation.objects.get_or_create(offer=offer)
+    if offer.description != "" and is_created :
+        print("hi")
+        massage = Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
+        massage.save()
     return JsonResponse({"id":conversation.id})
 
 

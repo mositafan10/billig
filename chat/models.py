@@ -47,6 +47,14 @@ class Conversation(BaseModel):
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
 
+    @property
+    def packet_id(self):
+        return self.offer.packet.id
+
+    @property
+    def packet_title(self):
+        return self.offer.packet.title
+
 
 class Massage(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="massage")
