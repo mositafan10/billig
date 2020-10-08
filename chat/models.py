@@ -15,16 +15,9 @@ class Conversation(BaseModel):
         return str(self.id)
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            count = Conversation.objects.filter(offer=self.offer).count()
-            if (count == 0): 
-                super().save(*args, **kwargs)
-                return self.id
-            else:
-                return None
-        else:
-            super().save(*args, **kwargs)
-            return self.id
+        self.sender = self.offer.travel.owner
+        self.receiver = self.offer.packet.owner
+        super().save(*args, **kwargs)
 
     @property
     def receiver_name(self):

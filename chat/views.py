@@ -37,14 +37,6 @@ def get_id(request):
 def chat_list(request):
     user = User.objects.get(pk=request.user.id)
     chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-updated_at')
-
-    # #for count new massages
-    # massages = Massage.objects.filter(chat_id=chatid)
-    # last_login = user.last_login
-    # last_logout = user.last_logout
-    # new_massages_count = massages.filter(create_at__range=(last_logout, last_login )).count()
-    # conversation = Conversation.objects.get(id=chatid)
-
     serializer = ConversationSerializer(chats, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -66,13 +58,8 @@ def create_conversation(request):
     offer = Offer.objects.get(slug=offer_slug)
     receiver_id = request.data.get('receiver')
     receiver = User.objects.get(pk=receiver_id)
-    conversation, is_created = Conversation.objects.get_or_create(offer=offer, receiver=receiver, sender=sender)
-    if conversation.id :
-        return JsonResponse({"id":conversation.id})
-    else:
-        conversation = Conversation.objects.get_or_create(offer=offer, receiver=sender, sender=receiver)
-        return JsonResponse({"id":conversation.id})
-
+    conversation, is_created = Conversation.objects.get_or_create(offer=offer)
+    return JsonResponse({"id":conversation.id})
 
 
 @api_view(['GET'])
