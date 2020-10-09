@@ -72,7 +72,7 @@ class TravelDeserializer(serializers.ModelSerializer):
         model = Travel
         fields = [
             'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
-            'description', 'approved_packet', 'income'
+            'description', 'approved_packet', 'income', 'status'
         ]
 
 

@@ -8,7 +8,6 @@ pay_status = [
     (1,'تایید پرداخت'),
     (2,'انجام شده'),
     (3,'انجام نشده'),
-
 ]
 
 class TransactionReceive(BaseModel):
@@ -30,7 +29,7 @@ class TransactionReceive(BaseModel):
 
 class TransactionSend(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_travel")
-    travel = models.ForeignKey(Travel, on_delete=models.PROTECT, related_name="travel")
+    travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel")
     amount = models.PositiveIntegerField()
     status = models.IntegerField(choices=pay_status, default=0)
 
@@ -42,7 +41,11 @@ class TransactionSend(BaseModel):
             state = pay_to_traveler(self.user, self.amount, self.travel)
             if state:
                self.status == 3
+               self.travel.status = 6
+               self.travel.save()
             else:
-               self.status == 4
+                self.status == 4
+                self.travel.status = 7
+                self.travel.save()
         super().save(*args, **kwargs)
 

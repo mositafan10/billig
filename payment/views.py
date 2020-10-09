@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from account.models import User, Profile
-from advertise.models import Travel
+from advertise.models import Travel, Offer
 from .models import TransactionReceive, TransactionSend 
 from .serializer import TransactionReceiveSerializer
 

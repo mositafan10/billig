@@ -199,6 +199,7 @@ class Offer(BaseModel):
             self.travel.approved_packet += 1
             self.travel.income += self.price
             self.travel.save()
+            super().save(*args, **kwargs)
 
     @property
     def receiver(self):
