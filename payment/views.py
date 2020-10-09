@@ -2,14 +2,14 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from account.models import User, Profile
-from advertise.models import Offer
-from .models import TransactionReceive
+from advertise.models import Travel
+from .models import TransactionReceive, TransactionSend 
 from .serializer import TransactionReceiveSerializer
 
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-import requests
+import requests, json
 from Basteh.settings.prod import vandar_api
 
 api_key  = vandar_api
@@ -79,28 +79,16 @@ def transactions_list(request):
 @permission_classes([IsAuthenticated])
 def pay_to_traveler(request):
     user = User.objects.get(pk=request.user.id)
-    iban = Profile.objects.get(user=user).account_number
     amount = request.data.get('amount')
     payment_number = request.data.get('payment_number')
+    travel = Travel.objects.get(slug=payment_number)
     data = {
-        "amount": amount,
-        "iban": iban,
-        "payment_number": payment_number
+        "user" : user,
+        "travel": travel,
+        "amount" : amount
     }
-    r = requests.post('https://api.vandar.io/v2.1/business/{business}/settlement/store', data=data).json()
-    if r['status'] == 1:
-        offer = Offer.objects.get(slug=payment_number)
-        travel = offer.travel
-        data = {
-            "user" : user,
-            "travel": travel,
-            "amount" : r['amount'],
-            "status": True
-        }
-        transaction = TransactionSend.objects.create(**data) 
-        transaction.save()
-        return JsonResponse(r, safe=False)
-    else:
-        return JsonResponse(r, status=400 ,safe=False)
-
+    transaction = TransactionSend.objects.create(**data)
+    transaction.save()
+    return HttpResponse(status=201)
+    
     
