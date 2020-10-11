@@ -12,7 +12,7 @@ pay_status = [
 
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
-    packet = models.ForeignKey(Packet, on_delete=models.PROTECT, related_name="travel")
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="travel")
     transId = models.BigIntegerField()
     amount = models.FloatField()
     status = models.BooleanField()

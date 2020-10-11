@@ -104,7 +104,15 @@ class Score(BaseModel):
     text = models.TextField()
 
     def __str__(self):
-        return "%s --> %s" % (self.owner, self.reciever)
+        return str(self.id)
+
+    @property
+    def owner_avatar(self):
+        return str(self.owner.picture)
+
+    @property
+    def owner_name(self):
+        return self.owner.user.name
 
     def save(self, *args, **kwargs):
         scores_count = self.reciever.scores_count

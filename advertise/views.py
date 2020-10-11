@@ -12,6 +12,7 @@ from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from account.models import User, Country, City
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
+import json
 
 
 @api_view(['GET', 'POST'])
@@ -279,8 +280,7 @@ def offer(request):
     packet = Packet.objects.get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
     offer = Offer.objects.filter(travel=travel, packet=packet)
-    print(offer)
-    if offer.count == 0 :
+    if offer.count() == 0 :
         if packet.owner != user :
             price = request.data.get("price")
             description = request.data.get("description")
@@ -294,9 +294,9 @@ def offer(request):
             return JsonResponse(serializer.errors, status=400)
         else:
             detail = "این آگهی برای خودتان است. امکان ثبت پیشنهاد وجود ندارد"
-            return JsonResponse(str(detail), status=401, safe=False)
+            raise NotAcceptable(detail)
     else:
-        raise NotAcceptable(detail="برای هر آگهی بیش از یک پیشنهاد مجاز نمی‌باشد")
+        raise NotAcceptable(detail="برای هر آگهی فقط یک پیشنهاد مجاز است")
     
   
 @permission_classes([IsAuthenticated]) # TODO is need owner of object

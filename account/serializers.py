@@ -38,7 +38,7 @@ class LimitedProfileSerializer(serializers.ModelSerializer):
 class ScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Score 
-        fields = ['score','text']
+        fields = ['score','text','owner_avatar','owner_name']
 
 
 class NewsletterSerializer(serializers.ModelSerializer):

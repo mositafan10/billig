@@ -63,10 +63,16 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 def signup(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
-    otp = generate_otp()
-    set_otp(new_phone_number, otp)
-    send_sms(phone_number, otp)
-    return HttpResponse(status=200)
+    user = User.objects.filter(phone_number=new_phone_number).count()
+    if user == 0:
+        print(new_phone_number)
+        otp = generate_otp()
+        print(otp)
+        set_otp(new_phone_number, otp)
+        # send_sms(phone_number, otp)
+        return HttpResponse(status=200)
+    else:
+        raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
 
 
 @api_view(['POST'])
@@ -302,6 +308,15 @@ def rating(request):
         return HttpResponse(status=200)
     return JsonResponse(serializer.errors, status=400)
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def comment(request, pk):
+    user = User.objects.get(pk=pk)
+    profile = Profile.objects.get(user=user) 
+    comment = Score.objects.filter(reciever=profile)
+    serializer = ScoreSerializer(comment, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(['POST'])

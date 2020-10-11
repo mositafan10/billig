@@ -48,3 +48,9 @@ def validate_phonenumber(phone_number):
     else:
         new_phone_number = '0' + '0' + phone_number
     return new_phone_number
+
+
+##incompleted
+def countrycode(phone_number):
+    r = requests.get('https://restcountries.eu/rest/v2/callingcode/{}'.format(code))
+    print(r)
