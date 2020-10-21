@@ -5,7 +5,7 @@ from .models import Profile, Score, Country, City, User, Newsletter
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = ['id','name','icon']
+        fields = ['id','name','eng_name','icon']
 
 
 class CitySerializer(serializers.ModelSerializer):

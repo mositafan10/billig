@@ -18,7 +18,6 @@ INSTALLED_APPS = [
     'rest_auth.registration',
     'account',
     'advertise',
-    'blog',
     'chat',
     'payment',
 ]

@@ -81,7 +81,7 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
-    picture = models.IntegerField(blank=True, null=True, default=1)
+    picture = models.IntegerField(default=1)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)

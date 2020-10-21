@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from .utils import validate_picture
 from django.contrib.auth.models import PermissionsMixin
+from advertise.utils import generate_slug
 
 
 # User = get_user_model()
@@ -62,6 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     follower_count = models.PositiveIntegerField(default=0)
     following_count = models.PositiveIntegerField(default=0)
     last_logout = models.DateTimeField(_('last logout'), blank=True, null=True)
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     USERNAME_FIELD = 'phone_number'
 
     objects = UserManager()
@@ -124,6 +126,7 @@ class Score(BaseModel):
 
 class Country(BaseModel):
     name = models.CharField(max_length=15)
+    eng_name = models.CharField(max_length=15)
     icon = models.ImageField(blank=True, null=True, upload_to='images/country')
     is_active = models.BooleanField(default=True)
 

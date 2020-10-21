@@ -65,9 +65,7 @@ def signup(request):
     new_phone_number = validate_phonenumber(phone_number)
     user = User.objects.filter(phone_number=new_phone_number).count()
     if user == 0:
-        print(new_phone_number)
         otp = generate_otp()
-        print(otp)
         set_otp(new_phone_number, otp)
         # send_sms(phone_number, otp)
         return HttpResponse(status=200)
