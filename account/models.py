@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils.translation import gettext_lazy as _
 from .utils import validate_picture
 from django.contrib.auth.models import PermissionsMixin
@@ -21,6 +21,13 @@ Level = [
     ('1', 'Gold'),
     ('2', 'Silver'),
     ('3', 'Bronz'),
+]
+
+Social_Type = [
+    ('0','Linkdin'),
+    ('1','Facebook'),
+    ('2','Instagram'),
+    ('3','Twitter')
 ]
 
 
@@ -75,22 +82,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
-    bio = models.TextField(blank=True, null=True)
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip or mobile number
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
-    favorite_gift = models.CharField(max_length=50, blank=True, null=True)
     level = models.CharField(max_length=1, choices=Level, default='3')
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
-    facebook_id = models.CharField(max_length=50, blank=True, null=True)
-    instagram_id = models.CharField(max_length=50, blank=True, null=True)
-    twitter_id = models.CharField(max_length=50, blank=True, null=True)
-    linkdin_id = models.CharField(max_length=50, blank=True, null=True)
-    account_number = models.CharField(max_length=20, blank=True, null=True)
+    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{0,9}$', message=_("ورودی نامعتبر است")), RegexValidator(regex='^.{5}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     is_approved = models.BooleanField(default=False) # some where should be used
-
+    
     def __str__(self):
         return str(self.id)
     
@@ -162,3 +163,12 @@ class Newsletter(BaseModel):
 
     def __str__(self):
         return self.email
+
+
+class Social(BaseModel):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="profile")
+    account_type = models.CharField(max_length=20 ,choices=Social_Type)
+    address = models.CharField(max_length=30)
+
+    def __str__(self):
+        return str(self.id)

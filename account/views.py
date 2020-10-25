@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, permissions, generics
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK
@@ -14,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
 from .utils import generate_otp, set_otp, verify_otp, send_sms, validate_phonenumber
-from .models import Profile, Score, City, Country, User
+from .models import Profile, Score, City, Country, User, Social
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
 from advertise.models import Offer 
@@ -38,6 +39,15 @@ def user_profile(request, pk):
     user = User.objects.get(pk=pk)
     profile = Profile.objects.get(user=user)
     serializer = ProfileSerializer(profile)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_profile_private(request, pk):
+    user = User.objects.get(pk=pk)
+    profile = Profile.objects.get(user=user)
+    serializer = PrivateProfileSerializer(profile)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -156,7 +166,7 @@ def confirm_reset_password(request):
         raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
 
 
-@api_view(['PUT'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def update_user(request):
@@ -168,21 +178,22 @@ def update_user(request):
     except:
         pass
     data = request.data
-    serializer = ProfileSerializer(data=data)
+    serializer = ProfileDeserializer(data=data)
     if serializer.is_valid():
-        profile.bio = request.data.get("bio")
-        profile.facebook_id = request.data.get("facebook_id")
-        profile.instagram_id = request.data.get("instagram_id")
-        profile.twitter_id = request.data.get("twitter_id")
-        profile.linkdin = request.data.get("bio")
-        profile.email = request.data.get("email")
+        try:
+            profile.email = request.data.get("email")
+        except:
+            pass
+        try:    
+            profile.account_number = request.data.get("account_number")
+        except:
+            pass
         try:
             profile.country = country
             profile.city = city
         except:
             pass
         profile.save()
-        user.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
 
@@ -329,3 +340,38 @@ def newsletter(request):
         return JsonResponse(serializers.errors, status=400)
     else:
         raise APIException(detail="ایمیل شما قبلا ثبت شده است")
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def social(request):
+    user = User.objects.get(pk=request.user.id)
+    profile = Profile.objects.get(user=user)
+    try:
+        social = Social.objects.get(profile=profile, account_type=request.data.get("account_type"))
+        raise PermissionDenied(detail=_("این اکانت از قبل ایجاد شده است"))
+    except Social.DoesNotExist:
+        data= request.data
+        serializer = SocialDeserializer(data=data)
+        if serializer.is_valid():
+            serializer.save(profile=profile)
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+        
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def social_pub(request, pk):
+    user = User.objects.get(pk=pk)
+    profile = Profile.objects.get(user=user)
+    social_list = Social.objects.filter(profile=profile)
+    serializer = SocialSerializer(social_list, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def social_delete(request, pk):
+    social = Social.objects.get(pk=pk)
+    social.delete()
+    return HttpResponse(status=204)

@@ -42,12 +42,11 @@ class PacketSerializer1(serializers.ModelSerializer):
     origin_city = serializers.StringRelatedField()
     origin_country = serializers.StringRelatedField()
     destination_city = serializers.IntegerField()
-    # category = serializers.StringRelatedField()
     status = serializers.StringRelatedField()
     class Meta:
         model = Packet
         fields = [
-            'slug','title', 'owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
+            'slug','title','owner' ,'owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status',
         ]
 

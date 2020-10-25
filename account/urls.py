@@ -15,6 +15,7 @@ urlpatterns = [
     path('login/reset_password/', views.reset_password, name="reset_password"),
     path('users/profile/', views.ProfileListCreateView.as_view(), name="profile"),
     path('users/profile/<int:pk>/', views.user_profile, name="profile_detail"),
+    path('users/profile/pr/<int:pk>/', views.user_profile_private, name="profile_detail"),
     path('users/', views.UserList.as_view(), name="users"),
     path('users/<int:pk>/', views.UserDetail.as_view(), name="users_detail"),
     path('users/update/', views.update_user, name="update_user"),
@@ -29,4 +30,7 @@ urlpatterns = [
     path('changepassword/', views.change_password, name="change_password"),
     path('newsletter/', views.newsletter, name='newsletter'),
     path('userinfo/', views.get_user_info, name='user_info'),
+    path('socials/', views.social, name='social'),
+    path('socials/<int:pk>', views.social_pub, name='social'),
+    path('social/<int:pk>', views.social_delete, name='social_delete'),
 ]

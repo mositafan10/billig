@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Score, Country, City, User, Newsletter
+from .models import Profile, Score, Country, City, User, Newsletter, Social
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -21,11 +21,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['level','score','picture','name']
+
+class PrivateProfileSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
     city = CitySerializer()
     class Meta:
         model = Profile
-        fields = ['bio','country','city','email','favorite_gift','level','score','scores_count','comment_count','facebook_id','instagram_id','twitter_id','linkdin_id','account_number','picture','name']
+        fields = ['country','city','email','level','score','scores_count','comment_count','account_number','picture','name']
+
+class ProfileDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['country','city','email','account_number','picture','name']
 
 
 class LimitedProfileSerializer(serializers.ModelSerializer):
@@ -45,3 +55,15 @@ class NewsletterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Newsletter
         fields = ['email']
+
+
+class SocialSerializer(serializers.ModelSerializer):
+    account_type = serializers.CharField(source='get_account_type_display')
+    class Meta:
+        model = Social
+        fields = ['id','account_type','address']
+
+class SocialDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = Social
+        fields = ['account_type','address']

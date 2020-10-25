@@ -87,6 +87,8 @@ def pay_to_traveler(request):
         "travel": travel,
         "amount" : amount
     }
+    travel.status = 8
+    travel.save()
     transaction = TransactionSend.objects.create(**data)
     transaction.save()
     return HttpResponse(status=201)
