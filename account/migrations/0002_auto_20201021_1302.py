@@ -12,12 +12,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='country',
-            name='eng_name',
-            field=models.CharField(default='', max_length=15),
-            preserve_default=False,
-        ),
-        migrations.AddField(
             model_name='user',
             name='slug',
             field=models.CharField(db_index=True, default=advertise.utils.generate_slug, editable=False, max_length=8, unique=True),

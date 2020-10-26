@@ -89,7 +89,7 @@ class Profile (BaseModel):
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
-    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{0,9}$', message=_("ورودی نامعتبر است")), RegexValidator(regex='^.{5}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
+    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{0,9}$', message=_("ورودی نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     is_approved = models.BooleanField(default=False) # some where should be used
     
     def __str__(self):
