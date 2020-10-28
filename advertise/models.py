@@ -101,6 +101,10 @@ class Packet(BaseModel):
         return str(self.owner.name)
 
     @property
+    def owner_slug(self):
+        return str(self.owner.slug)
+
+    @property
     def parcel_price(self):
         return self.packet_info.get().price   
          

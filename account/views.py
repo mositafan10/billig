@@ -36,7 +36,7 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def user_profile(request, pk):
-    user = User.objects.get(pk=pk)
+    user = User.objects.get(slug=pk)
     profile = Profile.objects.get(user=user)
     serializer = ProfileSerializer(profile)
     return JsonResponse(serializer.data, safe=False)
@@ -45,7 +45,7 @@ def user_profile(request, pk):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile_private(request, pk):
-    user = User.objects.get(pk=pk)
+    user = User.objects.get(slug=pk)
     profile = Profile.objects.get(user=user)
     serializer = PrivateProfileSerializer(profile)
     return JsonResponse(serializer.data, safe=False)
@@ -106,7 +106,7 @@ def signup_complete(request):
                 first_time = True
                 refresh = RefreshToken.for_user(user)
                 return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh), "user": user.id, "first_time": first_time})
+            "refresh": str(refresh), "user": user.slug, "first_time": first_time})
             else:
                 raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
         else :
@@ -133,7 +133,7 @@ def login(request):
         user.save()
         refresh = RefreshToken.for_user(user)
         return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh), "user": user.id, "first_time": first_time})
+            "refresh": str(refresh), "user": user.slug, "first_time": first_time})
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید")        
 
@@ -321,7 +321,7 @@ def rating(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def comment(request, pk):
-    user = User.objects.get(pk=pk)
+    user = User.objects.get(slug=pk)
     profile = Profile.objects.get(user=user) 
     comment = Score.objects.filter(reciever=profile)
     serializer = ScoreSerializer(comment, many=True)
@@ -362,7 +362,7 @@ def social(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def social_pub(request, pk):
-    user = User.objects.get(pk=pk)
+    user = User.objects.get(slug=pk)
     profile = Profile.objects.get(user=user)
     social_list = Social.objects.filter(profile=profile)
     serializer = SocialSerializer(social_list, many=True)

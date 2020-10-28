@@ -33,7 +33,7 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = [
-            'slug','title','owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
+            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link'
         ]
 

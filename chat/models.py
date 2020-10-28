@@ -4,13 +4,15 @@ from account.models import User, BaseModel, Profile
 from advertise.models import Offer
 from .utils import generate_slug
 from datetime import datetime
+from .utils import generate_slug
 
  
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer")
-    
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
+
     def __str__(self):
         return str(self.id)
 
@@ -22,6 +24,14 @@ class Conversation(BaseModel):
     @property
     def receiver_name(self):
         return str(self.receiver.name)
+    
+    @property
+    def sender_slug(self):
+        return str(self.sender.slug)
+
+    @property
+    def receiver_slug(self):
+        return str(self.receiver.slug)
 
     @property
     def sender_name(self):
@@ -48,8 +58,8 @@ class Conversation(BaseModel):
         return str(profile.picture)
 
     @property
-    def packet_id(self):
-        return self.offer.packet.id
+    def packet_slug(self):
+        return self.offer.packet.slug
 
     @property
     def packet_title(self):
@@ -71,8 +81,8 @@ class Massage(BaseModel):
         return str(self.owner.name)
 
     @property
-    def ownerid(self):
-        return self.owner.id
+    def owner_slug(self):
+        return self.owner.slug
 
     @property
     def owner_avatar(self): 

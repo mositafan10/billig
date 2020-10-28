@@ -62,7 +62,7 @@ def create_conversation(request):
     if offer.description != "" and is_created :
         massage = Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
         massage.save()
-    return JsonResponse({"id":conversation.id})
+    return JsonResponse({"id":conversation.slug})
 
 
 @api_view(['GET'])

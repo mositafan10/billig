@@ -17,7 +17,7 @@ class CitySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','phone_number','name']
+        fields = ['slug','phone_number','name']
 
 
 class ProfileSerializer(serializers.ModelSerializer):
