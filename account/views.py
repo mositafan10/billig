@@ -186,6 +186,7 @@ def update_user(request):
             pass
         try:    
             profile.account_number = request.data.get("account_number")
+            profile.account_owner = request.data.get("account_owner")
         except:
             pass
         try:

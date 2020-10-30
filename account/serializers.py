@@ -35,7 +35,7 @@ class PrivateProfileSerializer(serializers.ModelSerializer):
 class ProfileDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ['country','city','email','account_number','picture','name']
+        fields = ['country','city','email','account_number','account_owner','picture','name']
 
 
 class LimitedProfileSerializer(serializers.ModelSerializer):

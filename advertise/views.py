@@ -220,7 +220,6 @@ def bookmark(request, slug):
         except Bookmark.DoesNotExist:
             raise NotFound(detail="آگهی مورد نظر پیدا نشد")
         
-        
 @permission_classes([IsAuthenticated])
 @api_view(['GET','POST'])
 def bookmark_list(request):
@@ -232,8 +231,8 @@ def bookmark_list(request):
     elif request.method == 'POST':
         packet = Packet.objects.get(slug=request.data.get('packet'))
         if packet.owner != user :
-            count = Bookmark.objects.filter(owner=user, packet=packet).count()
-            if count == 0 :
+            bookmark = Bookmark.objects.filter(owner=user, packet=packet)
+            if bookmark.count() == 0 :
                 data = {
                     "packet": packet.id
                 }
@@ -243,7 +242,8 @@ def bookmark_list(request):
                     return JsonResponse(serializer.data, status=201)
                 return JsonResponse(serializer.errors, status=400)
             else:
-                raise NotAcceptable(detail="قبلا نشان شده است")
+                bookmark.delete()
+                return HttpResponse(status=204)
         else:
             detail = "! این آگهی برای خودتان است"
             raise NotAcceptable(detail)

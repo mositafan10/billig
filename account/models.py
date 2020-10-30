@@ -81,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.PROTECT)
-    picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') #need default
+    picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') 
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip or mobile number
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -89,7 +89,8 @@ class Profile (BaseModel):
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
-    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{0,9}$', message=_("ورودی نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
+    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
+    account_owner = models.CharField(max_length=50, blank=True, null=True)
     is_approved = models.BooleanField(default=False) # some where should be used
     
     def __str__(self):
