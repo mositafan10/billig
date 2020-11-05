@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.shortcuts import HttpResponse
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
@@ -39,9 +40,7 @@ def packet_list(request):
                     "packet": packet_id.id
                 }
                 serializer1 = BuyinfoSerializer(data=data1)
-                print(serializer1)
                 if serializer1.is_valid():  
-                    print("ok")
                     serializer1.save()
                     return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
                 return JsonResponse(serializer1.errors, status=400)

@@ -11,26 +11,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError, AuthenticationFailed, APIException, NotFound
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 
-from .utils import generate_otp, set_otp, verify_otp, send_sms, validate_phonenumber
+from .utils import OTP ,send_sms, validate_phonenumber
 from .models import Profile, Score, City, Country, User, Social
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
 from advertise.models import Offer 
 
 from datetime import datetime
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
 
 @api_view(['GET'])
@@ -75,12 +64,12 @@ def signup(request):
     new_phone_number = validate_phonenumber(phone_number)
     user = User.objects.filter(phone_number=new_phone_number).count()
     if user == 0:
-        otp = generate_otp()
-        set_otp(new_phone_number, otp)
-        # send_sms(phone_number, otp)
+        otp = OTP.generate_otp()
+        OTP.set_otp(new_phone_number, otp)
+        send_sms(phone_number, otp)
         return HttpResponse(status=200)
     else:
-        raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
+        raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
 
 
 @api_view(['POST'])
@@ -96,7 +85,7 @@ def signup_complete(request):
     otp = request.data.get('otp', '')
     if otp != '':
         otps = str(otp)
-        if verify_otp(new_phone_number, otps):
+        if OTP.verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
             profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
@@ -104,16 +93,15 @@ def signup_complete(request):
                 user.name = name
                 user.save()
                 first_time = True
-                refresh = RefreshToken.for_user(user)
-                return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh), "user": user.slug, "first_time": first_time})
+                token = Token.objects.create(user=user)
+                return JsonResponse({"token": str(token.key),"refresh": str(token.key), "user": user.slug, "first_time": first_time})
             else:
-                raise AuthenticationFailed(detail=".این شماره همراه قبلا در سایت ثبت‌نام شده است")
-        else :
-            error = "کد وارد شده اشتباه است .مجدد سعی کنید "
+                raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
+        else:
+            error = _("کد وارد شده اشتباه است .مجدد سعی کنید ")
             raise AuthenticationFailed(detail=error)
-    else :
-        raise ValidationError(detail="کد وارد نشده است")
+    else:
+        raise ValidationError(detail=_("کد وارد نشده است"))
 
 
 @api_view(['POST'])
@@ -131,9 +119,9 @@ def login(request):
             raise AuthenticationFailed(detail=".رمز عبور اشتباه است. مجدد تلاش کنید")
         user.last_login = datetime.now()
         user.save()
-        refresh = RefreshToken.for_user(user)
-        return JsonResponse({"token": str(refresh.access_token),
-            "refresh": str(refresh), "user": user.slug, "first_time": first_time})
+        token = Token.objects.get(user=user)
+        return JsonResponse({"token": str(token.key),
+            "refresh": str(token.key), "user": user.slug, "first_time": first_time})
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید")        
 
@@ -215,7 +203,6 @@ def country_list(request):
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
  
-
 
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])

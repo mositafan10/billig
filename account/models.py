@@ -8,15 +8,6 @@ from .utils import validate_picture
 from django.contrib.auth.models import PermissionsMixin
 from advertise.utils import generate_slug
 
-
-# User = get_user_model()
-
-Follow_Choices = [
-    ('0','در انتظار'),
-    ('1','تایید'),
-    ('2','رد')
-]
-
 Level = [
     ('1', 'Gold'),
     ('2', 'Silver'),
@@ -43,7 +34,7 @@ class UserManager(BaseUserManager):
     def create_user(self, phone_number, password=None):
        
         if not phone_number:
-            raise ValueError("شماره موبایل خود را وارد کنید")
+            raise ValueError(_("شماره موبایل خود را وارد کنید"))
         
         user = self.model(phone_number=phone_number)
         user.set_password(password)
@@ -80,7 +71,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile (BaseModel):
-    user = models.OneToOneField(User, on_delete=models.PROTECT)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') 
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip or mobile number
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
@@ -99,6 +90,10 @@ class Profile (BaseModel):
     @property
     def name(self):
         return str(self.user.name)
+    
+    @property
+    def phone_number(self):
+        return str(self.user.phone_number)
     
     
 class Score(BaseModel):
@@ -152,7 +147,7 @@ class City(BaseModel):
         return self.name
 
 
-class PacketPicture(BaseModel):
+class PacketPicture(BaseModel):   # TODO change to Profile picture and edit folder name
     image_file = models.FileField(upload_to='images/Packet/%Y/%m')
 
     def __str__(self):

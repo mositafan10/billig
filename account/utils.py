@@ -1,21 +1,20 @@
 from django.core.cache import cache
 from rest_framework.exceptions import APIException
-from Basteh.settings.prod import kavenegar_api
+from Basteh.settings import kavenegar_api
 import random, requests
 
-def generate_otp():
-    return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
+class OTP(object):
+    def generate_otp():
+        return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
 
-def set_otp(phone_number, otp):
-    key = '%s' % (phone_number)
-    cache.set(key, otp, 3000)
+    def set_otp(phone_number, otp):
+        key = '%s' % (phone_number)
+        cache.set(key, otp, 3000)
 
-def verify_otp(phone_number, otp):
-    key = '%s' % (phone_number)
-    if cache.get(key) == otp:
-        return True
-    else:      
-        return False
+    def verify_otp(phone_number, otp):
+        key = '%s' % (phone_number)
+        return cache.get(key) == otp
+
 
 # find attacker 
 # what happened when same time request is received ?

@@ -16,9 +16,9 @@ PACKET_CATEGORY = [
 class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
-        fields = [
+        fields = (
             'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other', 'buy',
-            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name']
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name')
 
 
 class PacketSerializer(serializers.ModelSerializer):
@@ -32,10 +32,10 @@ class PacketSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Packet
-        fields = [
+        fields = (
             'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link'
-        ]
+        )
 
 class PacketSerializer1(serializers.ModelSerializer):
     destination_country = serializers.StringRelatedField()
@@ -45,20 +45,20 @@ class PacketSerializer1(serializers.ModelSerializer):
     status = serializers.StringRelatedField()
     class Meta:
         model = Packet
-        fields = [
+        fields = (
             'slug','title','owner' ,'owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
             'category', 'weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status',
-        ]
+        )
 
     
 class TravelSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Travel
-        fields = [
+        fields = (
             'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
             'description'
-        ]
+        )
 
 
 class TravelDeserializer(serializers.ModelSerializer):
@@ -69,53 +69,52 @@ class TravelDeserializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = [
+        fields = (
             'slug', 'departure', 'departure_city', 'destination', 'destination_city', 'flight_date_start','flight_date_end',
             'description', 'approved_packet', 'income', 'status'
-        ]
+        )
 
 
 class OfferSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['slug','price','parcel_price','status','description','sender','sender_id','sender_avatar','receiver_avatar','receiver','receiver_id','packet_slug', 'packet_title']
+        fields = ('slug','price','parcel_price','status','description','sender','sender_id','sender_avatar','receiver_avatar','receiver','receiver_id','packet_slug', 'packet_title')
 
 
 class OfferDeserializer(serializers.ModelSerializer):
     packet = serializers.StringRelatedField()
     travel = serializers.StringRelatedField()
-    # status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ['packet', 'price', 'travel', 'description']
+        fields = ('packet', 'price', 'travel', 'description')
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ['packet']
+        fields = ('packet',)
 
 class BookmarkDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ['id','packet_slug','packet','packet_title']
+        fields = ('id','packet_slug','packet','packet_title')
 
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ['owner', 'packet', 'text']
+        fields = ('owner', 'packet', 'text')
 
 
 class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = PacketPicture
-        fields = ['image_file']
+        fields = ('image_file',)
 
 
 class BuyinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyinfo
-        fields = ['link','price','packet']
+        fields = ('link','price','packet')
 

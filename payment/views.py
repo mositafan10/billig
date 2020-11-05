@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view , permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 import requests, json
-from Basteh.settings.prod import vandar_api
+from Basteh.settings import vandar_api
 
 api_key  = vandar_api
 business = "Billlig"

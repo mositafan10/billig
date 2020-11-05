@@ -1,7 +1,14 @@
 import os
 from datetime import timedelta
+import environ
 
-BASE_DIR = os.path.dirname((os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+env = environ.Env()
+environ.Env.read_env()
+
+DEBUG = env('DEBUG')
+
+SECRET_KEY = env('SECRET_KEY')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -20,16 +27,23 @@ INSTALLED_APPS = [
     'advertise',
     'chat',
     'payment',
+    'fcm_django',
 ]
 
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'billlig.com',
+    '193.141.64.9',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTTokenUserAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.MultiPartParser',
@@ -73,16 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Basteh.wsgi.application'
 
-CHANNEL_LAYERS = {
-            'default': {
-                'BACKEND': 'channels_redis.core.RedisChannelLayer',
-                'CONFIG': {
-                    "hosts": [('127.0.0.1', 6379)],
-                },
-            },  
-        }
-
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -98,6 +102,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+DATABASES = {
+    'default': env.db(),
+}
 
 LANGUAGE_CODE = 'en-us'
 
@@ -122,18 +129,59 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'dstatic/media/')
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
+
 CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
-    }
+    # read os.environ['CACHE_URL'] and raises ImproperlyConfigured exception if not found
+    'default': env.cache('REDIS_URL'),
+    # read os.environ['REDIS_URL']
+    'redis': env.cache('REDIS_URL')
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 SITE_ID = 1 # what is this ?
 AUTH_USER_MODEL='account.User'
 
+
+FCM_DJANGO_SETTINGS = {
+         # default: _('FCM Django')
+        "APP_VERBOSE_NAME": "[string for AppConfig's verbose_name]",
+         # Your firebase API KEY
+        "FCM_SERVER_KEY": env("FCM_SECRET_KEY"),
+         # true if you want to have only one active device per registered user at a time
+         # default: False
+        "ONE_DEVICE_PER_USER": False,
+         # devices to which notifications cannot be sent,
+         # are deleted upon receiving error response from FCM
+         # default: False
+        "DELETE_INACTIVE_DEVICES": False,
+}
+
+kavenegar_api = env('kavenegar_api')
+vandar_api = env('vandar_api')
+
+CSRF_COOKIE_SECURE = True
+
+    # #to avoid transmitting the session cookie over HTTP accidentally.
+# SESSION_COOKIE_SECURE = True
+
+#     # SECURE_BROWSER_XSS_FILTER = True
+
+#     # SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# SECURE_SSL_REDIRECT = True
+
+# SECURE_HSTS_SECONDS = 86400  # 1 day
+
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+# SECURE_HSTS_PRELOAD = True

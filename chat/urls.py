@@ -9,4 +9,5 @@ urlpatterns = [
     path('conversation/<str:pk>/', views.conversation_info, name='conversation_info'),
     path('lastlogin/', views.get_lastlogin, name='last_login'),
     path('getid/', views.get_id, name='id'),
+    path('notifications/', views.notification_register, name='notification_register'),
 ]   

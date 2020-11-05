@@ -16,6 +16,11 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 
 from datetime import datetime
 
+from fcm_django.models import FCMDevice
+
+from .notification import send_chat_notification
+
+
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
@@ -78,15 +83,20 @@ def conversation_info(request, pk):
 def add_massage(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(pk=chatid)
+    receiver = conversation.receiver
+    if (user == receiver):
+        receiver = conversation.sender
     data = request.data
     if request.FILES.get('billig') != None:
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
+        send_chat_notification(receiver)
         return JsonResponse({"id": newdoc.id})
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, chat_id=conversation)
+            send_chat_notification(receiver)
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializer.errors, status=400)
 
@@ -96,3 +106,16 @@ def add_massage(request, chatid):
 def get_lastlogin(request):
     user = User.objects.get(pk=request.user.id)
     return JsonResponse(user.last_login, safe=False)
+
+
+@api_view(['POST'])
+def notification_register(request):
+    token = request.data.get('token','')
+    user = User.objects.get(pk=request.user.id)
+    # device = request.headers['user-agent']
+    data = {
+        "registration_id":token,
+        "user":user
+    }
+    fcm = FCMDevice.objects.get_or_create(**data)
+    return HttpResponse(status=201)

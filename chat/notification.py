@@ -1,19 +1,22 @@
-from redis import StrictRedis
-import json
+from fcm_django.models import FCMDevice
+from rest_framework.exceptions import NotFound
+import requests, json
 
-
-def add_notification(user_id, chat_id):
-    r = StrictRedis(host='localhost', port=6379, db=0)
-    r.hincrby('%s_notifications' % user_id, notification_id,)
-
-
-def set_notification_as_read(user_id, notification_id):
-    r = StrictRedis(host='localhost', port=6379)
-    data = json.loads(r.hget('%s_notifications' % user_id, notification_id))
-    data['read'] = True
-    add_notification(user_id, notification_id, data)
-
-
-def get_notifications(user_id):
-    r = StrictRedis(host='localhost', port=6379)
-    r   eturn r.hgetall('%s_notifications' % user_id)
+def send_chat_notification(user):
+    try:
+        fcm = FCMDevice.objects.get(user=user)
+        header = {
+            'Content-Type'  : 'application/json',
+            'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+        data = {
+                "notification": {
+                    "title": "بیلیگ",
+                    "body": "شما پیام جدید دارید",
+                    "click_action": "https://billlig.com/profile/inbox",
+                    "icon": "http://url-to-an-icon/icon.png"
+                    },
+                "to": fcm.registration_id
+                }
+        r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
+    except FCMDevice.DoesNotExist:
+        raise NotFound(detail="پیدا نشد")
