@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'billlig.com',
+    'www.billlig.com',
     '193.141.64.9',
 ]
 
@@ -43,7 +43,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-        # 'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.MultiPartParser',
@@ -53,7 +52,9 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',  #TODO
         'user': '1000/day'
-    }
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 6
 }
 
 MIDDLEWARE = [
@@ -129,26 +130,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'dstatic/media/')
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://127.0.0.1:6379/',
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
-
 CACHES = {
-    # read os.environ['CACHE_URL'] and raises ImproperlyConfigured exception if not found
-    'default': env.cache('REDIS_URL'),
-    # read os.environ['REDIS_URL']
-    'redis': env.cache('REDIS_URL')
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
 }
+
+# CACHES = {
+#     'default': env.cache('REDIS_URL'),
+#     'redis': env.cache('REDIS_URL')
+# }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-SITE_ID = 1 # what is this ?
+SITE_ID = 1 
 AUTH_USER_MODEL='account.User'
 
 

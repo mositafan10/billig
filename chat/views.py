@@ -9,10 +9,13 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.pagination import PageNumberPagination
+
 
 from datetime import datetime
 
@@ -90,13 +93,13 @@ def add_massage(request, chatid):
     if request.FILES.get('billig') != None:
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
-        send_chat_notification(receiver)
+        # send_chat_notification(receiver)
         return JsonResponse({"id": newdoc.id})
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, chat_id=conversation)
-            send_chat_notification(receiver)
+            # send_chat_notification(receiver)
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializer.errors, status=400)
 
@@ -119,3 +122,7 @@ def notification_register(request):
     }
     fcm = FCMDevice.objects.get_or_create(**data)
     return HttpResponse(status=201)
+
+
+
+

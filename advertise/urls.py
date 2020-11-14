@@ -2,16 +2,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # path('packet/update/<int:slug>/', views.update_packet, name='packet_list'),
-    path('packet/', views.packet_list, name='packet_list'),
+    path('packets/', views.packet_add, name='packet_add'),
+    path('packets/<str:country>/', views.packet_list, name='packet_list'),
     path('packet/<str:slug>/', views.packet_detail, name='packet_detail'),
-    path('packet/<str:slug>/visit/', views.visit_packet, name='packet_visit'),
     path('bookmarks/<str:slug>/', views.bookmark, name='bookmark'),
     path('bookmarks/', views.bookmark_list, name='bookmark_list'),
     path('travel/', views.travel_add, name='travel_add'),
     path('travel/<str:pk>/', views.travel_detail, name='travel'),
-    path('travellist/', views.travel_user_list, name='travel_user_list'),
-    path('travel/<str:slug>/visit/', views.visit_travel, name='travel_visit'),
+    path('travels/', views.travel_user_list, name='travel_user_list'),
     path('upload/', views.upload_file),
     path('offer/update/', views.offer_update, name='offer_update'),
     path('offer/<str:slug>/', views.offer_list, name='offer_packet_list'),

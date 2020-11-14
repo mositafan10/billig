@@ -1,19 +1,20 @@
 from django.core.cache import cache
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.exceptions import APIException
 from Basteh.settings import kavenegar_api
-import random, requests
+import random, requests, string
 
-class OTP(object):
-    def generate_otp():
-        return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
 
-    def set_otp(phone_number, otp):
-        key = '%s' % (phone_number)
-        cache.set(key, otp, 3000)
+def generate_otp():
+    return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
 
-    def verify_otp(phone_number, otp):
-        key = '%s' % (phone_number)
-        return cache.get(key) == otp
+def set_otp(phone_number, otp):
+    key = '%s' % (phone_number)
+    cache.set(key, otp, 3000)
+
+def verify_otp(phone_number, otp):
+    key = '%s' % (phone_number)
+    return cache.get(key) == otp
 
 
 # find attacker 
@@ -32,12 +33,14 @@ def send_sms(phone_number, otp):
     except HTTPException as e: 
         pass
     
+    
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size
         KB_limit = 1000
         if KB_limit < filesize:
             raise ValidationError("Max File Size is 500kb")
             # should be translated TODO
+
 
 def validate_phonenumber(phone_number):
     new_phone_number = str(phone_number)
@@ -49,7 +52,13 @@ def validate_phonenumber(phone_number):
     return new_phone_number
 
 
-##incompleted
-def countrycode(phone_number):
-    r = requests.get('https://restcountries.eu/rest/v2/callingcode/{}'.format(code))
-    print(r)
+def locate_ip(ip):
+    r = requests.get('http://ip-api.com/json/{}'.format(ip))
+    if r.status == "success":
+        return r.country
+
+
+def generate_slug():
+    return ''.join(str(random.choice(string.ascii_uppercase + string.ascii_lowercase)) for _ in range(6))
+
+

@@ -1,11 +1,12 @@
 from django.contrib import admin
+from django.contrib.admin.decorators import register
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
 from account.models import Country, City
 
 
-
+@register(Packet)
 class PacketAdmin(admin.ModelAdmin):
-    list_display  = ('id','slug','owner_user','title','origin_country','destination_country',
+    list_display  = ('id','slug','owner_user','title','origin_country','destination_country','phonenumber_visible',
                     'category','buy','get_pictures','weight','dimension','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
     list_filter   = ('origin_country','category','create_at', 'status','dimension')
@@ -20,11 +21,15 @@ class PacketAdmin(admin.ModelAdmin):
     
     get_pictures.short_description  = "pictures" 
 
+
+@register(City)
 class CityAdmin(admin.ModelAdmin):
     list_display  = ('id','name','country')
     list_filter   = ('country',)
     search_fields = ('name','country')
 
+
+@register(Country)
 class CountryAdmin(admin.ModelAdmin):
     list_display = ('id','name','city')
     
@@ -34,7 +39,8 @@ class CountryAdmin(admin.ModelAdmin):
             cities.append(c)
         return cities
         
-         
+
+@register(Offer)       
 class OfferAdmin(admin.ModelAdmin):
     list_display = ('id','slug','packet','offer_owner','offer_to','origin','destination','price','suggested_price','description','status')
     list_editable = ('status',)
@@ -55,6 +61,7 @@ class OfferAdmin(admin.ModelAdmin):
         return obj.packet.suggested_price 
 
 
+@register(Travel)
 class TravelAdmin(admin.ModelAdmin):
     list_display = ('id','slug','owner_user','departure','destination','flight_date_start','flight_date_end','visit_count','status','create_at')
     list_editable = ('status',)
@@ -65,29 +72,24 @@ class TravelAdmin(admin.ModelAdmin):
         return obj.owner.phone_number
 
 
+@register(Bookmark)
 class BookmarkAdmin(admin.ModelAdmin):
     list_display = ('id','owner','packet')
 
 
+@register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('id','owner','packet','text','create_at')
 
 
+@register(PacketPicture)
 class PacketPictureAdmin(admin.ModelAdmin):
     list_display = ('id','image_file','packet')
     
 
+@register(Buyinfo)
 class BuyinfoAdmin(admin.ModelAdmin):
     list_display = ( 'id', 'packet', 'link', 'price')
 
 
-admin.site.register(Packet, PacketAdmin)
-admin.site.register(Travel, TravelAdmin)
-admin.site.register(Offer, OfferAdmin)
-admin.site.register(Bookmark, BookmarkAdmin)
-admin.site.register(Country, CountryAdmin)
-admin.site.register(City, CityAdmin)
-admin.site.register(Report, ReportAdmin)
-admin.site.register(PacketPicture,PacketPictureAdmin)
-admin.site.register(Buyinfo,BuyinfoAdmin)
 

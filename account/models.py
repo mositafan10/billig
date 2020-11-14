@@ -4,22 +4,10 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils.translation import gettext_lazy as _
-from .utils import validate_picture
 from django.contrib.auth.models import PermissionsMixin
-from advertise.utils import generate_slug
 
-Level = [
-    ('1', 'Gold'),
-    ('2', 'Silver'),
-    ('3', 'Bronz'),
-]
-
-Social_Type = [
-    ('0','Linkdin'),
-    ('1','Facebook'),
-    ('2','Instagram'),
-    ('3','Twitter')
-]
+from core.utils import generate_slug
+from core.constant import Social_Type, Level
 
 
 class BaseModel (models.Model):
@@ -58,9 +46,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-    follower_count = models.PositiveIntegerField(default=0)
-    following_count = models.PositiveIntegerField(default=0)
-    last_logout = models.DateTimeField(_('last logout'), blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     USERNAME_FIELD = 'phone_number'
 
@@ -73,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') 
-    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True) # default = get from address or ip or mobile number
+    country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     level = models.CharField(max_length=1, choices=Level, default='3')
@@ -82,7 +67,8 @@ class Profile (BaseModel):
     comment_count = models.PositiveIntegerField(default=0)
     account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     account_owner = models.CharField(max_length=50, blank=True, null=True)
-    is_approved = models.BooleanField(default=False) # some where should be used
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    is_approved = models.BooleanField(default=False)
     
     def __str__(self):
         return str(self.id)
@@ -101,6 +87,8 @@ class Score(BaseModel):
     reciever = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='score_receiver')
     score = models.PositiveIntegerField(validators=[MaxValueValidator(5), MinValueValidator(1)])
     text = models.TextField()
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    is_approved = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
@@ -147,13 +135,6 @@ class City(BaseModel):
         return self.name
 
 
-class PacketPicture(BaseModel):   # TODO change to Profile picture and edit folder name
-    image_file = models.FileField(upload_to='images/Packet/%Y/%m')
-
-    def __str__(self):
-        return self.id
-
-
 class Newsletter(BaseModel):
     email = models.EmailField()
 
@@ -165,6 +146,26 @@ class Social(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="profile")
     account_type = models.CharField(max_length=20 ,choices=Social_Type)
     address = models.CharField(max_length=30)
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
 
     def __str__(self):
         return str(self.id)
+
+
+class CommentUser(BaseModel):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, blank=True, null=True)
+    text = models.TextField()
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    is_approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.id)
+
+    @property
+    def picture(self):
+        return str(self.owner.picture)
+
+    @property
+    def name(self):
+        return str(self.owner.user.name)
+

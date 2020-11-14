@@ -1,51 +1,70 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpRequest
 from django.db.models import Q
 from django.shortcuts import HttpResponse
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotAcceptable, NotFound
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotAcceptable, NotFound, PermissionDenied
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+
 from account.models import User, Country, City
+
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
+
 import json
 
-
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
-def packet_list(request):
-    if request.method == 'GET':
-        packet = Packet.objects.all().exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
-        serializer = PacketSerializer(packet, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
-        user = User.objects.get(pk=request.user.id)
-        buy = request.data.get('buy')
-        data = request.data
-        serializer = PacketDeserializer(data=data)
-        if serializer.is_valid():
-            packet_id = serializer.save(owner=user)
-            if buy:
-                link = request.data.get('link')
-                price = request.data.get('price')
-                data1 = {
-                    "link" : link,
-                    "price" : price,
-                    "packet": packet_id.id
-                }
-                serializer1 = BuyinfoSerializer(data=data1)
-                if serializer1.is_valid():  
-                    serializer1.save()
-                    return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
-                return JsonResponse(serializer1.errors, status=400)
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+def packet_list(request, country):
+    packet = Packet.objects.all().exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
+    if (country == "all"):
+        country_packet = packet
+    else:
+        try:
+            request_country =  Country.objects.get(eng_name=country)
+            country_packet = packet.filter(Q(origin_country=request_country) | Q(destination_country=request_country))
+        except:
+            raise NotFound(detail=_("Country Not Found"))
+    paginator = PageNumberPagination()
+    paginator.page_size = 12
+    result_page = paginator.paginate_queryset(country_packet, request)
+    serializer = PacketSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def packet_add(request):
+    user = User.objects.get(pk=request.user.id)
+    buy = request.data.get('buy')
+    data = request.data
+    serializer = PacketDeserializer(data=data)
+    if serializer.is_valid():
+        packet_id = serializer.save(owner=user)
+        if buy:
+            link = request.data.get('link')
+            price = request.data.get('price')
+            data1 = {
+                "link" : link,
+                "price" : price,
+                "packet": packet_id.id
+            }
+            serializer1 = BuyinfoSerializer(data=data1)
+            if serializer1.is_valid():  
+                serializer1.save()
+                return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
+            return JsonResponse(serializer1.errors, status=400)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
 
 
 @api_view(['GET'])
@@ -68,16 +87,26 @@ def user_packet_list(request):
 
 
 @permission_classes([AllowAny])
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET'])
 def packet_detail(request, slug):
+    try:
+        packet = Packet.objects.get(slug=slug)
+        packet.visit_count += 1
+        packet.save()
+        serilaizer = PacketSerializer(packet)
+        return JsonResponse(serilaizer.data, safe=False)
+    except Packet.DoesNotExist:
+        return HttpResponse(status=404)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['PUT', 'DELETE'])
+def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
-    if request.method == 'GET':
-        serilaizer = PacketSerializer(packet)
-        return JsonResponse(serilaizer.data, safe=False)
-    elif request.method == 'PUT':
+    if request.method == 'PUT':
         data = request.data
         serializer = PacketSerializer1(data=data)
         if serializer.is_valid():
@@ -253,6 +282,7 @@ def bookmark_list(request):
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 @api_view(['POST'])
 def upload_file(request):
+    http = request.META['REMOTE_ADDR'] 
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save() 
     return JsonResponse({"id": newdoc.id})

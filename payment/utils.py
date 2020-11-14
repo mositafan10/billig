@@ -1,6 +1,5 @@
 import requests
 from advertise.models import Travel
-# from .models import TransactionSend
 
 def pay_to_traveler(user, amount, payment_number):
     iban = Profile.objects.get(user=user).account_number

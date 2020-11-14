@@ -1,71 +1,17 @@
-import string
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.timezone import now
+from django.utils.translation import gettext_lazy as _
 from django.db import IntegrityError
 from django.db import models
 
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
-from .utils import generate_slug
+from core.utils import generate_slug
+from core.constant import *
 
-TRAVEL_STATUS = [
-        (0, "در انتظار تایید"),
-        (1, "عدم تایید"),
-        (2, "منتشر شده"),
-        (3, "دارای بسته"),
-        (4, "انجام شده"),
-        (5, "حذف شده"),
-        (6, "تسویه شده"),
-        (7, "تسویه نشده"),
-        (8, "در انتظار تسویه"),
-] 
+import string
 
-PACKET_STATUS = [
-        (0, "منتشر شده"),
-        (1, "دارای پیشنهاد"),
-        (2, "در انتظار پرداخت"),
-        (3, "در انتظار خرید"),
-        (4, "در انتظار تحویل"),
-        (5, "در انتظار تایید خریدار"),
-        (6, "انجام شده"),
-        (7, "تمام شده"),
-        (8, "حذف شده"),
-        (9, "منقضی شده"),
-        (10, "در انتظار تایید"),
-        (11, "عدم تایید"),
-] 
-
-Offer = [
-        (0, "در انتظار پاسخ"), # default state
-        (1, "در انتظار تایید مسافر"),# done by packet owner when accept offer : offer_update in advertise.view
-        (2, "در انتظار پرداخت"), # done by traveler after confirm the price : offer_update in advertise.view
-        (3, "در انتظار خرید"), # done after payment : verify function in payment.view
-        (4, "در انتظار تحویل"),# done by traveler after buy parcel : offer_update function in advertise.view
-        (5, "در انتظار تایید خریدار"), # done by traveler after get parcel in destination : offer_update function in advertise.view
-        (6, "انجام شده"),# done by packet owner when receive parcel in destination : offer_update in advertise.view
-        (7, "تمام شده"), # done after rating by packet owner in account.view
-        (8, "حذف شده"), # done by offer owner : offer_update in advertise.view
-] 
-
-# for other choice we need a field to be filled by user about category TODO
-PACKET_CATEGORY = [
-        (0, "مدارک و مستندات"),
-        (1, "کتاب و مجله"),
-        (2, "لوازم الکترونیکی"),
-        (3, "کفش و پوشاک"),
-        (4, "لوازم آرایشی و بهداشتی"),
-        (5, "دارو"),
-        (6, "سایر موارد"),
-]
-
-DIMENSION = [
-        (0, "کوچک"),
-        (1, "متوسط"),
-        (2, "بزرگ"),
-]
-    
 
 class Packet(BaseModel):
     title = models.CharField(max_length=50)
@@ -80,6 +26,7 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
+    phonenumber_visible = models.BooleanField(default=False)
     picture = models.IntegerField(default=1)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
@@ -110,20 +57,25 @@ class Packet(BaseModel):
     def parcel_link(self):
         return self.packet_info.get().link   
 
+    @property
+    def phonenumber(self):
+        return self.owner.phone_number
+
     def create(self):
         self.save()
         super().save(*args, **kwargs)
         return self.id 
     
     def save(self, *args, **kwargs):
+
+        #chack same country
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
                 raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
         else:
             super().save(*args, **kwargs)
 
-    
-
+        
 class Travel(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     departure = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="depar_country")
@@ -156,7 +108,6 @@ class Travel(BaseModel):
         else:
             super().save(*args, **kwargs)
     
-
 
 class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
@@ -271,11 +222,19 @@ class Report(BaseModel):
 
 
 class PacketPicture(BaseModel):
-    image_file = models.FileField(upload_to='images/%Y/%m')
+    image_file = models.FileField(upload_to='images/%Y/%m',)
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return str(self.id)
+    
+    def save(self, *args, **kwargs):
+        MAX_FILE_SIZE = 10485760
+        filesize = self.image_file.size
+        if filesize > MAX_FILE_SIZE:
+            raise ValidationError(detail=_("حجم تصویر بیش از حد زیاد است"))
+        else:
+            super().save(*args, **kwargs)
 
 
 class Buyinfo(BaseModel):

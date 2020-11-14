@@ -18,7 +18,7 @@ class PacketDeserializer(serializers.ModelSerializer):
         model = Packet
         fields = (
             'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other', 'buy',
-            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name')
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name', 'phonenumber_visible',)
 
 
 class PacketSerializer(serializers.ModelSerializer):
@@ -33,8 +33,8 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = (
-            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
-            'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link'
+            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy', 'phonenumber_visible',
+            'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link','phonenumber'
         )
 
 class PacketSerializer1(serializers.ModelSerializer):
@@ -110,7 +110,7 @@ class ReportSerializer(serializers.ModelSerializer):
 class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = PacketPicture
-        fields = ('image_file',)
+        fields = ('id','image_file',)
 
 
 class BuyinfoSerializer(serializers.ModelSerializer):

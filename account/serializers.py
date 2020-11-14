@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Score, Country, City, User, Newsletter, Social
+from .models import Profile, Score, Country, City, User, Newsletter, Social, CommentUser
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -66,3 +66,14 @@ class SocialDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Social
         fields = ('account_type','address')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentUser
+        fields = ('owner','picture','name','text')
+
+class CommentDeserializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentUser
+        fields = ('text',)

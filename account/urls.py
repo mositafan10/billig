@@ -1,11 +1,6 @@
 from django.urls import path, include
 from django.contrib import admin
 from . import views
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-
 
 urlpatterns = [
     path('signup/', views.signup, name="signup"),
@@ -22,7 +17,9 @@ urlpatterns = [
     path('confirmresetpassword/', views.confirm_reset_password, name="confirm_reset_password"),
     path('upload/', views.upload_file, name="upload_file"),
     path('rating/', views.rating, name="rate_user"),
-    path('comments/<str:pk>', views.comment, name="get_user_comment"),
+    path('rate_user_list/<str:user>', views.rate_user_list, name="get_user_comment"),
+    path('comments/', views.comment, name="get_user_comment"),
+    path('comments_billlig/', views.comments_billlig, name="comments_billlig"),
     path('changepassword/', views.change_password, name="change_password"),
     path('newsletter/', views.newsletter, name='newsletter'),
     path('userinfo/', views.get_user_info, name='user_info'),

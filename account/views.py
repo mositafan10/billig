@@ -13,13 +13,13 @@ from rest_framework.exceptions import PermissionDenied, ValidationError, Authent
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
 
-from .utils import OTP ,send_sms, validate_phonenumber
 from .models import Profile, Score, City, Country, User, Social
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
 from advertise.models import Offer 
-
 from datetime import datetime
+
+from core.utils import validate_phonenumber, generate_otp, verify_otp, set_otp, send_sms
 
 
 @api_view(['GET'])
@@ -64,8 +64,8 @@ def signup(request):
     new_phone_number = validate_phonenumber(phone_number)
     user = User.objects.filter(phone_number=new_phone_number).count()
     if user == 0:
-        otp = OTP.generate_otp()
-        OTP.set_otp(new_phone_number, otp)
+        otp = generate_otp()
+        set_otp(new_phone_number, otp)
         send_sms(phone_number, otp)
         return HttpResponse(status=200)
     else:
@@ -78,6 +78,12 @@ def signup(request):
 def signup_complete(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
+    ip = request.META['REMOTE_ADDR'] 
+    country_eng = locate_ip(ip)
+    try:
+        country = Country.objects.get(eng_name=country_eng) 
+    except:
+        country = None
     password = request.data.get('password')
     name = request.data.get('name', '')
     first_time = False
@@ -85,13 +91,15 @@ def signup_complete(request):
     otp = request.data.get('otp', '')
     if otp != '':
         otps = str(otp)
-        if OTP.verify_otp(new_phone_number, otps):
+        if verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
             profile, is_created = Profile.objects.get_or_create(user=user)
             if is_created is True:
                 user.set_password(password)
                 user.name = name
                 user.save()
+                profile.country = country
+                profile.save()
                 first_time = True
                 token = Token.objects.create(user=user)
                 return JsonResponse({"token": str(token.key),"refresh": str(token.key), "user": user.slug, "first_time": first_time})
@@ -160,28 +168,34 @@ def confirm_reset_password(request):
 def update_user(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user)
-    try:
-        country = Country.objects.get(pk=request.data.get("country"))   
-        city = City.objects.get(pk=request.data.get("city"))
-    except:
-        pass
     data = request.data
     serializer = ProfileDeserializer(data=data)
     if serializer.is_valid():
         try:
-            profile.email = request.data.get("email")
-        except:
-            pass
-        try:    
-            profile.account_number = request.data.get("account_number")
-            profile.account_owner = request.data.get("account_owner")
-        except:
-            pass
-        try:
+            country = Country.objects.get(pk=request.data.get("country")) 
             profile.country = country
+        except:
+            country = None
+        try:
+            city = City.objects.get(pk=request.data.get("city"))
             profile.city = city
         except:
-            pass
+            city = None
+        try:
+            email = request.data.get("email")
+            profile.email = email
+        except:
+            email = None
+        try:    
+            account_owner = request.data.get("account_owner")
+        except:
+            account_owner = None
+            profile.account_owner = account_owner
+        try:
+            account_number = request.data.get("account_number")
+            profile.account_number = account_number
+        except :
+            account_number = None
         profile.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
@@ -308,12 +322,44 @@ def rating(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def comment(request, pk):
-    user = User.objects.get(slug=pk)
+def rate_user_list(request, user):
+    user = User.objects.get(slug=user)
+    profile = Profile.objects.get(user=user)
+    scores = Score.objects.filter(owner=profile)
+    serializer = ScoreSerializer(scores, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def comment(request):
+    user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user) 
     comment = Score.objects.filter(reciever=profile)
     serializer = ScoreSerializer(comment, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['POST','GET'])
+@permission_classes([AllowAny])
+def comments_billlig(request):
+    if request.method == 'GET':
+        comments = CommentUser.objects.filter(is_approved=True)[:5]
+        serializer = CommentSerializer(comments, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    if request.method == 'POST':
+        try:
+            user = Token.objects.get(pk=request.data.get('token')).user
+            profile = Profile.objects.get(user=user)
+        except:
+            user = None
+            profile = None
+        data = request.data
+        serializer = CommentDeserializer(data=data)
+        if serializer.is_valid():
+            serializer.save(owner=profile)
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors)
 
 
 @api_view(['POST'])
