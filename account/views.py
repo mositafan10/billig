@@ -69,7 +69,7 @@ def signup(request):
         otp = generate_otp()
         print(otp)
         set_otp(new_phone_number, otp)
-        # send_sms(new_phone_number, otp)
+        send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
     
 
@@ -144,7 +144,7 @@ def reset_password(request):
         otp = generate_otp()
         print(otp)
         set_otp(phone_number, otp)
-        # send_sms(phone_number, otp)
+        send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
         raise AuthenticationFailed(detail="این شماره موبایل در سایت موجود نیست")
