@@ -19,7 +19,7 @@ from .permissions import IsOwnerProfileOrReadOnly
 from advertise.models import Offer 
 from datetime import datetime
 
-from core.utils import validate_phonenumber, generate_otp, verify_otp, set_otp, send_sms
+from core.utils import validate_phonenumber, generate_otp, verify_otp, set_otp, send_sms, locate_ip
 
 
 @api_view(['GET'])
@@ -62,15 +62,16 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 def signup(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
-    user = User.objects.filter(phone_number=new_phone_number).count()
-    if user == 0:
-        otp = generate_otp()
-        set_otp(new_phone_number, otp)
-        send_sms(phone_number, otp)
-        return HttpResponse(status=200)
-    else:
+    try:
+        user = User.objects.get(phone_number=new_phone_number)
         raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
-
+    except:
+        otp = generate_otp()
+        print(otp)
+        set_otp(new_phone_number, otp)
+        # send_sms(new_phone_number, otp)
+        return HttpResponse(status=200)
+    
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -141,8 +142,9 @@ def reset_password(request):
     try:
         user = User.objects.get(phone_number=phone_number)
         otp = generate_otp()
+        print(otp)
         set_otp(phone_number, otp)
-        send_sms(phone_number, otp)
+        # send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
         raise AuthenticationFailed(detail="این شماره موبایل در سایت موجود نیست")
@@ -177,6 +179,12 @@ def update_user(request):
         except:
             country = None
         try:
+            name = request.data.get("name")
+            user.name = name
+            print(user.name)
+        except:
+            country = None
+        try:
             city = City.objects.get(pk=request.data.get("city"))
             profile.city = city
         except:
@@ -197,6 +205,7 @@ def update_user(request):
         except :
             account_number = None
         profile.save()
+        user.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
 
@@ -325,7 +334,7 @@ def rating(request):
 def rate_user_list(request, user):
     user = User.objects.get(slug=user)
     profile = Profile.objects.get(user=user)
-    scores = Score.objects.filter(owner=profile)
+    scores = Score.objects.filter(reciever=profile)
     serializer = ScoreSerializer(scores, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -395,8 +404,8 @@ def social(request):
         
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def social_pub(request, pk):
-    user = User.objects.get(slug=pk)
+def social_pub(request, slug):
+    user = User.objects.get(slug=slug)
     profile = Profile.objects.get(user=user)
     social_list = Social.objects.filter(profile=profile)
     serializer = SocialSerializer(social_list, many=True)
@@ -405,7 +414,7 @@ def social_pub(request, pk):
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
-def social_delete(request, pk):
-    social = Social.objects.get(pk=pk)
+def social_delete(request, slug):
+    social = Social.objects.get(slug=slug)
     social.delete()
     return HttpResponse(status=204)

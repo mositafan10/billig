@@ -79,7 +79,7 @@ class OfferSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ('slug','price','parcel_price','status','description','sender','sender_id','sender_avatar','receiver_avatar','receiver','receiver_id','packet_slug', 'packet_title')
+        fields = ('slug','price','parcel_price','status','description','sender','sender_id','sender_avatar','receiver_avatar','receiver','receiver_id','packet_slug', 'packet_title', 'buy')
 
 
 class OfferDeserializer(serializers.ModelSerializer):
@@ -98,7 +98,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 class BookmarkDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ('id','packet_slug','packet','packet_title')
+        fields = ('slug','packet_slug','packet','packet_title')
 
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -110,7 +110,7 @@ class ReportSerializer(serializers.ModelSerializer):
 class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = PacketPicture
-        fields = ('id','image_file',)
+        fields = ('slug','image_file',)
 
 
 class BuyinfoSerializer(serializers.ModelSerializer):

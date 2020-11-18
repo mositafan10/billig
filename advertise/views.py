@@ -10,12 +10,12 @@ from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotAcceptable, NotFound, PermissionDenied
+from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 
-from account.models import User, Country, City
+from account.models import User, Country, City, Profile
 
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -45,6 +45,7 @@ def packet_list(request, country):
 @api_view(['POST'])
 def packet_add(request):
     user = User.objects.get(pk=request.user.id)
+    profile = Profile.objects.get(user=user)
     buy = request.data.get('buy')
     data = request.data
     serializer = PacketDeserializer(data=data)
@@ -64,6 +65,7 @@ def packet_add(request):
                 return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
             return JsonResponse(serializer1.errors, status=400)
         return JsonResponse(serializer.data, status=201)
+        profile.billig_done += 1
     return JsonResponse(serializer.errors, status=400)
 
 
@@ -124,9 +126,12 @@ def packet_edit(request, slug):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
-        packet.status = '8'
-        packet.save()
-        return HttpResponse(status=204)
+        if packet.status == 3 or packet.status == 4 or packet.status == 5 or packet.status == 6 :
+            raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
+        else:
+            packet.status = '8'
+            packet.save()
+            return HttpResponse(status=204)
 
 
 @parser_classes([MultiPartParser, FormParser, JSONParser])
@@ -134,6 +139,7 @@ def packet_edit(request, slug):
 @api_view(['POST'])
 def travel_add(request):
     user = User.objects.get(pk=request.user.id)
+    profile = Profile.objects.get(user=user)
     flight_date_end = request.data.get("flight_date_end")
     flight_date_start = request.data.get("flight_date_start")
     departure = Country.objects.get(pk=request.data.get("departure"))
@@ -153,6 +159,7 @@ def travel_add(request):
                 destination=departure,
                 destination_city=departure_city
                 )
+        profile.travel_done += 1
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
    
@@ -285,7 +292,7 @@ def upload_file(request):
     http = request.META['REMOTE_ADDR'] 
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save() 
-    return JsonResponse({"id": newdoc.id})
+    return JsonResponse({"id": newdoc.slug})
 
 
 @api_view(['GET'])
@@ -328,7 +335,7 @@ def offer(request):
         raise NotAcceptable(detail="برای هر آگهی فقط یک پیشنهاد مجاز است")
     
   
-@permission_classes([IsAuthenticated]) # TODO is need owner of object
+@permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def offer_update(request):
     slug = request.data.get('slug')
@@ -338,19 +345,22 @@ def offer_update(request):
         offer.price = price
         offer.save()
     if (request.data.get('status')):
-        status = request.data.get('status')
-        offer.status = status
-        offer.save()
+        offer.status = request.data.get('status')
         if(status == 8):
             offer.packet.offer_count -= 1
-            offer.save()
+        offer.save()
+    if (request.data.get('parcel_price')):
+        parcel_price = request.data.get('parcel_price')
+        buyinfo = Buyinfo.objects.get(packet=offer.packet)
+        buyinfo.price = parcel_price
+        buyinfo.save()
     return HttpResponse(status=200)
 
 
 @permission_classes([AllowAny])        
 @api_view(['GET'])
-def get_picture(request, pk):
-    picture = PacketPicture.objects.get(pk=pk)
+def get_picture(request, slug):
+    picture = PacketPicture.objects.get(slug=slug)
     serializer = PictureSerializer(picture)
     return JsonResponse(serializer.data, safe=False)
 

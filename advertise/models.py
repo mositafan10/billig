@@ -27,7 +27,7 @@ class Packet(BaseModel):
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
     phonenumber_visible = models.BooleanField(default=False)
-    picture = models.IntegerField(default=1)
+    picture = models.CharField(default=1, max_length=8)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
@@ -127,7 +127,7 @@ class Offer(BaseModel):
                 self.packet.offer_count += 1
 
             #update packet state due to offer state
-            if (self.status > 1 and self.status != 8): 
+            if (self.status != 1 and self.status != 0 and self.status != 8): 
                 self.packet.status = self.status
             self.packet.save()
             super().save(*args, **kwargs)
@@ -193,6 +193,10 @@ class Offer(BaseModel):
     def parcel_price(self):
         return self.packet.packet_info.get().price
     
+    @property
+    def buy(self):
+        return self.packet.buy
+    
 
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
@@ -224,6 +228,7 @@ class Report(BaseModel):
 class PacketPicture(BaseModel):
     image_file = models.FileField(upload_to='images/%Y/%m',)
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
+    slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
         return str(self.id)
@@ -238,7 +243,7 @@ class PacketPicture(BaseModel):
 
 
 class Buyinfo(BaseModel):
-    packet = models.ForeignKey('Packet', on_delete=models.CASCADE, related_name="packet_info")
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_info")
     link = models.CharField(max_length=100)
     price = models.PositiveIntegerField(default=0)
 

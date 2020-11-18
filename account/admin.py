@@ -9,7 +9,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('id','user','country','city')
+    list_display = ('id','user','country','city', 'travel_done', 'billlig_done' )
     list_filter = ('country','city')
 
 

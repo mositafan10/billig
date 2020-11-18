@@ -94,7 +94,7 @@ def add_massage(request, chatid):
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
         # send_chat_notification(receiver)
-        return JsonResponse({"id": newdoc.id})
+        return JsonResponse({"id": newdoc.slug})
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():

@@ -65,10 +65,12 @@ class Profile (BaseModel):
     score = models.DecimalField(default=0.0, max_digits=3, decimal_places=1)
     scores_count = models.PositiveIntegerField(default=0)
     comment_count = models.PositiveIntegerField(default=0)
+    travel_done = models.PositiveIntegerField(default=0)
+    billlig_done = models.PositiveIntegerField(default=0)
     account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     account_owner = models.CharField(max_length=50, blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
     
     def __str__(self):
         return str(self.id)
@@ -80,6 +82,10 @@ class Profile (BaseModel):
     @property
     def phone_number(self):
         return str(self.user.phone_number)
+    
+    @property
+    def joined_at(self):
+        return str(self.create_at)
     
     
 class Score(BaseModel):

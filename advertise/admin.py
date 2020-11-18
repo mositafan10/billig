@@ -84,7 +84,7 @@ class ReportAdmin(admin.ModelAdmin):
 
 @register(PacketPicture)
 class PacketPictureAdmin(admin.ModelAdmin):
-    list_display = ('id','image_file','packet')
+    list_display = ('id', 'slug' ,'image_file','packet')
     
 
 @register(Buyinfo)

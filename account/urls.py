@@ -24,6 +24,6 @@ urlpatterns = [
     path('newsletter/', views.newsletter, name='newsletter'),
     path('userinfo/', views.get_user_info, name='user_info'),
     path('socials/', views.social, name='social'),
-    path('socials/<str:pk>', views.social_pub, name='social'),
-    path('social/<str:pk>', views.social_delete, name='social_delete'),
+    path('socials/<str:slug>', views.social_pub, name='social'),
+    path('social/<str:slug>', views.social_delete, name='social_delete'),
 ]

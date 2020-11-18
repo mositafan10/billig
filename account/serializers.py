@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('level','score','picture','name')
+        fields = ('level','score','picture','name','travel_done','joined_at')
 
 class PrivateProfileSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
@@ -60,7 +60,7 @@ class SocialSerializer(serializers.ModelSerializer):
     account_type = serializers.CharField(source='get_account_type_display')
     class Meta:
         model = Social
-        fields = ('id','account_type','address')
+        fields = ('slug','account_type','address')
 
 class SocialDeserializer(serializers.ModelSerializer):
     class Meta:

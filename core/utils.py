@@ -2,11 +2,11 @@ from django.core.cache import cache
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.exceptions import APIException
 from Basteh.settings import kavenegar_api
-import random, requests, string
+import random, requests, string, json
 
 
 def generate_otp():
-    return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(3)))
+    return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(2)))
 
 def set_otp(phone_number, otp):
     key = '%s' % (phone_number)
@@ -17,8 +17,6 @@ def verify_otp(phone_number, otp):
     return cache.get(key) == otp
 
 
-# find attacker 
-# what happened when same time request is received ?
 def send_sms(phone_number, otp):
     text = "کد تایید بیلیگ: {}".format(otp)
     try:
@@ -31,15 +29,13 @@ def send_sms(phone_number, otp):
     except APIException as e: 
         pass
     except HTTPException as e: 
-        pass
-    
+        pass    
     
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size
         KB_limit = 1000
         if KB_limit < filesize:
             raise ValidationError("Max File Size is 500kb")
-            # should be translated TODO
 
 
 def validate_phonenumber(phone_number):
@@ -53,12 +49,15 @@ def validate_phonenumber(phone_number):
 
 
 def locate_ip(ip):
-    r = requests.get('http://ip-api.com/json/{}'.format(ip))
-    if r.status == "success":
-        return r.country
+    r = requests.get('http://ip-api.com/json/{}'.format(ip)).json()
+    country = None
+    if r['status'] == "success":
+        country = r["country"]
+    return country
+    
 
 
 def generate_slug():
-    return ''.join(str(random.choice(string.ascii_uppercase + string.ascii_lowercase)) for _ in range(6))
+    return ''.join(str(random.choice(string.ascii_uppercase + string.ascii_lowercase)) for _ in range(8))
 
 

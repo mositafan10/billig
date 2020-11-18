@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'www.billlig.com',
+    'billlig.com',
     '193.141.64.9',
 ]
 
