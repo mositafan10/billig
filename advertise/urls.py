@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     path('packets/', views.packet_add, name='packet_add'),
     path('packets/<str:country>/', views.packet_list, name='packet_list'),
-    path('packet/<str:slug>/', views.packet_detail, name='packet_detail'),
+    path('packet/<str:slug>/', views.packet_edit, name='packet_detail'),
     path('bookmarks/<str:slug>/', views.bookmark, name='bookmark'),
     path('bookmarks/', views.bookmark_list, name='bookmark_list'),
     path('travel/', views.travel_add, name='travel_add'),

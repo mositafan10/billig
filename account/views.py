@@ -67,7 +67,6 @@ def signup(request):
         raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
-        print(otp)
         set_otp(new_phone_number, otp)
         send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
@@ -142,7 +141,6 @@ def reset_password(request):
     try:
         user = User.objects.get(phone_number=phone_number)
         otp = generate_otp()
-        print(otp)
         set_otp(phone_number, otp)
         send_sms(phone_number, otp)
         return HttpResponse(status=200)
@@ -181,7 +179,6 @@ def update_user(request):
         try:
             name = request.data.get("name")
             user.name = name
-            print(user.name)
         except:
             country = None
         try:

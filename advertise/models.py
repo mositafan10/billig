@@ -10,14 +10,14 @@ from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug
 from core.constant import *
 
-import string
+import string, json
 
 
 class Packet(BaseModel):
     title = models.CharField(max_length=50)
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
-    origin_country = models.ForeignKey(Country, on_delete = models.PROTECT, related_name="origin_country")
-    origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city")
+    origin_country = models.ForeignKey(Country, on_delete = models.PROTECT, related_name="origin_country", default=1)
+    origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city", default=1)
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
@@ -76,6 +76,8 @@ class Packet(BaseModel):
             super().save(*args, **kwargs)
 
         
+
+        
 class Travel(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     departure = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="depar_country")
@@ -113,6 +115,7 @@ class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel_ads")
     price = models.PositiveIntegerField()
+    parcelPrice = models.PositiveIntegerField()
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
     status = models.IntegerField(choices=Offer, default=0)
@@ -146,6 +149,17 @@ class Offer(BaseModel):
                 self.packet.status = self.status
                 self.packet.save()
                 super().save(*args, **kwargs)
+            elif self.status == 1:
+                shouldPacketChange = False
+                packet = self.packet
+                offers = Offer.objects.filter(packet=packet)
+                for offer in offers:
+                    if offer.status == 2:
+                        shouldPacketChange = True
+                if shouldPacketChange:
+                    self.packet.status = self.status
+                    self.packet.save()
+                super().save(*args, **kwargs)
             else:
                 return None
         
@@ -166,10 +180,18 @@ class Offer(BaseModel):
     @property
     def sender_id(self):
         return self.travel.owner.id
+
+    @property
+    def sender_slug(self):
+        return self.travel.owner.slug
     
     @property
     def receiver_id(self):
         return self.packet.owner.id
+
+    @property
+    def receiver_slug(self):
+        return self.packet.owner.slug
     
     @property
     def sender_avatar(self):
@@ -194,8 +216,23 @@ class Offer(BaseModel):
         return self.packet.packet_info.get().price
     
     @property
+    def parcel_price_offer(self):
+        return self.parcelPrice
+
+    @property
     def buy(self):
         return self.packet.buy
+
+    @property
+    def travel_info(self):
+        data = {
+            "origin" : self.travel.departure.name,
+            "origin_city" : self.travel.departure_city.name,
+            "destination" : self.travel.destination.name,
+            "destination_city" : self.travel.destination_city.name,
+            "flight_date" : self.travel.flight_date_start
+        }
+        return data
     
 
 class Bookmark(BaseModel):

@@ -15,7 +15,7 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 
 from account.models import User, Country, City, Profile
 
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -88,27 +88,32 @@ def user_packet_list(request):
         return JsonResponse(serializer.data)
 
 
-@permission_classes([AllowAny])
-@api_view(['GET'])
-def packet_detail(request, slug):
-    try:
-        packet = Packet.objects.get(slug=slug)
-        packet.visit_count += 1
-        packet.save()
-        serilaizer = PacketSerializer(packet)
-        return JsonResponse(serilaizer.data, safe=False)
-    except Packet.DoesNotExist:
-        return HttpResponse(status=404)
+# @permission_classes([AllowAny])
+# @api_view(['GET'])
+# def packet_detail(request, slug):
+#     try:
+#         packet = Packet.objects.get(slug=slug)
+#         packet.visit_count += 1
+#         packet.save()
+#         serilaizer = PacketSerializer(packet)
+#         return JsonResponse(serilaizer.data, safe=False)
+#     except Packet.DoesNotExist:
+#         return HttpResponse(status=404)
 
 
-@permission_classes([IsAuthenticated])
-@api_view(['PUT', 'DELETE'])
+@permission_classes([AllowAny, IsAuthenticated])
+@api_view(['PUT', 'DELETE','GET'])
 def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
     except Packet.DoesNotExist:
         return HttpResponse(status=404)
-    if request.method == 'PUT':
+    if request.method == 'GET':
+        packet.visit_count += 1
+        packet.save()
+        serilaizer = PacketSerializer(packet)
+        return JsonResponse(serilaizer.data, safe=False)
+    if request.method == 'PUT' and IsAuthenticated: # TODO change permission to owner
         data = request.data
         serializer = PacketSerializer1(data=data)
         if serializer.is_valid():
@@ -122,10 +127,11 @@ def packet_edit(request, slug):
             packet.dimension = request.data.get('dimension')
             packet.suggested_price = request.data.get('suggested_price')
             packet.buy = request.data.get('buy')
+            packet.description = request.data.get('description')
             packet.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
-    elif request.method == 'DELETE':
+    elif request.method == 'DELETE' and IsAuthenticated: # TODO change permission to owner
         if packet.status == 3 or packet.status == 4 or packet.status == 5 or packet.status == 6 :
             raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
         else:
@@ -318,10 +324,6 @@ def offer(request):
     offer = Offer.objects.filter(travel=travel, packet=packet)
     if offer.count() == 0 :
         if packet.owner != user :
-            price = request.data.get("price")
-            description = request.data.get("description")
-            travel_slug = request.data.get("travel")
-            travel = Travel.objects.get(slug=travel_slug)
             data = request.data
             serializer = OfferDeserializer(data=data)
             if serializer.is_valid():
@@ -343,17 +345,15 @@ def offer_update(request):
     if (request.data.get('price')):
         price = request.data.get('price')
         offer.price = price
-        offer.save()
     if (request.data.get('status')):
-        offer.status = request.data.get('status')
+        status = request.data.get('status')
+        offer.status = status
         if(status == 8):
             offer.packet.offer_count -= 1
-        offer.save()
-    if (request.data.get('parcel_price')):
-        parcel_price = request.data.get('parcel_price')
-        buyinfo = Buyinfo.objects.get(packet=offer.packet)
-        buyinfo.price = parcel_price
-        buyinfo.save()
+    if (request.data.get('parcelPrice')):
+        parcelPrice = request.data.get('parcelPrice')
+        offer.parcelPrice = parcelPrice
+    offer.save()
     return HttpResponse(status=200)
 
 

@@ -107,11 +107,16 @@ class Score(BaseModel):
     def owner_name(self):
         return self.owner.user.name
 
+    @property
+    def owner_slug(self):
+        return self.owner.user.slug
+
     def save(self, *args, **kwargs):
-        scores_count = self.reciever.scores_count
-        self.reciever.score = (self.reciever.score * scores_count + self.score)/(scores_count + 1)
-        self.reciever.scores_count += 1
-        self.reciever.save()
+        if self.score: 
+            scores_count = self.reciever.scores_count
+            self.reciever.score = (self.reciever.score * scores_count + self.score)/(scores_count + 1)
+            self.reciever.scores_count += 1
+            self.reciever.save()
         super().save(*args, **kwargs)
 
 
