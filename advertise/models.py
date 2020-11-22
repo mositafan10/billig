@@ -16,8 +16,9 @@ import string, json
 class Packet(BaseModel):
     title = models.CharField(max_length=50)
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
-    origin_country = models.ForeignKey(Country, on_delete = models.PROTECT, related_name="origin_country", default=1)
-    origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city", default=1)
+    origin_country = models.ForeignKey(Country, on_delete = models.PROTECT, related_name="origin_country", null=True, blank=True)
+    origin_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="origin_city", null=True, blank=True)
+    no_matter_origin = models.BooleanField(default=False) 
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.IntegerField(choices=PACKET_CATEGORY)
@@ -32,7 +33,7 @@ class Packet(BaseModel):
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.IntegerField(choices=PACKET_STATUS, default=10)
+    status = models.IntegerField(choices=PACKET_STATUS, default=0)
  
     def __str__(self):
         return str(self.id)
@@ -115,7 +116,7 @@ class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel_ads")
     price = models.PositiveIntegerField()
-    parcelPrice = models.PositiveIntegerField()
+    parcelPrice = models.PositiveIntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
     status = models.IntegerField(choices=Offer, default=0)

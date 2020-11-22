@@ -67,8 +67,6 @@ class Profile (BaseModel):
     comment_count = models.PositiveIntegerField(default=0)
     travel_done = models.PositiveIntegerField(default=0)
     billlig_done = models.PositiveIntegerField(default=0)
-    account_number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
-    account_owner = models.CharField(max_length=50, blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     is_approved = models.BooleanField(default=True)
     
@@ -179,4 +177,5 @@ class CommentUser(BaseModel):
     @property
     def name(self):
         return str(self.owner.user.name)
+
 

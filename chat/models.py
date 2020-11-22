@@ -2,15 +2,15 @@ from django.db import models
 from django.db.models import Q
 from account.models import User, BaseModel, Profile
 from advertise.models import Offer
-from .utils import generate_slug
 from datetime import datetime
-from .utils import generate_slug
+from core.utils import generate_slug
 
  
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer")
+    not_seen = models.PositiveIntegerField()
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
 
     def __str__(self):
@@ -72,6 +72,7 @@ class Massage(BaseModel):
     picture = models.FileField(blank=True, null=True, upload_to='images/chat/%Y/%m')
     chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     first_day = models.BooleanField(default=False)
+    is_seen = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
@@ -90,21 +91,21 @@ class Massage(BaseModel):
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
 
-    def save(self, *args, **kwargs):
-        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
-        count = massages.count()
-        if count != 0 :
-            last_massage_date = massages[0].create_at
-        else :
-            self.first_day = True
+    # def save(self, *args, **kwargs):
+    #     massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
+    #     count = massages.count()
+    #     if count != 0 :
+    #         last_massage_date = massages[0].create_at
+    #     else :
+    #         self.first_day = True
 
-        self.chat_id.updated_at = datetime.now()
-        self.chat_id.save()
-        super().save(*args, **kwargs)
-        if ( count != 0):
-            if (last_massage_date.date() != self.create_at.date()):
-                self.first_day = True
-                self.save() 
+    #     self.chat_id.updated_at = datetime.now()
+    #     self.chat_id.save()
+    #     super().save(*args, **kwargs)
+    #     if ( count != 0):
+    #         if (last_massage_date.date() != self.create_at.date()):
+    #             self.first_day = True
+    #             self.save() 
     
   
 

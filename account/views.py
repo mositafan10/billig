@@ -415,3 +415,6 @@ def social_delete(request, slug):
     social = Social.objects.get(slug=slug)
     social.delete()
     return HttpResponse(status=204)
+
+
+

@@ -315,7 +315,6 @@ def offer_list(request, slug):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 def offer(request):
     slug = request.data.get("slug")
     user = User.objects.get(pk=request.user.id)

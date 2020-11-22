@@ -29,12 +29,12 @@ class PrivateProfileSerializer(serializers.ModelSerializer):
     city = CitySerializer()
     class Meta:
         model = Profile
-        fields = ('phone_number','country','city','email','level','score','scores_count','comment_count','account_number','picture','name')
+        fields = ('phone_number','country','city','email','level','score','scores_count','comment_count','picture','name')
 
 class ProfileDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('country','city','email','account_number','account_owner','picture','name')
+        fields = ('country','city','email','picture','name')
 
 
 class LimitedProfileSerializer(serializers.ModelSerializer):

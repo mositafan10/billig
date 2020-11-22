@@ -1,12 +1,11 @@
-import requests
 from advertise.models import Travel
+import requests
 
-def pay_to_traveler(user, amount, payment_number):
-    iban = Profile.objects.get(user=user).account_number
+def pay_to_traveler(user, amount, payment_number, account_number):
     travel = Travel.objects.get(slug=payment_number)
     data = {
         "amount": amount,
-        "iban": iban,
+        "iban": account_number,
         "payment_number": payment_number
     }
     r = requests.post('https://api.vandar.io/v2.1/business/{business}/settlement/store', data=data).json()

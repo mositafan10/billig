@@ -45,6 +45,10 @@ def get_id(request):
 def chat_list(request):
     user = User.objects.get(pk=request.user.id)
     chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-updated_at')
+    for chat in chats:
+        counter = Massage.objects.filter(chat_id=chat, is_seen=False).exclude(owner=user).count()
+        chat.not_seen = counter
+        chat.save()
     serializer = ConversationSerializer(chats, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -53,7 +57,11 @@ def chat_list(request):
 @permission_classes([permissions.IsAuthenticated])
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    massages = Massage.objects.filter(chat_id=chatid).order_by('create_at')
+    massages = Massage.objects.filter(chat_id=chatid).order_by('create_at') 
+    for massage in massages:
+        if massage.owner != user and massage.is_seen == False:
+            massage.is_seen = True
+            massage.save()
     serializer = MassageSerializer(massages, many=True)
     return JsonResponse(serializer.data, safe=False)
     
@@ -62,10 +70,8 @@ def massage_list(request, chatid):
 @permission_classes([permissions.IsAuthenticated])
 def create_conversation(request):
     sender = User.objects.get(pk=request.user.id)
-    offer_slug = request.data.get('offer')
-    offer = Offer.objects.get(slug=offer_slug)
-    receiver_id = request.data.get('receiver')
-    receiver = User.objects.get(pk=receiver_id)
+    offer = Offer.objects.get(slug=request.data.get('offer'))
+    receiver = User.objects.get(slug=request.data.get('receiver'))
     conversation, is_created = Conversation.objects.get_or_create(offer=offer)
     if offer.description != "" and is_created :
         massage = Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
@@ -85,16 +91,16 @@ def conversation_info(request, pk):
 @permission_classes([permissions.IsAuthenticated])
 def add_massage(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    conversation = Conversation.objects.get(pk=chatid)
+    conversation = Conversation.objects.get(slug=chatid)
     receiver = conversation.receiver
-    if (user == receiver):
+    if user == receiver:
         receiver = conversation.sender
     data = request.data
     if request.FILES.get('billig') != None:
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
         # send_chat_notification(receiver)
-        return JsonResponse({"id": newdoc.slug})
+        return HttpResponse(status=200)
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():

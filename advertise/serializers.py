@@ -18,7 +18,7 @@ class PacketDeserializer(serializers.ModelSerializer):
         model = Packet
         fields = (
             'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other', 'buy',
-            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name', 'phonenumber_visible',)
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name', 'phonenumber_visible','no_matter_origin')
 
 
 class PacketSerializer(serializers.ModelSerializer):
@@ -33,7 +33,7 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = (
-            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy', 'phonenumber_visible',
+            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy', 'phonenumber_visible','no_matter_origin',
             'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link','phonenumber'
         )
 
@@ -47,7 +47,7 @@ class PacketSerializer1(serializers.ModelSerializer):
         model = Packet
         fields = (
             'slug','title','owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
-            'category','dimension','weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status',
+            'category','dimension','weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status','no_matter_origin',
         )
 
     
@@ -79,7 +79,7 @@ class OfferSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
     class Meta:
         model = Offer
-        fields = ('slug','price','parcel_price','parcel_price_offer','status','description','sender','sender_slug','sender_avatar','receiver_avatar','receiver','receiver_id','packet_slug', 'packet_title', 'buy', 'travel_info')
+        fields = ('slug','price','parcel_price','parcel_price_offer','status','description','sender','sender_slug','sender_avatar','receiver_avatar','receiver','receiver_slug','packet_slug', 'packet_title', 'buy', 'travel_info')
 
 
 class OfferDeserializer(serializers.ModelSerializer):

@@ -1,4 +1,5 @@
 from django.core.cache import cache
+
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.exceptions import APIException
 from Basteh.settings import kavenegar_api
@@ -28,8 +29,6 @@ def send_sms(phone_number, otp):
         r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
     except APIException as e: 
         pass
-    except HTTPException as e: 
-        pass    
     
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size

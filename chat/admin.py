@@ -4,7 +4,7 @@ from .models import Massage, Conversation
 
 @register(Massage)
 class MassageAdmin(admin.ModelAdmin):
-    list_display = ('owner','chat_id','text','picture','create_at')
+    list_display = ('owner','chat_id','text','picture','is_seen','create_at')
    
 
 @register(Conversation)

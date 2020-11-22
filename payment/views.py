@@ -1,13 +1,15 @@
 from django.http import JsonResponse, HttpResponse
+from django.utils.translation import gettext_lazy as _
 from django.shortcuts import render
 
-from account.models import User, Profile
+from account.models import User 
 from advertise.models import Travel, Offer
-from .models import TransactionReceive, TransactionSend 
-from .serializer import TransactionReceiveSerializer
+from .models import TransactionReceive, TransactionSend , Bank
+from .serializer import TransactionReceiveSerializer, BankSerializer
 
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import NotFound
 
 import requests, json
 from Basteh.settings import vandar_api
@@ -35,7 +37,7 @@ def send(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def verify(request):
     user = User.objects.get(pk=request.user.id)
     token = request.data.get('token')
@@ -59,7 +61,7 @@ def verify(request):
             "status" : True
         }
         transaction = TransactionReceive.objects.create(**data) 
-        transaction.save()
+        transaction.save() # is this needed ?
         serializer = TransactionReceiveSerializer(transaction)
         return JsonResponse(serializer.data)
     else :
@@ -80,12 +82,13 @@ def transactions_list(request):
 def pay_to_traveler(request):
     user = User.objects.get(pk=request.user.id)
     amount = request.data.get('amount')
-    payment_number = request.data.get('payment_number')
-    travel = Travel.objects.get(slug=payment_number)
+    bank = Bank.objects.get(slug=request.data.get('account'))
+    travel = Travel.objects.get(slug=request.data.get('travel'))
     data = {
         "user" : user,
         "travel": travel,
-        "amount" : amount
+        "amount" : amount,
+        "bank": bank
     }
     travel.status = 8
     travel.save()
@@ -93,4 +96,26 @@ def pay_to_traveler(request):
     transaction.save()
     return HttpResponse(status=201)
     
+    
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+def accounts(request):
+    if request.method == 'GET':
+        try:
+            user = User.objects.get(pk=request.user.id)
+            bank = Bank.objects.filter(user=user)
+            serializer = BankSerializer(bank, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        except Bank.DoesNotExist:
+            raise NotFound(detail=_("اطلاعات حساب خود را وارد نمایید"))
+    if request.method == 'POST':
+        user = User.objects.get(pk=request.user.id)
+        data = request.data
+        serializer = BankSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors)
+
     

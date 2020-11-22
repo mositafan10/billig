@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from .models import TransactionReceive, TransactionSend
+from .models import TransactionReceive, TransactionSend, Bank
 
 
 @register(TransactionReceive)
@@ -13,4 +13,8 @@ class TransactionSendAdmin(admin.ModelAdmin):
     list_display = ('id','user','travel','amount','status','create_at')
     list_editable = ('status',)
 
+@register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ('id','slug','user','name','number','is_active')
+    list_editable = ('is_active',)
 
