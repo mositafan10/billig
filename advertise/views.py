@@ -88,21 +88,8 @@ def user_packet_list(request):
         return JsonResponse(serializer.data)
 
 
-# @permission_classes([AllowAny])
-# @api_view(['GET'])
-# def packet_detail(request, slug):
-#     try:
-#         packet = Packet.objects.get(slug=slug)
-#         packet.visit_count += 1
-#         packet.save()
-#         serilaizer = PacketSerializer(packet)
-#         return JsonResponse(serilaizer.data, safe=False)
-#     except Packet.DoesNotExist:
-#         return HttpResponse(status=404)
-
-
 @permission_classes([AllowAny, IsAuthenticated])
-@api_view(['PUT', 'DELETE','GET'])
+@api_view(['PUT','DELETE','GET'])
 def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
@@ -128,6 +115,21 @@ def packet_edit(request, slug):
             packet.suggested_price = request.data.get('suggested_price')
             packet.buy = request.data.get('buy')
             packet.description = request.data.get('description')
+            packet.phonenumber_visible = request.data.get('phonenumber_visible')
+            packet.no_matter_origin = request.data.get('no_matter_origin')
+            if request.data.get('buy'):
+                link = request.data.get('parcel_link')
+                print(link)
+                price = request.data.get('parcel_price')
+                print(price)
+                try:
+                    info = Buyinfo.objects.get(packet=packet)
+                    info.link = link
+                    info.price = price
+                except:
+                    info = Buyinfo.objects.create(packet=packet, price=request.data.get('parcel_price'), link=request.data.get('link'))
+                    print("Bye")
+                info.save()
             packet.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)

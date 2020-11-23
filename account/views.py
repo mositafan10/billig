@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import gettext_lazy as _
 
@@ -62,13 +62,19 @@ class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
 def signup(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
+    password = request.data.get('password')
+    try:
+        password_validation.validate_password(password)
+    except:
+        raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
     try:
         user = User.objects.get(phone_number=new_phone_number)
         raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
+        print(otp)
         set_otp(new_phone_number, otp)
-        send_sms(new_phone_number, otp)
+        # send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
     
 
@@ -212,7 +218,7 @@ def update_user(request):
 @api_view(['GET','POST'])
 def country_list(request):
     if request.method == 'GET':
-        countries = Country.objects.all()
+        countries = Country.objects.all().exclude(is_active=False)
         serializer = CountrySerializer(countries, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':

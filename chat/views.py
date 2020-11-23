@@ -21,7 +21,7 @@ from datetime import datetime
 
 from fcm_django.models import FCMDevice
 
-from .notification import send_chat_notification
+from core.utils import send_chat_notification
 
 
 
@@ -99,13 +99,13 @@ def add_massage(request, chatid):
     if request.FILES.get('billig') != None:
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
-        # send_chat_notification(receiver)
+        send_chat_notification(receiver)
         return HttpResponse(status=200)
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, chat_id=conversation)
-            # send_chat_notification(receiver)
+            send_chat_notification(receiver)
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializer.errors, status=400)
 
@@ -121,7 +121,6 @@ def get_lastlogin(request):
 def notification_register(request):
     token = request.data.get('token','')
     user = User.objects.get(pk=request.user.id)
-    # device = request.headers['user-agent']
     data = {
         "registration_id":token,
         "user":user

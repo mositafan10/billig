@@ -1,10 +1,11 @@
 from django.core.cache import cache
-
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework.exceptions import APIException
+from fcm_django.models import FCMDevice
+
+from rest_framework.exceptions import APIException, NotFound
+
 from Basteh.settings import kavenegar_api
 import random, requests, string, json
-
 
 def generate_otp():
     return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(2)))
@@ -16,7 +17,6 @@ def set_otp(phone_number, otp):
 def verify_otp(phone_number, otp):
     key = '%s' % (phone_number)
     return cache.get(key) == otp
-
 
 def send_sms(phone_number, otp):
     text = "کد تایید بیلیگ: {}".format(otp)
@@ -54,9 +54,46 @@ def locate_ip(ip):
         country = r["country"]
     return country
     
-
-
 def generate_slug():
     return ''.join(str(random.choice(string.ascii_uppercase + string.ascii_lowercase)) for _ in range(8))
 
+def send_chat_notification(user):
+    try:
+        fcm = FCMDevice.objects.filter(user=user)
+        for i in fcm:
+            header = {
+                'Content-Type'  : 'application/json',
+                'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+            data = {
+                "notification": {
+                    "title": "بیلیگ",
+                    "body": "شما پیام جدید دارید",
+                    "click_action": "https://billlig.com/profile/inbox",
+                    "icon": "http://url-to-an-icon/icon.png"
+                    },
+                "to": i.registration_id
+                }
+            r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
+    except FCMDevice.DoesNotExist:
+        raise NotFound(detail="پیدا نشد")
 
+
+def send_offer_notification(user):
+    try:
+        fcm = FCMDevice.objects.filter(user=user)
+        for i in fcm:
+            header = {
+                'Content-Type'  : 'application/json',
+                'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+            data = {
+                "notification": {
+                    "title": "بیلیگ",
+                    "body": "شما پیام جدید دارید",
+                    "click_action": "https://billlig.com/profile/inbox",
+                    "icon": "http://url-to-an-icon/icon.png"
+                    },
+                "to": i.registration_id
+                }
+            r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
+    except FCMDevice.DoesNotExist:
+        raise NotFound(detail="پیدا نشد")
