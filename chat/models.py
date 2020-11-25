@@ -4,22 +4,17 @@ from account.models import User, BaseModel, Profile
 from advertise.models import Offer
 from datetime import datetime
 from core.utils import generate_slug
+from core.constant import Massage_TYPE
 
  
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer")
     not_seen = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
 
     def __str__(self):
         return str(self.slug)
-
-    def save(self, *args, **kwargs):
-        self.sender = self.offer.travel.owner
-        self.receiver = self.offer.packet.owner
-        super().save(*args, **kwargs)
 
     @property
     def receiver_name(self):
@@ -63,7 +58,7 @@ class Conversation(BaseModel):
 
     @property
     def packet_title(self):
-        return self.offer.packet.title
+        return self.offer.packet.title  
 
 
 class Massage(BaseModel):
@@ -73,6 +68,7 @@ class Massage(BaseModel):
     chat_id = models.ForeignKey(Conversation, on_delete=models.CASCADE)
     first_day = models.BooleanField(default=False)
     is_seen = models.BooleanField(default=False)
+    type_text = models.IntegerField(choices=Massage_TYPE, default=0)
 
     def __str__(self):
         return str(self.id)
@@ -91,21 +87,22 @@ class Massage(BaseModel):
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
 
-    # def save(self, *args, **kwargs):
-    #     massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
-    #     count = massages.count()
-    #     if count != 0 :
-    #         last_massage_date = massages[0].create_at
-    #     else :
-    #         self.first_day = True
+    def save(self, *args, **kwargs):
+        massages = Massage.objects.filter(chat_id=self.chat_id).order_by('-create_at')
+        count = massages.count()
+        if count != 0 :
+            last_massage_date = massages[0].create_at
+        else :
+            self.first_day = True
 
-    #     self.chat_id.updated_at = datetime.now()
-    #     self.chat_id.save()
-    #     super().save(*args, **kwargs)
-    #     if ( count != 0):
-    #         if (last_massage_date.date() != self.create_at.date()):
-    #             self.first_day = True
-    #             self.save() 
+        self.chat_id.updated_at = datetime.now()
+        self.chat_id.save()
+        super().save(*args, **kwargs)
+
+        if count != 0:
+            if (last_massage_date.date() != self.create_at.date()):
+                self.first_day = True
+                super().save(*args, **kwargs)
     
   
 

@@ -16,6 +16,7 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 from account.models import User, Country, City, Profile
 
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from .utils import send_to_chat
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
 
@@ -205,6 +206,9 @@ def travel_detail(request, pk):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
+        offers = travel.travel_ads.filter()
+        for offer in offers :
+            offer.delete()
         travel.delete()
         return HttpResponse(status=204)
 
@@ -322,7 +326,7 @@ def offer(request):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
-    offer = Offer.objects.filter(travel=travel, packet=packet)
+    offer = Offer.objects.filter(travel=travel, packet=packet).exclude(status=8)
     if offer.count() == 0 :
         if packet.owner != user :
             data = request.data
@@ -350,7 +354,7 @@ def offer_update(request):
         status = request.data.get('status')
         offer.status = status
         if(status == 8):
-            offer.packet.offer_count -= 1
+            offer.delete()
     if (request.data.get('parcelPrice')):
         parcelPrice = request.data.get('parcelPrice')
         offer.parcelPrice = parcelPrice

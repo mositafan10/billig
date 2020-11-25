@@ -4,7 +4,7 @@ from .models import TransactionReceive, TransactionSend, Bank
 class TransactionReceiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransactionReceive
-        fields = ('transId','amount','create_at')
+        fields = ('transId','amount','cardNumber','paymentDate','create_at')
 
 
 class TransactionSendSerializer(serializers.ModelSerializer):

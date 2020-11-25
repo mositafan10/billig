@@ -69,3 +69,12 @@ Social_Type = [
     ('3','Twitter')
 ]
 
+
+#chat_constant
+
+Massage_TYPE = [
+        (0,'p2p'),
+        (1,'admin')
+]
+
+WelcomeText = "سلام . به بیلیگ پست خوش‌ آمدید. در اینجا می‌توانید سوالات خود را از ما بپرسید"

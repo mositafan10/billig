@@ -17,9 +17,11 @@ from .models import Profile, Score, City, Country, User, Social
 from .serializers import *
 from .permissions import IsOwnerProfileOrReadOnly
 from advertise.models import Offer 
+from chat.models import Conversation, Massage
 from datetime import datetime
 
 from core.utils import validate_phonenumber, generate_otp, verify_otp, set_otp, send_sms, locate_ip
+from core.constant import WelcomeText
 
 
 @api_view(['GET'])
@@ -99,7 +101,10 @@ def signup_complete(request):
         otps = str(otp)
         if verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
-            profile, is_created = Profile.objects.get_or_create(user=user)
+            admin = User.objects.get(pk=1)
+            profile = Profile.objects.create(user=user)
+            conversation = Conversation.objects.create(sender=admin, receiver=user)
+            massage = Massage.objects.create(chat_id=conversation, text=_(WelcomeText), owner=admin)
             if is_created is True:
                 user.set_password(password)
                 user.name = name
@@ -316,7 +321,7 @@ def change_password(request):
 def rating(request):
     owner_user = User.objects.get(pk=request.user.id)
     owner = Profile.objects.get(user=owner_user)
-    receiver_user = User.objects.get(pk=request.data.get('receiver'))
+    receiver_user = User.objects.get(slug=request.data.get('receiver'))
     receiver = Profile.objects.get(user=receiver_user)
     slug = request.data.get('slug')
     offer = Offer.objects.get(slug=slug)

@@ -56,6 +56,8 @@ def verify(request):
             "user" : user,
             "amount" : r['amount'],
             "transId": r['transId'],
+            "cardNumber": r['cardNumber'],
+            "paymentDate": r['paymentDate'],
             "packet": packet,
             "factorNumber": factorNumber,
             "status" : True

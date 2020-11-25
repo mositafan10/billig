@@ -8,9 +8,10 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug
-from core.constant import *
-
+from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, PACKET_CATEGORY, DIMENSION
+from chat.utils import send_to_chat
 import string, json
+from .utils import send_to_chat
 
 
 class Packet(BaseModel):
@@ -75,8 +76,12 @@ class Packet(BaseModel):
                 raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
         else:
             super().save(*args, **kwargs)
-
         
+        # defualt picture
+        if self.picture == 1:
+            picture = PacketPicture.objects.get(pk=1)
+            self.picture = picture.slug
+            super().save(*args, **kwargs)
 
         
 class Travel(BaseModel):
@@ -93,7 +98,7 @@ class Travel(BaseModel):
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
-    status = models.IntegerField(choices=TRAVEL_STATUS, default=0)
+    status = models.IntegerField(choices=TRAVEL_STATUS, default=2)
     
     def __str__(self):
         return str(self.id)
@@ -124,7 +129,14 @@ class Offer(BaseModel):
     def __str__(self):
         return str(self.id)
 
+    def delete(self, *args, **kwargs):
+        self.packet.offer_count -= 1
+        self.packet.save()
+        super().delete(*args, **kwargs)
+
     def save(self, *args, **kwargs):
+        send_to_chat(self.status, self.slug)
+
         #increase offer count of the packet
         if self.packet.status == 1:
             if self.status == 0:
@@ -166,9 +178,28 @@ class Offer(BaseModel):
         
         if self.status == 3 :
             self.travel.approved_packet += 1
-            self.travel.income += self.price
+            self.travel.income += (self.price + self.parcel_price) 
+            self.travel.status = 3
             self.travel.save()
             super().save(*args, **kwargs)
+
+        if self.status == 6 :
+            offers = Offer.objects.filter(travel=self.travel).exclude(status=8)
+            for offer in offers :
+                if (
+                    offer.status == 0
+                    or offer.status == 1 
+                    or offer.status == 2
+                    or offer.status == 3
+                    or offer.status == 4
+                    or offer.status == 5
+                    ):
+                    return None
+                else:
+                    self.travel.status = 4
+                    self.travel.save()
+                    super().save(*args, **kwargs)
+
 
     @property
     def receiver(self):
@@ -239,6 +270,7 @@ class Offer(BaseModel):
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="bookmark_packet")
+    slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
         return str(self.id)

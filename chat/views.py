@@ -1,43 +1,21 @@
-import json
-
-from .serializers import MassageSerializer, ConversationSerializer, ConversationDeserializer, MassageDeserializer
-from .models import Massage, Conversation
-from account.models import User
-from advertise.models import Offer
-
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from fcm_django.models import FCMDevice
 from rest_framework import status, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.pagination import PageNumberPagination
 
-
-from datetime import datetime
-
-from fcm_django.models import FCMDevice
-
+from account.models import User
+from advertise.models import Offer
 from core.utils import send_chat_notification
-
-
-
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def get_id(request):
-    user = User.objects.get(pk=request.user.id)
-    receiver = request.data.get("receiver")
-    chats = Conversation.objects.all()
-    serializer = ConversationSerializer(chats)
-    if chats is not None:
-        return JsonResponse(serializer.data)
-    else:
-        new_chat = Conversation(receiver=receiver, sender=user)
-        new_chat.save()
-        return JsonResponse({"id": new_chat.chat_id})
+from datetime import datetime
+from .serializers import MassageSerializer, ConversationSerializer, ConversationDeserializer, MassageDeserializer
+from .models import Massage, Conversation
+import json
 
 
 @api_view(['GET'])
@@ -69,10 +47,12 @@ def massage_list(request, chatid):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_conversation(request):
-    sender = User.objects.get(pk=request.user.id)
     offer = Offer.objects.get(slug=request.data.get('offer'))
-    receiver = User.objects.get(slug=request.data.get('receiver'))
-    conversation, is_created = Conversation.objects.get_or_create(offer=offer)
+    conversation, is_created = Conversation.objects.get_or_create(
+        slug=offer.slug,
+        sender=offer.travel.owner,
+        receiver=offer.packet.owner
+        )
     if offer.description != "" and is_created :
         massage = Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
         massage.save()

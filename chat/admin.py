@@ -9,5 +9,5 @@ class MassageAdmin(admin.ModelAdmin):
 
 @register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ('slug','sender', 'receiver','offer','offer_state','create_at','updated_at')
+    list_display = ('slug','sender','receiver','create_at','updated_at')
 

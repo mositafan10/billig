@@ -34,6 +34,8 @@ class TransactionReceive(BaseModel):
     amount = models.FloatField()
     status = models.BooleanField()
     factorNumber = models.CharField(max_length=8)
+    cardNumber = models.CharField(max_length=16)
+    paymentDate = models.CharField(max_length=20)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     
     def __str__(self):
