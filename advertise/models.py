@@ -11,7 +11,7 @@ from core.utils import generate_slug
 from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, PACKET_CATEGORY, DIMENSION
 from chat.utils import send_to_chat
 import string, json
-from .utils import send_to_chat
+from .utils import send_to_chat, send_admin_text
 
 
 class Packet(BaseModel):
@@ -34,7 +34,7 @@ class Packet(BaseModel):
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.IntegerField(choices=PACKET_STATUS, default=0)
+    status = models.IntegerField(choices=PACKET_STATUS, default=10)
  
     def __str__(self):
         return str(self.id)
@@ -70,6 +70,8 @@ class Packet(BaseModel):
     
     def save(self, *args, **kwargs):
 
+        send_admin_text(self.status, self.title, self.owner )
+
         #chack same country
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
@@ -82,6 +84,7 @@ class Packet(BaseModel):
             picture = PacketPicture.objects.get(pk=1)
             self.picture = picture.slug
             super().save(*args, **kwargs)
+
 
         
 class Travel(BaseModel):
@@ -131,6 +134,7 @@ class Offer(BaseModel):
 
     def delete(self, *args, **kwargs):
         self.packet.offer_count -= 1
+        self.travel.offer_count -= 1
         self.packet.save()
         super().delete(*args, **kwargs)
 
@@ -138,10 +142,11 @@ class Offer(BaseModel):
         if self.status != 0:
             send_to_chat(self.status, self.slug)
 
-        #increase offer count of the packet
+        #increase offer count of the packet and travel
         if self.packet.status == 1:
             if self.status == 0:
                 self.packet.offer_count += 1
+                self.travel.offer_count += 1
 
             #update packet state due to offer state
             if (self.status != 1 and self.status != 0 and self.status != 8): 

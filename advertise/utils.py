@@ -15,3 +15,16 @@ def send_to_chat(status, chat_id):
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=1, text=text, owner=user)
+
+
+def send_admin_text(status, packet, receiver):
+    admin = User.objects.get(pk=1)
+    conversation = Conversation.objects.get(sender=admin, receiver=receiver)
+    switcher = {
+        0 : "آگهی {} منتشر شد. این آگهی به مدت یک ماه بر روی سایت قرار خواهد گرفت".format(packet),
+        11 : "آگهی {} به دلیل عدم مطابقت با سیاست‌های بیلیگ منتشر نشد.".format(packet),
+    }
+    text = switcher.get(status," ")
+    Massage.objects.create(chat_id=conversation, type_text=0, text=text, owner=admin)
+
+
