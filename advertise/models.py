@@ -135,7 +135,8 @@ class Offer(BaseModel):
         super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        send_to_chat(self.status, self.slug)
+        if self.status != 0:
+            send_to_chat(self.status, self.slug)
 
         #increase offer count of the packet
         if self.packet.status == 1:

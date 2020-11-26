@@ -10,7 +10,7 @@ from core.constant import Massage_TYPE
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    not_seen = models.PositiveIntegerField(default=0)
+    not_seen = models.PositiveIntegerField(default=0) # not completed
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
 
     def __str__(self):

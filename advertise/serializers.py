@@ -116,5 +116,5 @@ class PictureSerializer(serializers.ModelSerializer):
 class BuyinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyinfo
-        fields = ('link','price','packet')
+        fields = ('link','price')
 
