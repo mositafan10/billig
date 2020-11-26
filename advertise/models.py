@@ -70,7 +70,6 @@ class Packet(BaseModel):
     
     def save(self, *args, **kwargs):
 
-        send_admin_text(self.status, self.title, self.owner )
 
         #chack same country
         if self.origin_country == self.destination_country:
@@ -84,6 +83,9 @@ class Packet(BaseModel):
             picture = PacketPicture.objects.get(pk=1)
             self.picture = picture.slug
             super().save(*args, **kwargs)
+            
+        send_admin_text(self.status, self.title, self.owner)
+
 
 
         
