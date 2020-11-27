@@ -38,16 +38,6 @@ Offer = [
         (8, "حذف شده"), # done by offer owner : offer_update in advertise.view
 ] 
 
-# for other choice we need a field to be filled by user about category TODO
-PACKET_CATEGORY = [
-        (0, "مدارک و مستندات"),
-        (1, "کتاب و مجله"),
-        (2, "لوازم الکترونیکی"),
-        (3, "کفش و پوشاک"),
-        (4, "لوازم آرایشی و بهداشتی"),
-        (5, "دارو"),
-        (6, "سایر موارد"),
-]
 
 DIMENSION = [
         (0, "کوچک"),

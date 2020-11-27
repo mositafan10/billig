@@ -17,4 +17,5 @@ urlpatterns = [
     path('user_packet/', views.packet_list_user, name='packet_list_user'),
     path('get_picture/<str:slug>/', views.get_picture, name='get_picture'),
     path('getuseroffer/', views.get_user_offer, name='get_user_offer'),
+    path('categoryList/<int:level>', views.category_list, name='category-list'),
 ]

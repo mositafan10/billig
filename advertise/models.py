@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug
-from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, PACKET_CATEGORY, DIMENSION
+from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, DIMENSION
 from chat.utils import send_to_chat
 import string, json
 from .utils import send_to_chat, send_admin_text
@@ -22,7 +22,7 @@ class Packet(BaseModel):
     no_matter_origin = models.BooleanField(default=False) 
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
-    category = models.IntegerField(choices=PACKET_CATEGORY)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name="category")
     category_other = models.CharField(max_length=50, blank=True, null=True)
     weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=DIMENSION)
@@ -69,12 +69,10 @@ class Packet(BaseModel):
         return self.id 
     
     def save(self, *args, **kwargs):
-
-
         #chack same country
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
-                raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
+                raise PermissionDenied(detail=_("امکان یکی بودن مبدا و مقصد وجود ندارد"))
         else:
             super().save(*args, **kwargs)
         
@@ -83,8 +81,10 @@ class Packet(BaseModel):
             picture = PacketPicture.objects.get(pk=1)
             self.picture = picture.slug
             super().save(*args, **kwargs)
-            
-        send_admin_text(self.status, self.title, self.owner)
+        
+        #send admin text
+        if self.status == 0 or self.status == 10 or self.status == 11:
+            send_admin_text(self.status, self.title, self.owner)
 
 
 
@@ -149,6 +149,7 @@ class Offer(BaseModel):
             if self.status == 0:
                 self.packet.offer_count += 1
                 self.travel.offer_count += 1
+                self.travel.save()
 
             #update packet state due to offer state
             if (self.status != 1 and self.status != 0 and self.status != 8): 
@@ -327,3 +328,13 @@ class Buyinfo(BaseModel):
 
     def __str__(self):
         return str(self.id)
+
+
+class Category(BaseModel):
+    name = models.CharField(max_length=30)
+    picture = models.ImageField(upload_to='images/category')
+    level = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.name)

@@ -111,7 +111,7 @@ def packet_edit(request, slug):
             packet.origin_city = City.objects.get(id=request.data.get('origin_city'))
             packet.destination_country = Country.objects.get(id=request.data.get('destination_country'))
             packet.destination_city = City.objects.get(id=request.data.get('destination_city'))
-            packet.category = request.data.get('category')
+            packet.category = Category.objects.get(pk=request.data.get('category'))
             packet.weight = request.data.get('weight')
             packet.dimension = request.data.get('dimension')
             packet.suggested_price = request.data.get('suggested_price')
@@ -366,9 +366,14 @@ def offer_update(request):
 @permission_classes([AllowAny])        
 @api_view(['GET'])
 def get_picture(request, slug):
-    picture = PacketPicture.objects.get(slug=slug)
-    serializer = PictureSerializer(picture)
-    return JsonResponse(serializer.data, safe=False)
+    if slug == '1':
+        picture = PacketPicture.objects.get(pk=1)
+        serializer = PictureSerializer(picture)
+        return JsonResponse(serializer.data, safe=False)
+    else:
+        picture = PacketPicture.objects.get(slug=slug)
+        serializer = PictureSerializer(picture)
+        return JsonResponse(serializer.data, safe=False)
 
 
 @api_view(['GET'])
@@ -379,3 +384,10 @@ def get_user_offer(request):
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  
+def category_list(request, level):
+    categories = Category.objects.filter(is_active=True, level=level)
+    serializer = CategorySerializer(categories, many=True)
+    return JsonResponse(serializer.data, safe=False)

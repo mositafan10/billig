@@ -74,9 +74,8 @@ def signup(request):
         raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
-        print(otp)
         set_otp(new_phone_number, otp)
-        # send_sms(new_phone_number, otp)
+        send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
     
 
@@ -156,19 +155,19 @@ def reset_password(request):
         send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail="این شماره موبایل در سایت موجود نیست")
+        raise AuthenticationFailed(detail=_("شماره موبایل در سایت یافت نشد"))
 
 
 @permission_classes([AllowAny])
 @api_view(['POST'])
 def confirm_reset_password(request):
     phone_number = request.data.get('phone_number')
-    otp = request.data.get('otp')
     user = User.objects.get(phone_number=phone_number)
+    otp = request.data.get('otp')
     if verify_otp(phone_number, otp):
         user.set_password(otp)
         user.save()
-        return JsonResponse({"detail":"رمز عبور به کد ارسال شده به شما تغییر پیدا کرد."},status=200)
+        return JsonResponse({"detail":_("رمز عبور به کد ارسال شده تغییر پیدا کرد.")},status=200)
     else:
         raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
 
@@ -308,12 +307,21 @@ def change_password(request):
     user = User.objects.get(pk=request.user.id)
     current_password = request.data.get('current_password')
     if not user.check_password(current_password):
-        raise AuthenticationFailed(detail=".رمز عبور فعلی اشتباه است. مجدد تلاش کنید")
+        raise AuthenticationFailed(detail=_(".رمز عبور فعلی اشتباه است"))
     else:
         new_password = request.data.get('new_password')
-        user.set_password(new_password)
-        user.save()
-        return HttpResponse(status=200)
+        try:
+            password_validation.validate_password(new_password)
+            if current_password == new_password:
+                raise ValidationError(detail=_(".رمز عبور جدید مشابه قبلی است"))
+            else:
+                user.set_password(new_password)
+                user.save()
+                return HttpResponse(status=200)
+        except:
+            raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
+
+        
 
 
 @api_view(['POST'])

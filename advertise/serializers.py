@@ -1,17 +1,12 @@
 from rest_framework import serializers
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category
 from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
-PACKET_CATEGORY = [
-        (0, "مدارک و مستندات"),
-        (1, "کتاب و مجله"),
-        (2, "لوازم الکترونیکی"),
-        (3, "کفش و پوشاک"),
-        (4, "لوازم آرایشی و بهداشتی"),
-        (5, "دارو"),
-        (6, "سایر موارد"),
-]
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id','name','picture')
 
 class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
@@ -27,7 +22,7 @@ class PacketSerializer(serializers.ModelSerializer):
     destination_country = CountrySerializer()
     destination_city = CitySerializer()
     status = serializers.CharField(source='get_status_display')
-    category = serializers.CharField(source='get_category_display')
+    category = CategorySerializer()
     dimension = serializers.CharField(source='get_dimension_display')
     
     class Meta:
@@ -42,6 +37,7 @@ class PacketSerializer1(serializers.ModelSerializer):
     origin_city = serializers.StringRelatedField()
     origin_country = serializers.StringRelatedField()
     destination_city = serializers.IntegerField()
+    category = serializers.IntegerField()
     status = serializers.StringRelatedField()
     class Meta:
         model = Packet
@@ -66,7 +62,7 @@ class TravelDeserializer(serializers.ModelSerializer):
     departure_city = CitySerializer()
     destination = CountrySerializer()
     destination_city = CitySerializer()
-
+    
     class Meta:
         model = Travel
         fields = (
@@ -117,4 +113,6 @@ class BuyinfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Buyinfo
         fields = ('link','price')
+
+
 

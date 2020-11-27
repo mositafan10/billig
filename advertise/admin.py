@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category
 from account.models import Country, City
 
 
@@ -90,6 +90,12 @@ class PacketPictureAdmin(admin.ModelAdmin):
 @register(Buyinfo)
 class BuyinfoAdmin(admin.ModelAdmin):
     list_display = ( 'id', 'packet', 'link', 'price')
+
+
+@register(Category)
+class BuyinfoAdmin(admin.ModelAdmin):
+    list_display = ( 'id', 'name', 'is_active')
+    list_editable = ('is_active',)
 
 
 

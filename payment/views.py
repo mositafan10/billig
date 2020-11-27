@@ -63,7 +63,6 @@ def verify(request):
             "status" : True
         }
         transaction = TransactionReceive.objects.create(**data) 
-        transaction.save() # is this needed ?
         serializer = TransactionReceiveSerializer(transaction)
         return JsonResponse(serializer.data)
     else :

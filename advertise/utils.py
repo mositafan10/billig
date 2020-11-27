@@ -1,5 +1,6 @@
 from chat.models import Massage, Conversation
 from account.models import User
+from core.utils import send_chat_notification
 
 def send_to_chat(status, chat_id):
     user = User.objects.get(pk=1)
@@ -22,6 +23,7 @@ def send_admin_text(status, packet, receiver):
     conversation = Conversation.objects.get(sender=admin, receiver=receiver)
     switcher = {
         0 : "آگهی {} منتشر شد. این آگهی به مدت یک ماه بر روی سایت قرار خواهد گرفت".format(packet),
+        10 : "آگهی {} در انتظار تایید است. خواهشمندیم منتظر بمانید.".format(packet),
         11 : "آگهی {} به دلیل عدم مطابقت با سیاست‌های بیلیگ منتشر نشد.".format(packet),
     }
     text = switcher.get(status," ")
