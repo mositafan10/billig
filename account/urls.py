@@ -26,4 +26,5 @@ urlpatterns = [
     path('socials/', views.social, name='social'),
     path('socials/<str:slug>', views.social_pub, name='social'),
     path('social/<str:slug>', views.social_delete, name='social_delete'),
+    path('tokenValidation/', views.token_validation, name='token_validation'),
 ]

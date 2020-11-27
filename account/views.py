@@ -436,4 +436,15 @@ def social_delete(request, slug):
     return HttpResponse(status=204)
 
 
+        
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def token_validation(request):
+    token = request.data.get('token')
+    try:
+        token = Token.objects.get(key=token)
+        return JsonResponse({"valid":True})
+    except Token.DoesNotExist:
+        return JsonResponse({"valid":False})
 
+    
