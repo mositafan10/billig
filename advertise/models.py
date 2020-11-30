@@ -34,7 +34,7 @@ class Packet(BaseModel):
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.IntegerField(choices=PACKET_STATUS, default=10)
+    status = models.IntegerField(choices=PACKET_STATUS, default=0)
  
     def __str__(self):
         return str(self.id)
