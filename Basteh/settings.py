@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     'chat',
     'payment',
     'fcm_django',
-    'sorl.thumbnail',
 ]
 
 ALLOWED_HOSTS = [
