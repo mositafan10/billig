@@ -1,4 +1,7 @@
 #advertise_constant
+
+Expire_Date_Billlig = 30 # days
+
 TRAVEL_STATUS = [
         (0, "در انتظار تایید"),
         (1, "عدم تایید"),

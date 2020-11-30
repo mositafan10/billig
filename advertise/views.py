@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import gettext_lazy as _
+from datetime import timedelta, datetime
 
 from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
@@ -14,6 +15,7 @@ from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotFound,
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 
 from account.models import User, Country, City, Profile
+from core.constant import Expire_Date_Billlig
 
 from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
 from .utils import send_to_chat
@@ -26,7 +28,7 @@ import json
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request, country):
-    packet = Packet.objects.all().exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
+    packet = Packet.objects.all().filter(create_at__gte=datetime.now()-timedelta(days=Expire_Date_Billlig)).exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
     if (country == "all"):
         country_packet = packet
     else:
