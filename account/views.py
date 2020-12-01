@@ -42,24 +42,7 @@ def user_profile_private(request, pk):
     return JsonResponse(serializer.data, safe=False)
 
 
-class ProfileListCreateView(generics.ListCreateAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def perform_create(self, serializer):
-        user = self.request.user
-        serializer.save(user=user)
-
-
-class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Profile.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated,IsOwnerProfileOrReadOnly]
-
-
 @api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([AllowAny])
 def signup(request): 
     phone_number = request.data.get('phone_number')
@@ -71,7 +54,7 @@ def signup(request):
         raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
     try:
         user = User.objects.get(phone_number=new_phone_number)
-        raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
+        raise AuthenticationFailed(detail=_(".این شماره قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
         set_otp(new_phone_number, otp)
@@ -80,11 +63,11 @@ def signup(request):
     
 
 @api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([AllowAny])
 def signup_complete(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
+    # Check ip and detect country of user 
     ip = request.META['REMOTE_ADDR'] 
     country_eng = locate_ip(ip)
     try:
@@ -93,15 +76,16 @@ def signup_complete(request):
         country = None
     password = request.data.get('password')
     name = request.data.get('name', '')
-    first_time = False
-    refresh = None
     otp = request.data.get('otp', '')
+    # For showing the welcome page in client side 
+    first_time = False
     if otp != '':
         otps = str(otp)
         if verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
-            admin = User.objects.get(pk=1)
             profile = Profile.objects.create(user=user)
+            # Create a chat conversation between admin and the user and send user welcome text
+            admin = User.objects.get(pk=1)
             conversation = Conversation.objects.create(sender=admin, receiver=user)
             massage = Massage.objects.create(chat_id=conversation, text=_(WelcomeText), owner=admin)
             if is_created is True:
@@ -112,6 +96,7 @@ def signup_complete(request):
                 profile.save()
                 first_time = True
                 token = Token.objects.create(user=user)
+                # Is this needed to send refresh in response ( I think not and that was for jwt ) TODO
                 return JsonResponse({"token": str(token.key),"refresh": str(token.key), "user": user.slug, "first_time": first_time})
             else:
                 raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
@@ -123,13 +108,11 @@ def signup_complete(request):
 
 
 @api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
 def login(request):
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
     password = request.data.get('password')
-    refresh = None
     first_time = False
     try:
         user = User.objects.get(phone_number=phone_number)
@@ -138,10 +121,11 @@ def login(request):
         user.last_login = datetime.now()
         user.save()
         token = Token.objects.get(user=user)
+        # Is this needed to send refresh in response ( I think not and that was for jwt ) TODO
         return JsonResponse({"token": str(token.key),
             "refresh": str(token.key), "user": user.slug, "first_time": first_time})
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail=".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید")        
+        raise AuthenticationFailed(detail=_(".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید"))        
 
 
 @permission_classes([AllowAny])
@@ -155,7 +139,7 @@ def reset_password(request):
         send_sms(phone_number, otp)
         return HttpResponse(status=200)
     except User.DoesNotExist:
-        raise AuthenticationFailed(detail=_("شماره موبایل در سایت یافت نشد"))
+        raise AuthenticationFailed(detail=_("شماره در سایت یافت نشد"))
 
 
 @permission_classes([AllowAny])
@@ -164,17 +148,17 @@ def confirm_reset_password(request):
     phone_number = request.data.get('phone_number')
     user = User.objects.get(phone_number=phone_number)
     otp = request.data.get('otp')
-    if verify_otp(phone_number, otp):
-        user.set_password(otp)
+    otps = str(otp)
+    if verify_otp(phone_number, otps):
+        user.set_password(otps)
         user.save()
         return JsonResponse({"detail":_("رمز عبور به کد ارسال شده تغییر پیدا کرد.")},status=200)
     else:
-        raise AuthenticationFailed(detail="عدد وارد شده اشتباه است")
+        raise AuthenticationFailed(detail="کد وارد شده اشتباه است")
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 def update_user(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user)
@@ -217,58 +201,19 @@ def update_user(request):
     return JsonResponse(serializer.errors, status=400)
 
 
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([permissions.AllowAny])
-@api_view(['GET','POST'])
-def country_list(request):
-    if request.method == 'GET':
-        countries = Country.objects.all().exclude(is_active=False)
-        serializer = CountrySerializer(countries, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
-        data = request.data
-        serializer = CountrySerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
- 
-
-@parser_classes([MultiPartParser, FormParser, JSONParser])
-@permission_classes([permissions.AllowAny])
-@api_view(['GET','POST'])
-def city_list(request, pk):
-    if request.method == 'GET':
-        cities = City.objects.filter(country=pk)
-        serializer = CitySerializer(cities, many=True)
-        return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
-        data = request.data
-        serializer = CitySerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-
-
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
-@permission_classes([IsAuthenticated])
-def friend_request(request):
-    request_by = User.objects.get(pk=request.user.id)
-    data = request.data
-    serializer = FollowSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save(follower = request_by)
-        return JsonResponse(serializer.data, status=201)
-    return JsonResponse(serializer.errors, status=400)
-
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def friend_list(request):
-    user = User.objects.get(pk=request.user.id)
-    friend = Follow.objects.filter(follower = user)
-    serializer = FollowSerializer(friend, many=True)
+def country_list(request):
+    countries = Country.objects.all().exclude(is_active=False)
+    serializer = CountrySerializer(countries, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+ 
+@permission_classes([permissions.AllowAny])
+@api_view(['GET'])
+def city_list(request, pk):
+    cities = City.objects.filter(country=pk)
+    serializer = CitySerializer(cities, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -292,6 +237,7 @@ def upload_file(request):
     return JsonResponse(str(profile.picture), safe=False)
  
 
+# Is this useable  TODO
 @permission_classes([IsAuthenticated]) 
 @api_view(['GET'])
 def logout(request):
@@ -322,8 +268,8 @@ def change_password(request):
             raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
 
         
-
-
+# There is extra query by profile. why ? TODO
+# Slug should send by url not by body TODO
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def rating(request):
@@ -335,7 +281,6 @@ def rating(request):
     offer = Offer.objects.get(slug=slug)
     score = request.data.get('score')
     text = request.data.get('comment')
-    receiver = Profile.objects.get(user=receiver_user)
     serializer = ScoreSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(owner=owner, reciever=receiver)
@@ -354,6 +299,7 @@ def rate_user_list(request, user):
     serializer = ScoreSerializer(scores, many=True)
     return JsonResponse(serializer.data, safe=False)
 
+# These are same TODO
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -398,7 +344,7 @@ def newsletter(request):
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializers.errors, status=400)
     else:
-        raise APIException(detail="ایمیل شما قبلا ثبت شده است")
+        raise APIException(detail=_("ایمیل شما قبلا ثبت شده است"))
 
 
 @api_view(['POST'])
@@ -408,7 +354,7 @@ def social(request):
     profile = Profile.objects.get(user=user)
     try:
         social = Social.objects.get(profile=profile, account_type=request.data.get("account_type"))
-        raise PermissionDenied(detail=_("این اکانت از قبل ایجاد شده است"))
+        raise PermissionDenied(detail=_("این اکانت قبلاً ایجاد شده است"))
     except Social.DoesNotExist:
         data= request.data
         serializer = SocialDeserializer(data=data)
@@ -436,7 +382,6 @@ def social_delete(request, slug):
     return HttpResponse(status=204)
 
 
-        
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def token_validation(request):

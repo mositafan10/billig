@@ -63,7 +63,7 @@ class OfferAdmin(admin.ModelAdmin):
 
 @register(Travel)
 class TravelAdmin(admin.ModelAdmin):
-    list_display = ('id','slug','owner_user','departure','destination','flight_date_start','flight_date_end','visit_count','status','create_at')
+    list_display = ('id','slug','owner_user','departure','destination','flight_date_start','flight_date_end','visit_count','offer_count','status','create_at')
     list_editable = ('status',)
     list_filter = ('departure','destination',)
     search_fields = ('owner',)

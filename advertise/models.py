@@ -38,10 +38,6 @@ class Packet(BaseModel):
  
     def __str__(self):
         return str(self.id)
-
-    def visit(self):
-        self.visit_count += 1
-        self.save()
     
     @property
     def owner_name(self):
@@ -73,20 +69,17 @@ class Packet(BaseModel):
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
                 raise PermissionDenied(detail=_("امکان یکی بودن مبدا و مقصد وجود ندارد"))
-        else:
-            super().save(*args, **kwargs)
         
         # defualt picture
         if self.picture == 1:
             picture = PacketPicture.objects.get(pk=1)
             self.picture = picture.slug
-            super().save(*args, **kwargs)
         
         #send admin text
         if self.status == 0 or self.status == 10 or self.status == 11:
             send_admin_text(self.status, self.title, self.owner)
-
-
+        
+        super().save(*args, **kwargs)
 
         
 class Travel(BaseModel):
@@ -132,7 +125,7 @@ class Offer(BaseModel):
     status = models.IntegerField(choices=Offer, default=0)
 
     def __str__(self):
-        return str(self.id)
+        return "%s --> %s" %(self.packet.owner,self.travel.owner)
 
     def delete(self, *args, **kwargs):
         self.packet.offer_count -= 1
@@ -282,7 +275,7 @@ class Bookmark(BaseModel):
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.packet.title)
 
     @property
     def packet_title(self):
@@ -310,7 +303,7 @@ class PacketPicture(BaseModel):
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.packet.title)
     
     def save(self, *args, **kwargs):
         MAX_FILE_SIZE = 10485760
@@ -327,7 +320,7 @@ class Buyinfo(BaseModel):
     price = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.packet.title)
 
 
 class Category(BaseModel):

@@ -11,8 +11,8 @@ from rest_framework import status, permissions
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import MethodNotAllowed, NotAcceptable, NotFound, PermissionDenied
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.exceptions import NotAcceptable, NotFound, PermissionDenied
+from rest_framework.pagination import PageNumberPagination
 
 from account.models import User, Country, City, Profile
 from core.constant import Expire_Date_Billlig
@@ -26,17 +26,19 @@ import json
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list(request, country):
+    # Send just last month orders ( one month expiration policy )
+    # The Order should be recheck ( updated_at instead of create_at ) TODO
     packet = Packet.objects.all().filter(create_at__gte=datetime.now()-timedelta(days=Expire_Date_Billlig)).exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
+    # Filter orders Based Country
     if (country == "all"):
         country_packet = packet
     else:
         try:
-            request_country =  Country.objects.get(eng_name=country)
+            request_country = Country.objects.get(eng_name=country)
             country_packet = packet.filter(Q(origin_country=request_country) | Q(destination_country=request_country))
-        except:
-            raise NotFound(detail=_("Country Not Found"))
+        except Country.DoesNotExist:
+            raise NotFound
     paginator = PageNumberPagination()
     paginator.page_size = 12
     result_page = paginator.paginate_queryset(country_packet, request)
@@ -68,28 +70,18 @@ def packet_add(request):
             return JsonResponse(serializer1.errors, status=400)
         else:
             serializer.save(owner=user)
-        return JsonResponse(serializer.data, status=201)
         profile.billig_done += 1
+        return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 def packet_list_user(request):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.filter(owner=user).exclude(status=8).order_by('-create_at')
     serializer = PacketSerializer(packet, many=True)
     return JsonResponse(serializer.data, safe=False)
-
-
-@permission_classes([AllowAny])
-@api_view(['GET'])
-def user_packet_list(request):
-    if request.method == 'GET':
-        packet = Packet.objects.all()
-        serializer = PacketSerializer(packet, many=True)
-        return JsonResponse(serializer.data)
 
 
 @permission_classes([AllowAny, IsAuthenticated])
@@ -98,13 +90,15 @@ def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
     except Packet.DoesNotExist:
-        return HttpResponse(status=404)
+        raise NotFound
     if request.method == 'GET':
+        # A repeted user should be removed by cache TODO
         packet.visit_count += 1
         packet.save()
         serilaizer = PacketSerializer(packet)
         return JsonResponse(serilaizer.data, safe=False)
-    if request.method == 'PUT' and IsAuthenticated: # TODO change permission to owner
+    # TODO change permission to owner   
+    if request.method == 'PUT' and IsAuthenticated: 
         data = request.data
         serializer = PacketSerializer1(data=data)
         if serializer.is_valid():
@@ -123,30 +117,29 @@ def packet_edit(request, slug):
             packet.no_matter_origin = request.data.get('no_matter_origin')
             if request.data.get('buy'):
                 link = request.data.get('parcel_link')
-                print(link)
                 price = request.data.get('parcel_price')
-                print(price)
                 try:
                     info = Buyinfo.objects.get(packet=packet)
                     info.link = link
                     info.price = price
                 except:
-                    info = Buyinfo.objects.create(packet=packet, price=request.data.get('parcel_price'), link=request.data.get('link'))
-                    print("Bye")
+                    info = Buyinfo.objects.create(packet=packet, price=price, link=link)
                 info.save()
             packet.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
-    elif request.method == 'DELETE' and IsAuthenticated: # TODO change permission to owner
+    # Change permission to owner TODO 
+    elif request.method == 'DELETE' and IsAuthenticated:
+        # Should check due to bussiness TODO
         if packet.status == 3 or packet.status == 4 or packet.status == 5 or packet.status == 6 :
             raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
         else:
+            # We can here delete the packet for ever TODO
             packet.status = '8'
             packet.save()
             return HttpResponse(status=204)
 
 
-@parser_classes([MultiPartParser, FormParser, JSONParser])
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def travel_add(request):
@@ -162,6 +155,7 @@ def travel_add(request):
     serializer = TravelSerializer(data=data)
     if serializer.is_valid():
         serializer.save(owner=user)
+        # Add double journey
         if flight_date_end != None:
             Travel.objects.create(
                 owner=user,
@@ -180,22 +174,20 @@ def travel_add(request):
 @api_view(['GET'])
 def travel_user_list(request):
     user = User.objects.get(pk=request.user.id)
-    travel = Travel.objects.filter(owner=user).order_by('-create_at')
+    travel = Travel.objects.filter(owner=user).exclude(status=5).order_by('-create_at')
     serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
     
 
+# permission should be test => if ok then deploy on packet-detail and packet update TODO
 @permission_classes([IsOwnerPacketOrReadOnly])
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['PUT','DELETE'])
 def travel_detail(request, pk):
     try:
         travel = Travel.objects.get(slug=pk)
     except Travel.DoesNotExist:
-        return HttpResponse(status=404)
-    if request.method == 'GET':
-        serializer = TravelDeserializer(travel)
-        return JsonResponse(serializer.data)
-    elif request.method == 'PUT':
+        raise NotFound
+    if request.method == 'PUT':
         user = User.objects.get(pk=request.user.id)
         data = request.data
         serializer = TravelSerializer(data=data)
@@ -209,46 +201,13 @@ def travel_detail(request, pk):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     elif request.method == 'DELETE':
+        # here should be check that a travel can be deleted or not ? TODO
+        # when travel could be deleted then the all its offers should be deleted
         offers = travel.travel_ads.filter()
         for offer in offers :
             offer.delete()
         travel.delete()
         return HttpResponse(status=204)
-
-
-@permission_classes([AllowAny])
-@api_view(['GET','POST'])
-def visit_packet(request, pk):
-    try:
-        packet = Packet.objects.get(pk=pk)
-    except Packet.DoesNotExist:
-        return HttpResponse(status=404)
-    model_name = "visit_packet"
-    ip = request.META.get("HTTP_REMOTE_ADDR")
-    key = "%s_%s" % (model_name, ip)
-    if not cache.get(key) == pk:
-        cache.set(key, pk, 4)
-        packet.visit()
-        return HttpResponse(status=201)
-    return HttpResponse(status=400)
-
-
-@permission_classes([AllowAny])
-@api_view(['GET','POST'])
-def visit_travel(request, pk):
-    try:
-        travel = Travel.objects.get(pk=pk)
-    except Travel.DoesNotExist:
-        return HttpResponse(status=404)
-    travel = Travel.objects.get(pk=pk)
-    model_name = "visit_travel"
-    ip = request.META.get("HTTP_REMOTE_ADDR")
-    key = "%s_%s" % (model_name, ip)
-    if not cache.get(key) == pk:
-        cache.set(key, pk, 4)
-        travel.visit()
-        return HttpResponse(status=201)
-    return HttpResponse(status=400)
 
 
 @permission_classes([IsAuthenticated])
@@ -268,8 +227,9 @@ def bookmark(request, slug):
             bookmark.delete()
             return HttpResponse(status=204)
         except Bookmark.DoesNotExist:
-            raise NotFound(detail="آگهی مورد نظر پیدا نشد")
+            raise NotFound(detail=_("آگهی مورد نظر پیدا نشد"))
         
+
 @permission_classes([IsAuthenticated])
 @api_view(['GET','POST'])
 def bookmark_list(request):
@@ -280,8 +240,10 @@ def bookmark_list(request):
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
         packet = Packet.objects.get(slug=request.data.get('packet'))
+        # check for owner of bookmark
         if packet.owner != user :
             bookmark = Bookmark.objects.filter(owner=user, packet=packet)
+            # check for whether the user bookmark this packet before or not 
             if bookmark.count() == 0 :
                 data = {
                     "packet": packet.id
@@ -295,19 +257,8 @@ def bookmark_list(request):
                 bookmark.delete()
                 return HttpResponse(status=204)
         else:
-            detail = "! این آگهی برای خودتان است"
-            raise NotAcceptable(detail)
-
-
-
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])
-@api_view(['POST'])
-def upload_file(request):
-    http = request.META['REMOTE_ADDR'] 
-    newdoc = PacketPicture(image_file = request.FILES.get('billig'))
-    newdoc.save() 
-    return JsonResponse({"id": newdoc.slug})
+            detail = _("! این آگهی برای خودتان است")
+            raise NotAcceptable(detail) # is this error correct ? TODO
 
 
 @api_view(['GET'])
@@ -315,8 +266,8 @@ def upload_file(request):
 def offer_list(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
-    except:
-        return HttpResponse(status=404)
+    except Packet.DoesNotExist:
+        raise NotFound
     offer = Offer.objects.filter(packet=packet).exclude(status="7").exclude(status="8").order_by('-create_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
@@ -329,6 +280,8 @@ def offer(request):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
+    # between which of offers we should serach ? TODO
+    # should be used "get" instead "filter" because there is just on offer between on packet and one travel. TODO
     offer = Offer.objects.filter(travel=travel, packet=packet).exclude(status=8)
     if offer.count() == 0 :
         if packet.owner != user :
@@ -336,15 +289,22 @@ def offer(request):
             serializer = OfferDeserializer(data=data)
             if serializer.is_valid():
                 serializer.save(packet=packet, travel=travel)
+                # can we increase offer_count of travel and packet here ? TODO ( I think yes : after save offer it can)
                 return JsonResponse(serializer.data, status=201)
             return JsonResponse(serializer.errors, status=400)
         else:
-            detail = "این آگهی برای خودتان است. امکان ثبت پیشنهاد وجود ندارد"
+            detail = _("این آگهی برای خودتان است!")
             raise NotAcceptable(detail)
     else:
-        raise NotAcceptable(detail="برای هر آگهی فقط یک پیشنهاد مجاز است")
+        detail=_("قبلا برای این اگهی پیشنهاد گذاشته‌اید.")
+        raise NotAcceptable(detail)
     
-  
+
+# This should be update just by two user : traveler and billliger.
+# So we need a custom permission here not is_authenticated TODO
+# Should edit url and insert slug into it not in body TODO
+# Should write with try/expection not by if TODO
+# Offer should be implement by delete method not post TODO
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def offer_update(request):
@@ -368,6 +328,7 @@ def offer_update(request):
 @permission_classes([AllowAny])        
 @api_view(['GET'])
 def get_picture(request, slug):
+    # Defualt picture 
     if slug == '1':
         picture = PacketPicture.objects.get(pk=1)
         serializer = PictureSerializer(picture)
@@ -393,3 +354,11 @@ def category_list(request, level):
     categories = Category.objects.filter(is_active=True, level=level)
     serializer = CategorySerializer(categories, many=True)
     return JsonResponse(serializer.data, safe=False)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def upload_file(request):
+    newdoc = PacketPicture(image_file = request.FILES.get('billig'))
+    newdoc.save() 
+    return JsonResponse({"id": newdoc.slug})

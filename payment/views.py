@@ -54,13 +54,13 @@ def verify(request):
         packet = offer.packet
         data = {
             "user" : user,
-            "amount" : r['amount'],
+            "packet": packet,
             "transId": r['transId'],
+            "amount" : r['amount'],
+            "status" : True,
+            "factorNumber": factorNumber,
             "cardNumber": r['cardNumber'],
             "paymentDate": r['paymentDate'],
-            "packet": packet,
-            "factorNumber": factorNumber,
-            "status" : True
         }
         transaction = TransactionReceive.objects.create(**data) 
         serializer = TransactionReceiveSerializer(transaction)
