@@ -70,7 +70,7 @@ def packet_add(request):
             return JsonResponse(serializer1.errors, status=400)
         else:
             serializer.save(owner=user)
-        profile.billig_done += 1
+        profile.billlig_done += 1
         return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
 
