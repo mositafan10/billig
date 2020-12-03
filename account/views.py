@@ -264,14 +264,17 @@ def change_password(request):
         new_password = request.data.get('new_password')
         try:
             password_validation.validate_password(new_password)
-            if current_password == new_password:
-                raise ValidationError(detail=_(".رمز عبور جدید مشابه قبلی است"))
-            else:
-                user.set_password(new_password)
-                user.save()
-                return HttpResponse(status=200)
         except:
-            raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
+            detail1={"detail" :_("رمز عبور باید شامل یک حرف باشد")}
+            raise ValidationError(detail1)
+        if current_password == new_password:
+            print("hi")
+            detail={"detail" :_(".رمز عبور جدید مشابه قبلی است")}
+            raise ValidationError(detail)
+        else:
+            user.set_password(new_password)
+            user.save()
+            return HttpResponse(status=200)
 
         
 # There is extra query by profile. why ? TODO

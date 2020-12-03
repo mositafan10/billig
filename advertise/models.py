@@ -290,6 +290,10 @@ class Bookmark(BaseModel):
     def packet_slug(self):
         return self.packet.slug
 
+    @property
+    def packet_picture(self):
+        return self.packet.picture
+
 
 class Report(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")

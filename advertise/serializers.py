@@ -94,7 +94,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 class BookmarkDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
-        fields = ('slug','packet_slug','packet','packet_title')
+        fields = ('slug','packet_slug','packet','packet_title','packet_picture')
 
 
 class ReportSerializer(serializers.ModelSerializer):
