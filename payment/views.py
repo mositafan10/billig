@@ -5,7 +5,7 @@ from django.shortcuts import render
 from account.models import User 
 from advertise.models import Travel, Offer
 from .models import TransactionReceive, TransactionSend , Bank
-from .serializer import TransactionReceiveSerializer, BankSerializer
+from .serializer import TransactionReceiveSerializer, TransactionSendSerializer ,BankSerializer
 
 from rest_framework.decorators import api_view , permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -46,6 +46,14 @@ def verify(request):
         "token" : token
     }
     r = requests.post('https://ipg.vandar.io/api/v3/verify', data=data).json()
+    # r = {
+    #     "status": 1,
+    #     "factorNumber": "fUcYJYyU",
+    #     "transId": "1234",
+    #     "amount": 123000,
+    #     "cardNumber": "622106******5803",
+    #     "paymentDate":"22.10.11",
+    # }
     if r['status'] == 1:
         factorNumber = r['factorNumber']
         offer = Offer.objects.get(slug=factorNumber)
@@ -75,6 +83,15 @@ def transactions_list(request):
     user = User.objects.get(pk=request.user.id)
     transactions = TransactionReceive.objects.filter(user=user).order_by('-create_at')
     serializer = TransactionReceiveSerializer(transactions, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cashout_list(request):
+    user = User.objects.get(pk=request.user.id)
+    transactions = TransactionSend.objects.filter(user=user).order_by('-create_at')
+    serializer = TransactionSendSerializer(transactions, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 

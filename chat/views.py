@@ -79,13 +79,13 @@ def add_massage(request, chatid):
     if request.FILES.get('billig') != None:
         newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
-        send_chat_notification(receiver)
+        send_chat_notification(receiver, 1)
         return HttpResponse(status=200)
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, chat_id=conversation)
-            send_chat_notification(receiver)
+            send_chat_notification(receiver, 1)
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializer.errors, status=400)
 

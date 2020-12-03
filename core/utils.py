@@ -58,46 +58,62 @@ def locate_ip(ip):
 def generate_slug():
     return ''.join(str(random.choice(string.ascii_uppercase + string.ascii_lowercase)) for _ in range(8))
 
-def send_chat_notification(user):
+def send_chat_notification(user,type_notif):
     try:
         fcm = FCMDevice.objects.filter(user=user)
-        for i in fcm:
-            header = {
-                'Content-Type'  : 'application/json',
-                'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
-            data = {
-                "notification": {
-                    "title": "بیلیگ",
-                    "body": "شما پیام جدید دارید",
-                    "click_action": "https://billlig.com/profile/inbox",
-                    "icon": "http://url-to-an-icon/icon.png"
-                    },
-                "to": i.registration_id
-                }
-            r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
-    except FCMDevice.DoesNotExist:
-        raise NotFound(detail="پیدا نشد")
+        if type_notif == 1 :
+            for i in fcm:
+                header = {
+                    'Content-Type'  : 'application/json',
+                    'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+                data = {
+                    "notification": {
+                        "title": "بیلیگ",
+                        "body": "شما پیام جدید دارید",
+                        "click_action": "https://billlig.com/profile/inbox",
+                        "icon": "https://billlig.com/dstatic//media/images/profile_picture/2020/11/0.png"
+                        },
+                    "to": i.registration_id
+                    }
+                r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
+        else:
+            for i in fcm:
+                header = {
+                    'Content-Type'  : 'application/json',
+                    'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+                data = {
+                    "notification": {
+                        "title": "بیلیگ",
+                        "body": "وضعیت پیشنهاد شما تغییر کرد",
+                        "click_action": "https://billlig.com/profile/inbox",
+                        "icon": "https://billlig.com/dstatic//media/images/profile_picture/2020/11/0.png"
+                        },
+                    "to": i.registration_id
+                    }
+                r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
 
-
-def send_offer_notification(user):
-    try:
-        fcm = FCMDevice.objects.filter(user=user)
-        for i in fcm:
-            header = {
-                'Content-Type'  : 'application/json',
-                'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
-            data = {
-                "notification": {
-                    "title": "بیلیگ",
-                    "body": "شما پیام جدید دارید",
-                    "click_action": "https://billlig.com/profile/inbox",
-                    "icon": "http://url-to-an-icon/icon.png"
-                    },
-                "to": i.registration_id
-                }
-            r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
     except FCMDevice.DoesNotExist:
-        raise NotFound(detail="پیدا نشد")
+        raise NotFound
+
+# def send_offer_notification(user):
+#     try:
+#         fcm = FCMDevice.objects.filter(user=user)
+#         for i in fcm:
+#             header = {
+#                 'Content-Type'  : 'application/json',
+#                 'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
+#             data = {
+#                 "notification": {
+#                     "title": "بیلیگ",
+#                     "body": "شما پیام جدید دارید",
+#                     "click_action": "https://billlig.com/profile/inbox",
+#                     "icon": "http://url-to-an-icon/icon.png"
+#                     },
+#                 "to": i.registration_id
+#                 }
+#             r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
+#     except FCMDevice.DoesNotExist:
+#         raise NotFound(detail="پیدا نشد")
 
 
     

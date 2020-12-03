@@ -27,7 +27,10 @@ from core.constant import WelcomeText
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def user_profile(request, pk):
-    user = User.objects.get(slug=pk)
+    try:
+        user = User.objects.get(slug=pk)
+    except User.DoesNotExist:
+        raise NotFound
     profile = Profile.objects.get(user=user)
     serializer = ProfileSerializer(profile)
     return JsonResponse(serializer.data, safe=False)
@@ -87,7 +90,10 @@ def signup_complete(request):
             # Create a chat conversation between admin and the user and send user welcome text
             admin = User.objects.get(pk=1)
             conversation = Conversation.objects.create(sender=admin, receiver=user)
-            massage = Massage.objects.create(chat_id=conversation, text=_(WelcomeText), owner=admin)
+            Massage.objects.create(chat_id=conversation, text=(WelcomeText.join(user.name)), owner=admin)
+            Massage.objects.create(chat_id=conversation, text=(WelcomeText1), owner=admin)
+            Massage.objects.create(chat_id=conversation, text=(WelcomeText2), owner=admin)
+            Massage.objects.create(chat_id=conversation, text=(WelcomeText3), owner=admin)
             if is_created is True:
                 user.set_password(password)
                 user.name = name

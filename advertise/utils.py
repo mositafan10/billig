@@ -16,6 +16,7 @@ def send_to_chat(status, chat_id):
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=1, text=text, owner=user)
+    # send_chat_notification(conversation.receiver, 2)
 
 
 def send_admin_text(status, packet, receiver):

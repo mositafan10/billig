@@ -261,6 +261,7 @@ def bookmark_list(request):
             raise NotAcceptable(detail) # is this error correct ? TODO
 
 
+# List of packet's offers
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def offer_list(request, slug):
@@ -276,13 +277,12 @@ def offer_list(request, slug):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def offer(request):
-    slug = request.data.get("slug")
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
     # between which of offers we should serach ? TODO
     # should be used "get" instead "filter" because there is just on offer between on packet and one travel. TODO
-    offer = Offer.objects.filter(travel=travel, packet=packet).exclude(status=8)
+    offer    = Offer.objects.filter(travel=travel, packet=packet).exclude(status=8)
     if offer.count() == 0 :
         if packet.owner != user :
             data = request.data
@@ -304,7 +304,6 @@ def offer(request):
 # So we need a custom permission here not is_authenticated TODO
 # Should edit url and insert slug into it not in body TODO
 # Should write with try/expection not by if TODO
-# Offer should be implement by delete method not post TODO
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def offer_update(request):
@@ -323,6 +322,21 @@ def offer_update(request):
         offer.parcelPrice = parcelPrice
     offer.save()
     return HttpResponse(status=200)
+
+
+@permission_classes([IsOwnerPacketOrReadOnly])
+@api_view(['DELETE'])
+def offer_delete(request, slug):
+    try:
+        offer = Offer.objects.get(slug=slug)
+    except Offer.DoesNotExist:
+        raise NotFound
+    offer.delete()
+    # offer.packet.offer_count -= 1
+    # offer.packet.save()
+    # offer.travel.offer_count -= 1
+    # offer.travel.save()
+    return HttpResponse(status=204)
 
 
 @permission_classes([AllowAny])        

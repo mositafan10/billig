@@ -178,9 +178,14 @@ class Offer(BaseModel):
             else:
                 return None
         
+        # There is conflict here : income is consider for pay to traveler but pracel_price is not the 
+        # income of trevelr . so what should we do ?
         if self.status == 3 :
             self.travel.approved_packet += 1
-            self.travel.income += (self.price + self.parcel_price) 
+            if self.packet.buy:
+                self.travel.income += (self.price + self.parcel_price) 
+            else:
+                self.travel.income += self.price
             self.travel.status = 3
             self.travel.save()
             super().save(*args, **kwargs)

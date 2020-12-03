@@ -27,6 +27,8 @@ class Bank(BaseModel):
         return str(self.slug)
 
 
+# We need offer field instead of packet because the offer has the packet plus travel
+# So it is better to remove packet and add offer TODO
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="travel")
