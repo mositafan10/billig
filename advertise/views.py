@@ -118,14 +118,16 @@ def packet_edit(request, slug):
             if request.data.get('buy'):
                 link = request.data.get('parcel_link')
                 price = request.data.get('parcel_price')
-                try:
-                    info = Buyinfo.objects.get(packet=packet)
-                    info.link = link
-                    info.price = price
-                except:
-                    info = Buyinfo.objects.create(packet=packet, price=price, link=link)
-                info.save()
-            packet.save()
+                # Should be test TODO
+                buyinfo, created = Buyinfo.objects.get_or_create(packet=packet, price=price, link=link)
+            #     try:
+            #         info = Buyinfo.objects.get(packet=packet)
+            #         info.link = link
+            #         info.price = price
+            #         info.save()
+            #     except:
+            #         info = Buyinfo.objects.create(packet=packet, price=price, link=link)
+            # packet.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     # Change permission to owner TODO 
@@ -166,6 +168,7 @@ def travel_add(request):
                 destination_city=departure_city
                 )
         profile.travel_done += 1
+        profile.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
    
@@ -181,12 +184,16 @@ def travel_user_list(request):
 
 # permission should be test => if ok then deploy on packet-detail and packet update TODO
 @permission_classes([IsOwnerPacketOrReadOnly])
-@api_view(['PUT','DELETE'])
+@api_view(['PUT','DELETE','GET'])
 def travel_detail(request, pk):
     try:
         travel = Travel.objects.get(slug=pk)
     except Travel.DoesNotExist:
         raise NotFound
+
+    if request.method == 'GET':
+        serializer = TravelDeserializer(travel)
+        return JsonResponse(serializer.data)
     if request.method == 'PUT':
         user = User.objects.get(pk=request.user.id)
         data = request.data

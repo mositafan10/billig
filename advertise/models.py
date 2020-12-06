@@ -32,7 +32,7 @@ class Packet(BaseModel):
     picture = models.CharField(default=1, max_length=8)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
-    description = models.TextField(blank=True, null=True)
+    description = models.CharField(max_length=1000)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     status = models.IntegerField(choices=PACKET_STATUS, default=0)
  

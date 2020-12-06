@@ -54,8 +54,7 @@ def create_conversation(request):
         receiver=offer.packet.owner
         )
     if offer.description != "" and is_created :
-        massage = Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
-        massage.save()
+        Massage.objects.create(owner=conversation.sender, text=offer.description, first_day=True, chat_id=conversation )
     return JsonResponse({"id":conversation.slug})
 
 

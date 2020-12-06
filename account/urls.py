@@ -15,6 +15,7 @@ urlpatterns = [
     path('cities/<int:pk>/', views.city_list, name='city_list'),
     path('resetpassword/', views.reset_password, name="reset_password"),
     path('confirmresetpassword/', views.confirm_reset_password, name="confirm_reset_password"),
+    path('newPassword/', views.new_password, name="new_password"),
     path('upload/', views.upload_file, name="upload_file"),
     path('rating/', views.rating, name="rate_user"),
     path('rate_user_list/<str:user>', views.rate_user_list, name="get_user_comment"),

@@ -140,27 +140,39 @@ def reset_password(request):
     phone_number = request.data.get('phone_number')
     try:
         user = User.objects.get(phone_number=phone_number)
-        otp = generate_otp()
-        set_otp(phone_number, otp)
-        send_sms(phone_number, otp)
-        return HttpResponse(status=200)
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_("شماره در سایت یافت نشد"))
+    otp = generate_otp()
+    set_otp(phone_number, otp)
+    send_sms(phone_number, otp)
+    return HttpResponse(status=200)
 
 
 @permission_classes([AllowAny])
 @api_view(['POST'])
 def confirm_reset_password(request):
     phone_number = request.data.get('phone_number')
-    user = User.objects.get(phone_number=phone_number)
     otp = request.data.get('otp')
     otps = str(otp)
     if verify_otp(phone_number, otps):
-        user.set_password(otps)
-        user.save()
-        return JsonResponse({"detail":_("رمز عبور به کد ارسال شده تغییر پیدا کرد.")},status=200)
+        return JsonResponse({"detail":True})
     else:
-        raise AuthenticationFailed(detail="کد وارد شده اشتباه است")
+        raise ValidationError(detail="کد وارد شده اشتباه است")
+
+@permission_classes([AllowAny])
+@api_view(['POST'])
+def new_password(request):
+    phone_number = request.data.get('phone_number')
+    user = User.objects.get(phone_number=phone_number)
+    password = request.data.get('new_password')
+    try:
+        password_validation.validate_password(password)
+    except:
+        raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
+    user.set_password(password)
+    user.save()
+    return JsonResponse({"detail":_("رمز عبور با موفقیت تغییر پیدا کرد.")},status=200)
+
 
 
 @api_view(['POST'])
