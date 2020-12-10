@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.db.models import Q
 from django.shortcuts import HttpResponse
 from django.contrib.auth import authenticate, password_validation
 from django.views.decorators.csrf import csrf_exempt
@@ -20,8 +21,8 @@ from advertise.models import Offer
 from chat.models import Conversation, Massage
 from datetime import datetime
 
-from core.utils import validate_phonenumber, generate_otp, verify_otp, set_otp, send_sms, locate_ip
-from core.constant import WelcomeText
+from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip
+from core.constant import WelcomeText, WelcomeText1, WelcomeText2, WelcomeText3
 
 
 @api_view(['GET'])
@@ -60,8 +61,11 @@ def signup(request):
         raise AuthenticationFailed(detail=_(".این شماره قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
+        print(otp)
+        # Here is good in set_otp we check that a how many time the user is insert the phone number :
+        # for above a number we dont call the send_sms TODO
         set_otp(new_phone_number, otp)
-        send_sms(new_phone_number, otp)
+        # send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
     
 
@@ -72,7 +76,10 @@ def signup_complete(request):
     new_phone_number = validate_phonenumber(phone_number)
     # Check ip and detect country of user 
     ip = request.META['REMOTE_ADDR'] 
-    country_eng = locate_ip(ip)
+    try:
+        country_eng = locate_ip(ip)
+    except:
+        country_eng = None
     try:
         country = Country.objects.get(eng_name=country_eng) 
     except:
@@ -86,14 +93,8 @@ def signup_complete(request):
         otps = str(otp)
         if verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
-            profile = Profile.objects.create(user=user)
+            profile, is_created = Profile.objects.get_or_create(user=user)
             # Create a chat conversation between admin and the user and send user welcome text
-            admin = User.objects.get(pk=1)
-            conversation = Conversation.objects.create(sender=admin, receiver=user)
-            Massage.objects.create(chat_id=conversation, text=(WelcomeText.join(user.name)), owner=admin)
-            Massage.objects.create(chat_id=conversation, text=(WelcomeText1), owner=admin)
-            Massage.objects.create(chat_id=conversation, text=(WelcomeText2), owner=admin)
-            Massage.objects.create(chat_id=conversation, text=(WelcomeText3), owner=admin)
             if is_created is True:
                 user.set_password(password)
                 user.name = name
@@ -102,6 +103,12 @@ def signup_complete(request):
                 profile.save()
                 first_time = True
                 token = Token.objects.create(user=user)
+                admin = User.objects.get(pk=1)
+                conversation, is_created = Conversation.objects.get_or_create(sender=admin, receiver=user)
+                Massage.objects.create(chat_id=conversation, text='{} {}'.format(WelcomeText,user.name), owner=admin)
+                Massage.objects.create(chat_id=conversation, text=(WelcomeText1), owner=admin)
+                Massage.objects.create(chat_id=conversation, text=(WelcomeText2), owner=admin)
+                Massage.objects.create(chat_id=conversation, text=(WelcomeText3), owner=admin)
                 # Is this needed to send refresh in response ( I think not and that was for jwt ) TODO
                 return JsonResponse({"token": str(token.key),"refresh": str(token.key), "user": user.slug, "first_time": first_time})
             else:
@@ -144,6 +151,7 @@ def reset_password(request):
         raise AuthenticationFailed(detail=_("شماره در سایت یافت نشد"))
     otp = generate_otp()
     set_otp(phone_number, otp)
+    # Maybe here need to use try/except when api of sms dose not work TODO
     send_sms(phone_number, otp)
     return HttpResponse(status=200)
 
@@ -241,7 +249,16 @@ def get_user_info(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user)
     serializer = LimitedProfileSerializer(profile)
-    return JsonResponse(serializer.data)
+
+    # calculate total not_seen massage for user
+    conversations = Conversation.objects.filter(Q(sender=user) | Q(receiver=user))
+    
+    total = 0
+    for conversation in conversations:
+        print(conversation.not_seen)
+        total += conversation.not_seen 
+    print(total)
+    return JsonResponse({"data":serializer.data,"total":total})
 
 
 @permission_classes([IsAuthenticated])
@@ -377,7 +394,14 @@ def social(request):
         social = Social.objects.get(profile=profile, account_type=request.data.get("account_type"))
         raise PermissionDenied(detail=_("این اکانت قبلاً ایجاد شده است"))
     except Social.DoesNotExist:
-        data= request.data
+        # Check the @ before address
+        address = request.data.get('address')
+        new_address = validate_socailaddress(address)
+        data = {
+            "account_type": request.data.get('account_type'),
+            "address": new_address
+        }
+
         serializer = SocialDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(profile=profile)

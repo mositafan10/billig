@@ -58,28 +58,42 @@ class Packet(BaseModel):
     @property
     def phonenumber(self):
         return self.owner.phone_number
-
-    def create(self):
-        self.save()
-        super().save(*args, **kwargs)
-        return self.id 
     
     def save(self, *args, **kwargs):
-        #chack same country
+
+        #chack same country when packet is created
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
                 raise PermissionDenied(detail=_("امکان یکی بودن مبدا و مقصد وجود ندارد"))
-        
-        # defualt picture
-        if self.picture == 1:
-            picture = PacketPicture.objects.get(pk=1)
-            self.picture = picture.slug
         
         #send admin text
         if self.status == 0 or self.status == 10 or self.status == 11:
             send_admin_text(self.status, self.title, self.owner)
         
+        # Increase number of billlig_done by user
+        if self.status == 7:
+            profile = Profile.objects.get(user=self.owner)
+            profile.billlig_done += 1
+            profile.save()
+    
+        # defualt picture
+        if self.picture == 1:
+            picture = PacketPicture.objects.get(pk=1)
+            self.picture = picture.slug
+
         super().save(*args, **kwargs)
+    
+    # Question is if a owner of packet wnats to delete it, what do we do ? TODO
+    # Check the correct error on frontend
+    # when travel could be deleted then the all its offers should be deleted
+    def delete(self, *args, **kwargs):
+        if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
+            raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
+        else:
+            offers = Offer.objects.filter(packet=self)
+            for offer in offers :
+                offer.delete()
+            super().delete(*args, **kwargs)
 
         
 class Travel(BaseModel):
@@ -90,7 +104,7 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     flight_date_start = models.DateField()
     flight_date_end = models.DateField(blank=True, null=True)
-    visit_count = models.PositiveIntegerField(default=0)
+    visit_count = models.PositiveIntegerField(default=0) # This is useless. 
     offer_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     income = models.PositiveIntegerField(default=0)
@@ -101,19 +115,32 @@ class Travel(BaseModel):
     def __str__(self):
         return str(self.id)
 
-    def visit(self):
-        self.visit_count += 1
-        self.save()
-
     def save(self, *args, **kwargs):
+
+        #chack same country when packet is created
         if self.departure == self.destination:
             if self.departure_city == self.destination_city:
                 raise PermissionDenied(detail="امکان یکی بودن مبدا و مقصد وجود ندارد")
-            else:
-                super().save(*args, **kwargs)
-        else:
-            super().save(*args, **kwargs)
+
+        # Increase the travel_done number for user
+        if self.status == 4:
+            profile = Profile.objects.get(user=self.owner)
+            profile.travel_done += 1
+            profile.save()
+        super().save(*args, **kwargs)
     
+    def delete(self, *args, **kwargs):
+        # Question is if a owner of travel wnats to delete it, what do we do ? TODO
+        # when travel could be deleted then the all its offers should be deleted
+        # if self.status == 3 and self.status == 4 and self.status == 8:
+        if self.status == 2:
+            offers = Offer.objects.filter(travel=self)
+            for offer in offers :
+                offer.delete()
+            super().delete(*args, **kwargs)
+        else:
+            raise PermissionDenied(detail=_(".امکان حذف این سفر نیست"))
+            
 
 class Offer(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_ads")
@@ -128,84 +155,97 @@ class Offer(BaseModel):
         return "%s --> %s" %(self.packet.owner,self.travel.owner)
 
     def delete(self, *args, **kwargs):
+        # Packet handling and change packet status if it is necessary
         self.packet.offer_count -= 1
-        self.travel.offer_count -= 1
         self.packet.save()
+        if self.packet.offer_count == 0:
+            self.packet.status = 0
+            self.packet.save()
+
+        # Travel handling and change travel status if it is necessary
+        self.travel.offer_count -= 1
+        self.travel.save()
+        if self.travel.offer_count == 0:
+            self.travel.status = 2
+            self.travel.save()
+
         super().delete(*args, **kwargs)
 
+    # What is defference between != and is not ? TODO
     def save(self, *args, **kwargs):
-        if self.status != 0:
+        print( "the status of offer is :" , self.status)
+        print( "the status of packet is :" ,self.packet.status)
+        # Check the new offer and increase offer_count of packet and travel by one due to packet status
+        if self._state.adding:
+            if self.packet.status == 3 or self.packet.status == 4 or self.packet.status == 5 or self.packet.status == 6 or self.packet.status == 7 :
+                raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان ثبت پیشنهاد وجود ندارد"))
+            else:
+                self.packet.offer_count += 1
+                self.packet.save()
+                self.travel.offer_count += 1
+                self.travel.status = 3
+                self.travel.save()
+                super().save(*args, **kwargs)
+        else:
+            # Send the state of offer into chat, This is done for all state except new offer
             send_to_chat(self.status, self.slug)
 
-        #increase offer count of the packet and travel
-        if self.packet.status == 1:
-            if self.status == 0:
-                self.packet.offer_count += 1
-                self.travel.offer_count += 1
-                self.travel.save()
-
-            #update packet state due to offer state
-            if (self.status != 1 and self.status != 0 and self.status != 8): 
-                self.packet.status = self.status
-            self.packet.save()
-            super().save(*args, **kwargs)
-
-        #first offer for packet
-        elif self.packet.status == 0 :
-            self.packet.status = 1
-            self.packet.offer_count += 1
-            self.packet.save()
-            super().save(*args, **kwargs)
-
-        elif (self.packet.status > 1):
-            if self.status == 0:
-                raise PermissionDenied(detail="این آگهی امکان دریافت پیشنهاد ندارد")
-            elif (self.status != 1 and self.status != 8): 
-                self.packet.status = self.status
-                self.packet.save()
-                super().save(*args, **kwargs)
-            elif self.status == 1:
-                shouldPacketChange = False
-                packet = self.packet
-                offers = Offer.objects.filter(packet=packet)
-                for offer in offers:
-                    if offer.status == 2:
-                        shouldPacketChange = True
-                if shouldPacketChange:
+            # Update packet state due to offer state
+            if self.packet.status == 1:
+                if (self.status != 1 and self.status is not 0): 
                     self.packet.status = self.status
                     self.packet.save()
-                super().save(*args, **kwargs)
+                    super().save(*args, **kwargs)
             else:
-                return None
-        
-        # There is conflict here : income is consider for pay to traveler but pracel_price is not the 
-        # income of trevelr . so what should we do ?
-        if self.status == 3 :
-            self.travel.approved_packet += 1
-            if self.packet.buy:
-                self.travel.income += (self.price + self.parcel_price) 
-            else:
-                self.travel.income += self.price
-            self.travel.status = 3
-            self.travel.save()
-            super().save(*args, **kwargs)
+                if self.status != 1 and self.status is not 0: 
+                    self.packet.status = self.status
+                    self.packet.save()
+                    super().save(*args, **kwargs)
+            
+            # When an offer reject by billiger this state is happend
+                elif self.status == 1:
+                    shouldPacketChange = False
+                    packet = self.packet
+                    offers = Offer.objects.filter(packet=packet)
+                    for offer in offers:
+                        if offer.status == 2:
+                            shouldPacketChange = True
+                    if shouldPacketChange:
+                        self.packet.status = self.status
+                        self.packet.save()
+                    super().save(*args, **kwargs)
 
-        if self.status == 6 :
-            offers = Offer.objects.filter(travel=self.travel).exclude(status=8)
-            for offer in offers :
-                if (
-                    offer.status == 0
-                    or offer.status == 1 
-                    or offer.status == 2
-                    or offer.status == 3
-                    or offer.status == 4
-                    or offer.status == 5
-                    ):
-                    return None
-                else:
-                    self.travel.status = 4
+                # There is conflict here : income is consider for pay to traveler but pracel_price is not the 
+                # income of treveler . so what should we do ?
+                elif self.status == 3 :
+                    self.travel.approved_packet += 1
+                    if self.packet.buy:
+                        self.travel.income += (self.price + self.parcel_price) 
+                    else:
+                        self.travel.income += self.price
+                    self.travel.status = 3
                     self.travel.save()
                     super().save(*args, **kwargs)
+
+                    # Here we check all the offers for a specific travel.
+                # When an offer is done, we check others and
+                # if all the others were done the state of travel should change to done.
+                elif self.status == 6:
+                    offers = Offer.objects.filter(travel=self.travel)
+                    for offer in offers :
+                        if (
+                            offer.status == 0
+                            or offer.status == 1 
+                            or offer.status == 2
+                            or offer.status == 3
+                            or offer.status == 4
+                            or offer.status == 5
+                            ):
+                            return None
+                        else:
+                            self.travel.status = 4
+                            self.travel.save()
+                            super().save(*args, **kwargs)
 
 
     @property
@@ -312,8 +352,9 @@ class PacketPicture(BaseModel):
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
-        return str(self.packet.title)
+        return str(self.id)
     
+    # Compress the pic is done in frontend, is this here needed ? we can change the number to 200kb due to frontend TODO 
     def save(self, *args, **kwargs):
         MAX_FILE_SIZE = 10485760
         filesize = self.image_file.size

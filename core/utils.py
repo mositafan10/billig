@@ -47,6 +47,12 @@ def validate_phonenumber(phone_number):
         new_phone_number = '0' + '0' + phone_number
     return new_phone_number
 
+def validate_socailaddress(account):
+    new_account = str(account)
+    if account[0] == '@':
+        new_account = account.replace('@','',1)
+    return new_account
+
 
 def locate_ip(ip):
     r = requests.get('http://ip-api.com/json/{}'.format(ip)).json()

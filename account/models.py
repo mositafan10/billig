@@ -56,7 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Profile (BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') 
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)

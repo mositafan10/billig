@@ -23,7 +23,7 @@ PACKET_STATUS = [
         (5, "در انتظار تایید خریدار"),
         (6, "انجام شده"),
         (7, "تمام شده"),
-        (8, "حذف شده"),
+        (8, "حذف شده"), # Should be removed TODO
         (9, "منقضی شده"),
         (10, "در انتظار تایید"),
         (11, "عدم تایید"),
@@ -38,7 +38,7 @@ Offer = [
         (5, "در انتظار تایید خریدار"), # done by traveler after get parcel in destination : offer_update function in advertise.view
         (6, "انجام شده"),# done by packet owner when receive parcel in destination : offer_update in advertise.view
         (7, "تمام شده"), # done after rating by packet owner in account.view
-        (8, "حذف شده"), # done by offer owner : offer_update in advertise.view
+        (8, "حذف شده"), # done by offer owner : offer_update in advertise.view        
 ] 
 
 
@@ -71,6 +71,6 @@ Massage_TYPE = [
 ]
 
 WelcomeText = "سلام"
-WelcomeText0 = "سلام به بیلیگ خوش‌ آمدید. اینجا می‌توانید سوالات خود را از ما بپرسید"
-WelcomeText1= "در حال حاضر نسخه آزمایشی بیلیگ را تجربه می‌کنید. با استفاده از این پلتفرم ما را از نظرات، پیشنهادات و انتقادات خود بهره‌مند کنید."
-WelcomeText2 = "با تشکر از شما کاربر گرامی"
+WelcomeText1 = "به بیلیگ خوش‌ آمدید"
+WelcomeText2= "در حال حاضر نسخه آزمایشی بیلیگ را تجربه می‌کنید. لطفا ما را از نظرات، پیشنهادات و انتقادات خود بهره‌مند کنید."
+WelcomeText3 = "اینجا می‌توانید سوالات خود را از ما بپرسید"

@@ -1,33 +1,31 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse
 from django.db.models import Q
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from fcm_django.models import FCMDevice
+from django.core.paginator import Paginator
 from rest_framework import status, permissions
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import api_view, permission_classes
+from fcm_django.models import FCMDevice
+from datetime import datetime
+import json
 
+from .models import Massage, Conversation
+from .serializers import MassageSerializer, ConversationSerializer, ConversationDeserializer, MassageDeserializer
 from account.models import User
 from advertise.models import Offer
 from core.utils import send_chat_notification
-from datetime import datetime
-from .serializers import MassageSerializer, ConversationSerializer, ConversationDeserializer, MassageDeserializer
-from .models import Massage, Conversation
-import json
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def chat_list(request):
     user = User.objects.get(pk=request.user.id)
-    chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('-updated_at')
+    chats = Conversation.objects.filter(Q(sender=user) | Q(receiver=user)).order_by('updated_at')
     for chat in chats:
         counter = Massage.objects.filter(chat_id=chat, is_seen=False).exclude(owner=user).count()
         chat.not_seen = counter
         chat.save()
-    serializer = ConversationSerializer(chats, many=True)
+    chats1 = chats.order_by('-updated_at')
+    serializer = ConversationSerializer(chats1, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 
@@ -76,15 +74,21 @@ def add_massage(request, chatid):
         receiver = conversation.sender
     data = request.data
     if request.FILES.get('billig') != None:
-        newdoc = Massage(picture = request.FILES.get('billig'), owner=user, chat_id=conversation)
+        newdoc = Massage(picture=request.FILES.get('billig'), owner=user, chat_id=conversation)
         newdoc.save()
-        send_chat_notification(receiver, 1)
+        try:
+            send_chat_notification(receiver, 1)
+        except:
+            pass
         return HttpResponse(status=200)
     else :
         serializer = MassageDeserializer(data=data)
         if serializer.is_valid():
             serializer.save(owner=user, chat_id=conversation)
-            send_chat_notification(receiver, 1)
+            try:
+                send_chat_notification(receiver, 1)
+            except:
+                pass
             return JsonResponse(serializer.data, safe=False)
         return JsonResponse(serializer.errors, status=400)
 
@@ -97,6 +101,7 @@ def get_lastlogin(request):
 
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def notification_register(request):
     token = request.data.get('token','')
     user = User.objects.get(pk=request.user.id)

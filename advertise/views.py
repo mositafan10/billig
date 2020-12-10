@@ -50,7 +50,6 @@ def packet_list(request, country):
 @api_view(['POST'])
 def packet_add(request):
     user = User.objects.get(pk=request.user.id)
-    profile = Profile.objects.get(user=user)
     buy = request.data.get('buy')
     data = request.data
     serializer = PacketDeserializer(data=data)
@@ -70,7 +69,6 @@ def packet_add(request):
             return JsonResponse(serializer1.errors, status=400)
         else:
             serializer.save(owner=user)
-        profile.billlig_done += 1
         return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
 
@@ -79,7 +77,16 @@ def packet_add(request):
 @permission_classes([IsAuthenticated])
 def packet_list_user(request):
     user = User.objects.get(pk=request.user.id)
-    packet = Packet.objects.filter(owner=user).exclude(status=8).order_by('-create_at')
+    packet = Packet.objects.filter(owner=user).exclude(status=8).exclude(status=7).order_by('-create_at')
+    serializer = PacketSerializer(packet, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def packet_list_user_completed(request):
+    user = User.objects.get(pk=request.user.id)
+    packet = Packet.objects.filter(owner=user, status=7).exclude(status=8).order_by('-create_at')
     serializer = PacketSerializer(packet, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -97,7 +104,7 @@ def packet_edit(request, slug):
         packet.save()
         serilaizer = PacketSerializer(packet)
         return JsonResponse(serilaizer.data, safe=False)
-    # TODO change permission to owner   
+    # Change permission to owner TODO
     if request.method == 'PUT' and IsAuthenticated: 
         data = request.data
         serializer = PacketSerializer1(data=data)
@@ -119,7 +126,7 @@ def packet_edit(request, slug):
                 link = request.data.get('parcel_link')
                 price = request.data.get('parcel_price')
                 # Should be test TODO
-                buyinfo, created = Buyinfo.objects.get_or_create(packet=packet, price=price, link=link)
+                buyinfo, is_created = Buyinfo.objects.get_or_create(packet=packet, price=price, link=link)
             #     try:
             #         info = Buyinfo.objects.get(packet=packet)
             #         info.link = link
@@ -132,15 +139,9 @@ def packet_edit(request, slug):
         return JsonResponse(serializer.errors, status=400)
     # Change permission to owner TODO 
     elif request.method == 'DELETE' and IsAuthenticated:
-        # Should check due to bussiness TODO
-        if packet.status == 3 or packet.status == 4 or packet.status == 5 or packet.status == 6 :
-            raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
-        else:
-            # We can here delete the packet for ever TODO
-            packet.status = '8'
-            packet.save()
-            return HttpResponse(status=204)
-
+        packet.delete()
+        return HttpResponse(status=204)
+        
 
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
@@ -167,8 +168,6 @@ def travel_add(request):
                 destination=departure,
                 destination_city=departure_city
                 )
-        profile.travel_done += 1
-        profile.save()
         return JsonResponse(serializer.data, status=200)
     return JsonResponse(serializer.errors, status=400)
    
@@ -177,7 +176,17 @@ def travel_add(request):
 @api_view(['GET'])
 def travel_user_list(request):
     user = User.objects.get(pk=request.user.id)
-    travel = Travel.objects.filter(owner=user).exclude(status=5).order_by('-create_at')
+    travel = Travel.objects.filter(owner=user).exclude(status=5).exclude(status=4).order_by('-create_at')
+    serializer = TravelDeserializer(travel, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def travel_user_list_completed(request):
+    user = User.objects.get(pk=request.user.id)
+    travel = Travel.objects.filter(owner=user, status=4).order_by('-create_at')
     serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
     
@@ -190,29 +199,27 @@ def travel_detail(request, pk):
         travel = Travel.objects.get(slug=pk)
     except Travel.DoesNotExist:
         raise NotFound
-
+    # For travel edit
     if request.method == 'GET':
         serializer = TravelDeserializer(travel)
         return JsonResponse(serializer.data)
     if request.method == 'PUT':
-        user = User.objects.get(pk=request.user.id)
-        data = request.data
-        serializer = TravelSerializer(data=data)
-        if serializer.is_valid():
-            travel.departure = Country.objects.get(pk=request.data.get('departure'))
-            travel.departure_city = City.objects.get(pk=request.data.get('departure_city'))
-            travel.destination = Country.objects.get(pk=request.data.get('destination'))
-            travel.destination_city = City.objects.get(pk=request.data.get('destination_city'))
-            travel.flight_date_start = request.data.get('flight_date_start')
-            travel.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+        if travel.status == 2 :
+            user = User.objects.get(pk=request.user.id)
+            data = request.data
+            serializer = TravelSerializer(data=data)
+            if serializer.is_valid():
+                travel.departure = Country.objects.get(pk=request.data.get('departure'))
+                travel.departure_city = City.objects.get(pk=request.data.get('departure_city'))
+                travel.destination = Country.objects.get(pk=request.data.get('destination'))
+                travel.destination_city = City.objects.get(pk=request.data.get('destination_city'))
+                travel.flight_date_start = request.data.get('flight_date_start')
+                travel.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+        else:
+            raise PermissionDenied(detail=_("امکان ویرایش این سفر وجود ندارد"))
     elif request.method == 'DELETE':
-        # here should be check that a travel can be deleted or not ? TODO
-        # when travel could be deleted then the all its offers should be deleted
-        offers = travel.travel_ads.filter()
-        for offer in offers :
-            offer.delete()
         travel.delete()
         return HttpResponse(status=204)
 
@@ -287,15 +294,17 @@ def offer(request):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
+
     # between which of offers we should serach ? TODO
     # should be used "get" instead "filter" because there is just on offer between on packet and one travel. TODO
-    offer    = Offer.objects.filter(travel=travel, packet=packet).exclude(status=8)
+    offer = Offer.objects.filter(travel=travel, packet=packet)
     if offer.count() == 0 :
         if packet.owner != user :
             data = request.data
             serializer = OfferDeserializer(data=data)
             if serializer.is_valid():
                 serializer.save(packet=packet, travel=travel)
+
                 # can we increase offer_count of travel and packet here ? TODO ( I think yes : after save offer it can)
                 return JsonResponse(serializer.data, status=201)
             return JsonResponse(serializer.errors, status=400)
@@ -322,8 +331,6 @@ def offer_update(request):
     if (request.data.get('status')):
         status = request.data.get('status')
         offer.status = status
-        if(status == 8):
-            offer.delete()
     if (request.data.get('parcelPrice')):
         parcelPrice = request.data.get('parcelPrice')
         offer.parcelPrice = parcelPrice
@@ -339,10 +346,6 @@ def offer_delete(request, slug):
     except Offer.DoesNotExist:
         raise NotFound
     offer.delete()
-    # offer.packet.offer_count -= 1
-    # offer.packet.save()
-    # offer.travel.offer_count -= 1
-    # offer.travel.save()
     return HttpResponse(status=204)
 
 

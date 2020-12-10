@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.db.models import Q
 from account.models import User, BaseModel, Profile
 from advertise.models import Offer
@@ -10,7 +11,7 @@ from core.constant import Massage_TYPE
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
-    not_seen = models.PositiveIntegerField(default=0) # not completed
+    not_seen = models.PositiveIntegerField(default=4) # not completed
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
 
     def __str__(self):
