@@ -61,11 +61,11 @@ def signup(request):
         raise AuthenticationFailed(detail=_(".این شماره قبلا در سایت ثبت‌نام شده است"))
     except:
         otp = generate_otp()
-        print(otp)
+        # print(otp)
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
         # for above a number we dont call the send_sms TODO
         set_otp(new_phone_number, otp)
-        # send_sms(new_phone_number, otp)
+        send_sms(new_phone_number, otp)
         return HttpResponse(status=200)
     
 
@@ -252,12 +252,9 @@ def get_user_info(request):
 
     # calculate total not_seen massage for user
     conversations = Conversation.objects.filter(Q(sender=user) | Q(receiver=user))
-    
     total = 0
     for conversation in conversations:
-        print(conversation.not_seen)
         total += conversation.not_seen 
-    print(total)
     return JsonResponse({"data":serializer.data,"total":total})
 
 
