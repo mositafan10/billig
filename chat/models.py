@@ -13,6 +13,7 @@ class Conversation(BaseModel):
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     not_seen = models.PositiveIntegerField(default=4) # not completed
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True, primary_key=True) 
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.slug)
@@ -32,10 +33,6 @@ class Conversation(BaseModel):
     @property
     def sender_name(self):
         return str(self.sender.name)
-        
-    @property
-    def offer_state(self):
-        return self.offer.get_status_display
 
     @property
     def sender_username(self):
@@ -52,14 +49,6 @@ class Conversation(BaseModel):
         user = self.receiver
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
-
-    @property
-    def packet_slug(self):
-        return self.offer.packet.slug
-
-    @property
-    def packet_title(self):
-        return self.offer.packet.title  
 
 
 class Massage(BaseModel):

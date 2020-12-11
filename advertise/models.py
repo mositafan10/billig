@@ -11,7 +11,7 @@ from core.utils import generate_slug
 from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, DIMENSION
 from chat.utils import send_to_chat
 import string, json
-from .utils import send_to_chat, send_admin_text
+from .utils import send_to_chat, send_admin_text, disable_chat
 
 
 class Packet(BaseModel):
@@ -60,14 +60,18 @@ class Packet(BaseModel):
         return self.owner.phone_number
     
     def save(self, *args, **kwargs):
+        
+        # Send admin text while create packet   
+        if self._state.adding:
+            send_admin_text(self.status, self.title, self.owner)
 
         #chack same country when packet is created
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
                 raise PermissionDenied(detail=_("امکان یکی بودن مبدا و مقصد وجود ندارد"))
         
-        #send admin text
-        if self.status == 0 or self.status == 10 or self.status == 11:
+        # Send admin text
+        if self.status == 10 or self.status == 11:
             send_admin_text(self.status, self.title, self.owner)
         
         # Increase number of billlig_done by user
@@ -155,6 +159,7 @@ class Offer(BaseModel):
         return "%s --> %s" %(self.packet.owner,self.travel.owner)
 
     def delete(self, *args, **kwargs):
+        disable_chat(self.slug)
         # Packet handling and change packet status if it is necessary
         self.packet.offer_count -= 1
         self.packet.save()
@@ -181,6 +186,8 @@ class Offer(BaseModel):
                 raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان ثبت پیشنهاد وجود ندارد"))
             else:
                 self.packet.offer_count += 1
+                if self.packet.status == 0 :
+                    self.packet.status = 1
                 self.packet.save()
                 self.travel.offer_count += 1
                 self.travel.status = 3
@@ -195,7 +202,7 @@ class Offer(BaseModel):
                 if (self.status != 1 and self.status is not 0): 
                     self.packet.status = self.status
                     self.packet.save()
-                    super().save(*args, **kwargs)
+                super().save(*args, **kwargs)
             else:
                 if self.status != 1 and self.status is not 0: 
                     self.packet.status = self.status

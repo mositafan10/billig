@@ -3,6 +3,7 @@ from django.shortcuts import HttpResponse
 from django.db.models import Q
 from django.core.paginator import Paginator
 from rest_framework import status, permissions
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import api_view, permission_classes
 from fcm_django.models import FCMDevice
 from datetime import datetime
@@ -56,41 +57,48 @@ def create_conversation(request):
     return JsonResponse({"id":conversation.slug})
 
 
-@api_view(['GET'])
+@api_view(['GET','DELETE'])
 @permission_classes([permissions.IsAuthenticated])
-def conversation_info(request, pk):
-    conversation = Conversation.objects.get(pk=pk)
-    serializer = ConversationSerializer(conversation)
-    return JsonResponse(serializer.data)
+def conversation(request, slug):
+    conversation = Conversation.objects.get(slug=slug)
+    if request.method == 'GET':
+        serializer = ConversationSerializer(conversation)
+        return JsonResponse(serializer.data)
+    elif request.method == 'DELETE':
+        conversation.delete()
+        return HttpResponse(status=204)
 
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def add_massage(request, chatid):
-    user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(slug=chatid)
-    receiver = conversation.receiver
-    if user == receiver:
-        receiver = conversation.sender
-    data = request.data
-    if request.FILES.get('billig') != None:
-        newdoc = Massage(picture=request.FILES.get('billig'), owner=user, chat_id=conversation)
-        newdoc.save()
-        try:
-            send_chat_notification(receiver, 1)
-        except:
-            pass
-        return HttpResponse(status=200)
-    else :
-        serializer = MassageDeserializer(data=data)
-        if serializer.is_valid():
-            serializer.save(owner=user, chat_id=conversation)
+    if conversation.is_active:
+        user = User.objects.get(pk=request.user.id)
+        receiver = conversation.receiver
+        if user == receiver:
+            receiver = conversation.sender
+        data = request.data
+        if request.FILES.get('billig') != None:
+            newdoc = Massage(picture=request.FILES.get('billig'), owner=user, chat_id=conversation)
+            newdoc.save()
             try:
                 send_chat_notification(receiver, 1)
             except:
                 pass
-            return JsonResponse(serializer.data, safe=False)
-        return JsonResponse(serializer.errors, status=400)
+            return HttpResponse(status=200)
+        else :
+            serializer = MassageDeserializer(data=data)
+            if serializer.is_valid():
+                serializer.save(owner=user, chat_id=conversation)
+                try:
+                    send_chat_notification(receiver, 1)
+                except:
+                    pass
+                return JsonResponse(serializer.data, safe=False)
+            return JsonResponse(serializer.errors, status=400)
+    else:
+        raise PermissionDenied(detail=_("این چت امکان دریافت پیام ندارد"))
 
 
 @api_view(['GET'])

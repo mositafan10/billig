@@ -16,7 +16,6 @@ def send_to_chat(status, chat_id):
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=1, text=text, owner=user)
-    # send_chat_notification(conversation.receiver, 2)
 
 
 def send_admin_text(status, packet, receiver):
@@ -29,5 +28,11 @@ def send_admin_text(status, packet, receiver):
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=0, text=text, owner=admin)
+
+
+def disable_chat(slug):
+    conversation = Conversation.objects.get(slug=slug)
+    conversation.is_active = False
+    conversation.save()
 
 

@@ -6,7 +6,7 @@ urlpatterns = [
     path('massagelist/<str:chatid>/', views.massage_list, name='massage_list'),
     path('messages/<str:chatid>', views.add_massage, name='add_massage'),
     path('conversation/', views.create_conversation, name='create_conversation'),
-    path('conversation/<str:pk>/', views.conversation_info, name='conversation_info'),
+    path('conversation/<str:slug>/', views.conversation, name='conversation'),
     path('lastlogin/', views.get_lastlogin, name='last_login'),
     path('notifications/', views.notification_register, name='notification_register'),
 ]   
