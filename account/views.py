@@ -21,7 +21,7 @@ from advertise.models import Offer
 from chat.models import Conversation, Massage
 from datetime import datetime
 
-from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip
+from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip, setPhoneCache
 from core.constant import WelcomeText, WelcomeText1, WelcomeText2, WelcomeText3
 
 
@@ -55,18 +55,26 @@ def signup(request):
     try:
         password_validation.validate_password(password)
     except:
-        raise ValidationError(detail=_("رمز عبور باید شامل یک حرف باشد"))
+        detail=_("رمز عبور باید شامل یک حرف باشد")
+        raise ValidationError({"detail": detail})
     try:
+        print(new_phone_number)
         user = User.objects.get(phone_number=new_phone_number)
-        raise AuthenticationFailed(detail=_(".این شماره قبلا در سایت ثبت‌نام شده است"))
+        print(user)
+        detail=_(".این شماره قبلا در سایت ثبت‌نام شده است")
+        return JsonResponse({"detail": detail},status=403)
     except:
         otp = generate_otp()
-        # print(otp)
+        print(otp)
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
         # for above a number we dont call the send_sms TODO
-        set_otp(new_phone_number, otp)
-        send_sms(new_phone_number, otp)
-        return HttpResponse(status=200)
+        if setPhoneCache(new_phone_number):
+            set_otp(new_phone_number, otp)
+            # send_sms(new_phone_number, otp)
+            return HttpResponse(status=200)
+        else:
+            detail=_("لطفا چند دقیقه صبر نمایید")
+            raise PermissionDenied({"detail": detail})
     
 
 @api_view(['POST'])
@@ -74,16 +82,6 @@ def signup(request):
 def signup_complete(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
-    # Check ip and detect country of user 
-    ip = request.META['REMOTE_ADDR'] 
-    try:
-        country_eng = locate_ip(ip)
-    except:
-        country_eng = None
-    try:
-        country = Country.objects.get(eng_name=country_eng) 
-    except:
-        country = None
     password = request.data.get('password')
     name = request.data.get('name', '')
     otp = request.data.get('otp', '')
@@ -93,31 +91,48 @@ def signup_complete(request):
         otps = str(otp)
         if verify_otp(new_phone_number, otps):
             user, is_created = User.objects.get_or_create(phone_number=new_phone_number)
-            profile, is_created = Profile.objects.get_or_create(user=user)
-            # Create a chat conversation between admin and the user and send user welcome text
             if is_created is True:
+                token, is_created = Token.objects.get_or_create(user=user)
+                profile, is_created = Profile.objects.get_or_create(user=user)
                 user.set_password(password)
                 user.name = name
                 user.save()
+                first_time = True
+
+                # Check ip and detect country of user 
+                ip = request.META['REMOTE_ADDR'] 
+                try:
+                    country_eng = locate_ip(ip)
+                except:
+                    country_eng = None
+                try:
+                    country = Country.objects.get(eng_name=country_eng) 
+                except:
+                    country = None
                 profile.country = country
                 profile.save()
-                first_time = True
-                token = Token.objects.create(user=user)
+
+                # Create a chat conversation between admin and the user and send user welcome text
                 admin = User.objects.get(pk=1)
                 conversation, is_created = Conversation.objects.get_or_create(sender=admin, receiver=user)
                 Massage.objects.create(chat_id=conversation, text='{} {}'.format(WelcomeText,user.name), owner=admin)
                 Massage.objects.create(chat_id=conversation, text=(WelcomeText1), owner=admin)
                 Massage.objects.create(chat_id=conversation, text=(WelcomeText2), owner=admin)
                 Massage.objects.create(chat_id=conversation, text=(WelcomeText3), owner=admin)
-                # Is this needed to send refresh in response ( I think not and that was for jwt ) TODO
-                return JsonResponse({"token": str(token.key),"refresh": str(token.key), "user": user.slug, "first_time": first_time})
+                return JsonResponse({"token": str(token.key), "user": user.slug, "first_time": first_time})
             else:
-                raise AuthenticationFailed(detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است"))
+                detail=_(".این شماره همراه قبلا در سایت ثبت‌نام شده است")
+                raise AuthenticationFailed({"detail":detail})
         else:
-            error = _("کد وارد شده اشتباه است .مجدد سعی کنید ")
-            raise AuthenticationFailed(detail=error)
+            if setPhoneCache(new_phone_number):
+                detail = _("کد وارد شده اشتباه است .مجدد سعی کنید ")
+                raise AuthenticationFailed({"detail":detail})
+            else:
+                detail=_("لطفا چند دقیقه صبر نمایید")
+                raise PermissionDenied({"detail": detail})
     else:
-        raise ValidationError(detail=_("کد وارد نشده است"))
+        detail=_("کد وارد نشده است")
+        raise ValidationError({"detail":detail})
 
 
 @api_view(['POST'])
@@ -128,15 +143,11 @@ def login(request):
     password = request.data.get('password')
     first_time = False
     try:
-        user = User.objects.get(phone_number=phone_number)
+        user = User.objects.get(phone_number=new_phone_number)
         if not user.check_password(password):
-            raise AuthenticationFailed(detail=".رمز عبور اشتباه است. مجدد تلاش کنید")
-        user.last_login = datetime.now()
-        user.save()
+            raise AuthenticationFailed(detail=_(".رمز عبور اشتباه است. مجدد تلاش کنید"))
         token = Token.objects.get(user=user)
-        # Is this needed to send refresh in response ( I think not and that was for jwt ) TODO
-        return JsonResponse({"token": str(token.key),
-            "refresh": str(token.key), "user": user.slug, "first_time": first_time})
+        return JsonResponse({"token": str(token.key), "user": user.slug, "first_time": first_time})
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_(".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید"))        
 
@@ -145,33 +156,40 @@ def login(request):
 @api_view(['POST'])
 def reset_password(request):
     phone_number = request.data.get('phone_number')
+    new_phone_number = validate_phonenumber(phone_number)
     try:
-        user = User.objects.get(phone_number=phone_number)
+        user = User.objects.get(phone_number=new_phone_number)
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_("شماره در سایت یافت نشد"))
     otp = generate_otp()
-    set_otp(phone_number, otp)
-    # Maybe here need to use try/except when api of sms dose not work TODO
-    send_sms(phone_number, otp)
-    return HttpResponse(status=200)
+    if setPhoneCache(new_phone_number):
+        set_otp(new_phone_number, otp)
+        # Maybe here need to use try/except when api of sms dose not work TODO
+        send_sms(phone_number, otp)
+        return HttpResponse(status=200)
+    else:
+        detail=_("لطفا چند دقیقه صبر نمایید")
+        raise PermissionDenied({"detail": detail})
 
 
 @permission_classes([AllowAny])
 @api_view(['POST'])
 def confirm_reset_password(request):
     phone_number = request.data.get('phone_number')
+    new_phone_number = validate_phonenumber(phone_number)
     otp = request.data.get('otp')
     otps = str(otp)
-    if verify_otp(phone_number, otps):
+    if verify_otp(new_phone_number, otps):
         return JsonResponse({"detail":True})
     else:
-        raise ValidationError(detail="کد وارد شده اشتباه است")
+        raise ValidationError(detail=_("کد وارد شده اشتباه است"))
 
 @permission_classes([AllowAny])
 @api_view(['POST'])
 def new_password(request):
     phone_number = request.data.get('phone_number')
-    user = User.objects.get(phone_number=phone_number)
+    new_phone_number = validate_phonenumber(phone_number)
+    user = User.objects.get(phone_number=new_phone_number)
     password = request.data.get('new_password')
     try:
         password_validation.validate_password(password)
@@ -180,7 +198,6 @@ def new_password(request):
     user.set_password(password)
     user.save()
     return JsonResponse({"detail":_("رمز عبور با موفقیت تغییر پیدا کرد.")},status=200)
-
 
 
 @api_view(['POST'])

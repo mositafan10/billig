@@ -11,12 +11,27 @@ import random, requests, string, json
 def generate_otp():
     return (str(random.randint(1,9)) + ''.join(str(random.randint(1,9))).join(str(random.randint(0,9)) for _ in range(2)))
 
-def set_otp(phone_number, otp):
+def setPhoneCache(phone_number):
     key = '%s' % (phone_number)
-    cache.set(key, otp, 3000)
+    if cache.get(key) is not None:
+        if cache.get(key) == 1:
+            cache.set(key, 2, 120)
+            return True
+        elif cache.get(key) == 2:
+            cache.set(key, 3, 120)
+            return True
+        elif cache.get(key) == 3:
+            return False
+    else:
+        cache.set(key, 1, 120)
+        return True
+
+def set_otp(phone_number, otp):
+    key = '%s-%s' % (phone_number,otp)
+    cache.set(key, otp, 300)
 
 def verify_otp(phone_number, otp):
-    key = '%s' % (phone_number)
+    key = '%s-%s' % (phone_number,otp)
     return cache.get(key) == otp
 
 def send_sms(phone_number, otp):

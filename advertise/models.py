@@ -28,7 +28,7 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=DIMENSION)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
-    phonenumber_visible = models.BooleanField(default=False)
+    phonenumber_visible = models.BooleanField(default=False) # should be removed TODO
     picture = models.CharField(default=1, max_length=8)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
