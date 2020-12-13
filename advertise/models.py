@@ -11,7 +11,7 @@ from core.utils import generate_slug
 from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, DIMENSION
 from chat.utils import send_to_chat
 import string, json
-from .utils import send_to_chat, send_admin_text, disable_chat
+from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
 
 
 class Packet(BaseModel):
@@ -178,13 +178,14 @@ class Offer(BaseModel):
 
     # What is defference between != and is not ? TODO
     def save(self, *args, **kwargs):
-        print( "the status of offer is :" , self.status)
-        print( "the status of packet is :" ,self.packet.status)
         # Check the new offer and increase offer_count of packet and travel by one due to packet status
         if self._state.adding:
             if self.packet.status == 3 or self.packet.status == 4 or self.packet.status == 5 or self.packet.status == 6 or self.packet.status == 7 :
                 raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان ثبت پیشنهاد وجود ندارد"))
             else:
+                # Create chat when the offer is created.
+                create_chat(self.slug, self.travel.owner, self.packet.owner, self.description)
+
                 self.packet.offer_count += 1
                 if self.packet.status == 0 :
                     self.packet.status = 1

@@ -51,26 +51,24 @@ def user_profile_private(request, pk):
 def signup(request): 
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
-    password = request.data.get('password')
+    password = request.data.get('password','')
+    if password != '':
+        try:
+            password_validation.validate_password(password)
+        except:
+            detail=_("رمز عبور باید شامل یک حرف باشد")
+            raise ValidationError({"detail": detail})
     try:
-        password_validation.validate_password(password)
-    except:
-        detail=_("رمز عبور باید شامل یک حرف باشد")
-        raise ValidationError({"detail": detail})
-    try:
-        print(new_phone_number)
         user = User.objects.get(phone_number=new_phone_number)
-        print(user)
         detail=_(".این شماره قبلا در سایت ثبت‌نام شده است")
         return JsonResponse({"detail": detail},status=403)
     except:
         otp = generate_otp()
-        print(otp)
+        # print(otp)
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
-        # for above a number we dont call the send_sms TODO
         if setPhoneCache(new_phone_number):
             set_otp(new_phone_number, otp)
-            # send_sms(new_phone_number, otp)
+            send_sms(new_phone_number, otp)
             return HttpResponse(status=200)
         else:
             detail=_("لطفا چند دقیقه صبر نمایید")

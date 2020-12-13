@@ -38,6 +38,7 @@ def packet_list(request, country):
             request_country = Country.objects.get(eng_name=country)
             country_packet = packet.filter(Q(origin_country=request_country) | Q(destination_country=request_country))
         except Country.DoesNotExist:
+            # Error should be completed TODO
             raise NotFound
     paginator = PageNumberPagination()
     paginator.page_size = 12
@@ -365,9 +366,10 @@ def get_picture(request, slug):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])        
-def get_user_offer(request):
+def get_user_offer(request,travel):
     user = User.objects.get(pk=request.user.id)
-    offer = Offer.objects.filter(travel__owner=user).exclude(status=8).order_by('-updated_at')
+    offerTravel = Travel.objects.get(slug=travel)
+    offer = Offer.objects.filter(travel__owner=user,travel=offerTravel).exclude(status=8).order_by('-updated_at')
     serializer = OfferSerializer(offer, many=True)
     return JsonResponse(serializer.data, safe=False)
 

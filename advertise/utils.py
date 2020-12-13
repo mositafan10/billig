@@ -36,3 +36,10 @@ def disable_chat(slug):
     conversation.save()
 
 
+def create_chat(slug,sender,receiver,text):
+    conversation = Conversation.objects.create(slug=slug, sender=sender, receiver=receiver)
+    Massage.objects.create(owner=conversation.sender, text=text, first_day=True, chat_id=conversation )
+
+
+
+

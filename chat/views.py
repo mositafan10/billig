@@ -5,6 +5,7 @@ from django.core.paginator import Paginator
 from rest_framework import status, permissions
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination, CursorPagination
 from fcm_django.models import FCMDevice
 from datetime import datetime
 import json
@@ -34,13 +35,16 @@ def chat_list(request):
 @permission_classes([permissions.IsAuthenticated])
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    massages = Massage.objects.filter(chat_id=chatid).order_by('create_at') 
+    massages = Massage.objects.filter(chat_id=chatid).order_by('-create_at') 
     for massage in massages:
         if massage.owner != user and massage.is_seen == False:
             massage.is_seen = True
             massage.save()
-    serializer = MassageSerializer(massages, many=True)
-    return JsonResponse(serializer.data, safe=False)
+    paginator = PageNumberPagination()
+    paginator.page_size = request.GET.get('count',20)
+    result_page = paginator.paginate_queryset(massages, request)
+    serializer = MassageSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
     
 
 @api_view(['POST'])
