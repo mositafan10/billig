@@ -7,7 +7,7 @@ from django.db import models
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
-from core.utils import generate_slug
+from core.utils import generate_slug, send_sms_publish
 from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, DIMENSION
 from chat.utils import send_to_chat
 import string, json
@@ -92,7 +92,7 @@ class Packet(BaseModel):
     # when travel could be deleted then the all its offers should be deleted
     def delete(self, *args, **kwargs):
         if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
-            raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان حذف آن وجود ندارد"))
+            raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد، امکان حذف وجود ندارد"))
         else:
             offers = Offer.objects.filter(packet=self)
             for offer in offers :

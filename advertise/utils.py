@@ -1,6 +1,6 @@
 from chat.models import Massage, Conversation
 from account.models import User
-from core.utils import send_chat_notification
+from core.utils import send_chat_notification, send_sms_publish, send_sms_notpublish
 
 def send_to_chat(status, chat_id):
     user = User.objects.get(pk=1)
@@ -22,13 +22,22 @@ def send_admin_text(status, packet, receiver):
     admin = User.objects.get(pk=1)
     conversation = Conversation.objects.get(sender=admin, receiver=receiver)
     switcher = {
-        0 : "آگهی {} منتشر شد. این آگهی به مدت یک ماه بر روی سایت قرار خواهد گرفت".format(packet),
+        0 : "آگهی {} منتشر شد. این آگهی به مدت یک ماه بر روی سایت باقی خواهد ماند".format(packet),
         10 : "آگهی {} در انتظار تایید است. خواهشمندیم منتظر بمانید.".format(packet),
         11 : "آگهی {} به دلیل عدم مطابقت با سیاست‌های بیلیگ منتشر نشد.".format(packet),
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=0, text=text, owner=admin)
-
+    if status == 0:
+        try:
+            send_sms_publish(receiver.phone_number, packet)
+        except:
+            pass # What should we do here ? TODO
+    elif status == 11:
+        try:
+            send_sms_notpublish(receiver.phone_number, packet)
+        except:
+            pass # What should we do here ? TODO
 
 def disable_chat(slug):
     conversation = Conversation.objects.get(slug=slug)

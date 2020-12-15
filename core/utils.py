@@ -35,7 +35,6 @@ def verify_otp(phone_number, otp):
     return cache.get(key) == otp
 
 def send_sms(phone_number, otp):
-    text = "کد تایید بیلیگ: {}".format(otp)
     try:
         data = {
             'receptor': phone_number,
@@ -43,9 +42,31 @@ def send_sms(phone_number, otp):
             'template' : "verify"
         }
         r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
-    except APIException as e: 
+    except: 
+        pass
+
+def send_sms_publish(phone_number, packet):
+    try:
+        data = {
+            'receptor': phone_number,
+            'token' : packet,
+            'template' : "publish"
+        }
+        r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
+    except: 
         pass
     
+def send_sms_notpublish(phone_number, packet):
+    try:
+        data = {
+            'receptor': phone_number,
+            'token' : packet,
+            'template' : "Notpublish"
+        }
+        r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
+    except: 
+        pass
+
 def validate_picture(fieldfile_obj):
         filesize = fieldfile_obj.size
         KB_limit = 1000
@@ -67,7 +88,6 @@ def validate_socailaddress(account):
     if account[0] == '@':
         new_account = account.replace('@','',1)
     return new_account
-
 
 def locate_ip(ip):
     r = requests.get('http://ip-api.com/json/{}'.format(ip)).json()
@@ -116,25 +136,6 @@ def send_chat_notification(user,type_notif):
     except FCMDevice.DoesNotExist:
         raise NotFound
 
-# def send_offer_notification(user):
-#     try:
-#         fcm = FCMDevice.objects.filter(user=user)
-#         for i in fcm:
-#             header = {
-#                 'Content-Type'  : 'application/json',
-#                 'Authorization' : 'key=AAAA6996axw:APA91bFlpMzzDLWtxzPGyo7LAL8JVxSQ8MDt8J1cZP5FQixZ3RME_58tb1eQloxcxeFclClmvS8Y2SkOr5IAmUhzXl33joz9-hvfPzsSm_CqveSKcoDgfvyAomYRcaIjCfkgdcmOcfQ8'}
-#             data = {
-#                 "notification": {
-#                     "title": "بیلیگ",
-#                     "body": "شما پیام جدید دارید",
-#                     "click_action": "https://billlig.com/profile/inbox",
-#                     "icon": "http://url-to-an-icon/icon.png"
-#                     },
-#                 "to": i.registration_id
-#                 }
-#             r = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data), headers=header)
-#     except FCMDevice.DoesNotExist:
-#         raise NotFound(detail="پیدا نشد")
 
 
     
