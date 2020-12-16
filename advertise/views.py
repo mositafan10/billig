@@ -17,7 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from account.models import User, Country, City, Profile
 from core.constant import Expire_Date_Billlig
 
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, RemoveReason
 from .utils import send_to_chat
 from .serializers import *
 from .permissions import IsOwnerPacketOrReadOnly
@@ -29,7 +29,7 @@ import json
 def packet_list(request, country):
     # Send just last month orders ( one month expiration policy )
     # The Order should be recheck ( updated_at instead of create_at ) TODO
-    packet = Packet.objects.all().filter(create_at__gte=datetime.now()-timedelta(days=Expire_Date_Billlig)).exclude(Q(status='8') | Q(status='9') | Q(status='10') | Q(status='11')).order_by('-create_at')
+    packet = Packet.objects.all().filter(create_at__gte=datetime.now()-timedelta(days=Expire_Date_Billlig)).filter(Q(status='1') | Q(status='2') | Q(status='0')).order_by('-create_at')
     # Filter orders Based Country
     if (country == "all"):
         country_packet = packet
@@ -93,7 +93,7 @@ def packet_list_user_completed(request):
 
 
 @permission_classes([AllowAny, IsAuthenticated])
-@api_view(['PUT','DELETE','GET'])
+@api_view(['PUT','POST','GET'])
 def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
@@ -139,8 +139,9 @@ def packet_edit(request, slug):
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
     # Change permission to owner TODO 
-    elif request.method == 'DELETE' and IsAuthenticated:
-        packet.delete()
+    elif request.method == 'POST' and IsAuthenticated:
+        packet.status = 8
+        packet.save()
         return HttpResponse(status=204)
         
 
@@ -180,7 +181,6 @@ def travel_user_list(request):
     travel = Travel.objects.filter(owner=user).exclude(status=5).exclude(status=4).order_by('-create_at')
     serializer = TravelDeserializer(travel, many=True)
     return JsonResponse(serializer.data, safe=False)
-
 
 
 @permission_classes([IsAuthenticated])
@@ -231,18 +231,17 @@ def bookmark(request, slug):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=slug)
     if request.method == 'GET':
-        try:
-            bookmark = Bookmark.objects.get(owner=user, packet=packet)
+        if Bookmark.objects.filter(owner=user, packet=packet).exists():
             return JsonResponse({"bookmark":True})
-        except Bookmark.DoesNotExist:
+        else:
             return JsonResponse({"bookmark":False})
     if request.method == 'DELETE':
         try:
             bookmark = Bookmark.objects.get(owner=user, packet=packet)
-            bookmark.delete()
-            return HttpResponse(status=204)
         except Bookmark.DoesNotExist:
             raise NotFound(detail=_("آگهی مورد نظر پیدا نشد"))
+        bookmark.delete()
+        return HttpResponse(status=204)
         
 
 @permission_classes([IsAuthenticated])
@@ -298,15 +297,12 @@ def offer(request):
 
     # between which of offers we should serach ? TODO
     # should be used "get" instead "filter" because there is just on offer between on packet and one travel. TODO
-    offer = Offer.objects.filter(travel=travel, packet=packet)
-    if offer.count() == 0 :
+    if Offer.objects.filter(travel=travel, packet=packet).exists():
         if packet.owner != user :
             data = request.data
             serializer = OfferDeserializer(data=data)
             if serializer.is_valid():
                 serializer.save(packet=packet, travel=travel)
-
-                # can we increase offer_count of travel and packet here ? TODO ( I think yes : after save offer it can)
                 return JsonResponse(serializer.data, status=201)
             return JsonResponse(serializer.errors, status=400)
         else:
@@ -388,3 +384,41 @@ def upload_file(request):
     newdoc = PacketPicture(image_file = request.FILES.get('billig'))
     newdoc.save() 
     return JsonResponse({"id": newdoc.slug})
+
+
+@permission_classes([IsOwnerPacketOrReadOnly])
+@api_view(['POST'])
+def add_remove_reason(request, slug):
+    user = User.objects.get(pk=request.user.id)
+    packet = Packet.objects.get(slug=slug)
+    data = request.data
+    serializer = RemoveReasonSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save(packet=packet)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def check_report(request, slug):
+    user = User.objects.get(pk=request.user.id)
+    packet = Packet.objects.get(slug=slug)
+    if Report.objects.filter(owner=user, packet=packet).exists():
+        return JsonResponse({"report": True})
+    else:
+        return JsonResponse({"report": False})
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def add_report(request):
+    user = User.objects.get(pk=request.user.id)
+    packet = Packet.objects.get(slug=request.data.get('packet'))
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save(owner=user, packet=packet)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
+

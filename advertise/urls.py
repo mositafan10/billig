@@ -19,6 +19,9 @@ urlpatterns = [
     path('user_packet/', views.packet_list_user, name='packet_list_user'),
     path('user_packet/completed/', views.packet_list_user_completed, name='packet_list_user_completed'),
     path('get_picture/<str:slug>/', views.get_picture, name='get_picture'),
-    path('getuseroffer/<str:travel>', views.get_user_offer, name='get_user_offer'),
-    path('categoryList/<int:level>', views.category_list, name='category-list'),
+    path('getuseroffer/<str:travel>/', views.get_user_offer, name='get_user_offer'),
+    path('categoryList/<int:level>/', views.category_list, name='category-list'),
+    path('removeReason/<str:slug>/', views.add_remove_reason, name='add_remove_reason'),
+    path('report/', views.add_report, name='add_report'),
+    path('reports/<str:slug>/', views.check_report, name='check_report'),
 ]

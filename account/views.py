@@ -142,10 +142,14 @@ def login(request):
     first_time = False
     try:
         user = User.objects.get(phone_number=new_phone_number)
-        if not user.check_password(password):
-            raise AuthenticationFailed(detail=_(".رمز عبور اشتباه است. مجدد تلاش کنید"))
-        token = Token.objects.get(user=user)
-        return JsonResponse({"token": str(token.key), "user": user.slug, "first_time": first_time})
+        # Check the user is active or not 
+        if user.is_active:
+            if not user.check_password(password):
+                raise AuthenticationFailed(detail=_(".رمز عبور اشتباه است. مجدد تلاش کنید"))
+            token = Token.objects.get(user=user)
+            return JsonResponse({"token": str(token.key), "user": user.slug, "first_time": first_time})
+        else:
+            raise AuthenticationFailed(detail=_(".حساب کاربری غیرفعال شده است. موضوع را از پشتیبانی سایت پیگیری نمایید"))
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_(".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید"))        
 

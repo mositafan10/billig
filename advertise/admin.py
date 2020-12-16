@@ -1,25 +1,37 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category
+from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category, RemoveReason
 from account.models import Country, City
+from django.utils.translation import ngettext
+from django.contrib import messages
 
 
 @register(Packet)
 class PacketAdmin(admin.ModelAdmin):
-    list_display  = ('id','slug','owner_user','title','origin_country','destination_country','phonenumber_visible',
+    list_display  = ('id','slug','title','owner_user','origin_country','destination_country',
                     'category','buy','get_pictures','weight','dimension','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
     list_filter   = ('origin_country','category','create_at', 'status','dimension')
     raw_id_fields = ("owner",) 
     search_fields = ('owner___username','category')
+    actions = ['make_approve']
 
     def owner_user(self, obj):
         return obj.owner.phone_number
 
     def get_pictures(self,obj):
-        return obj.picture
+        return obj.picture  
+    
+    def make_approve(self, request, queryset):
+        updated = queryset.update(status=0)
+        self.message_user(request, ngettext(
+            '%d packet was successfully marked as approved.',
+            '%d packets were successfully marked as approved.',
+            updated,
+        ) % updated, messages.SUCCESS)
     
     get_pictures.short_description  = "pictures" 
+    make_approve.short_description = "Mark selected packets as approved"
 
 
 @register(City)
@@ -79,7 +91,7 @@ class BookmarkAdmin(admin.ModelAdmin):
 
 @register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ('id','owner','packet','text','create_at')
+    list_display = ('id','owner','packet','title','text','create_at')
 
 
 @register(PacketPicture)
@@ -96,6 +108,12 @@ class BuyinfoAdmin(admin.ModelAdmin):
 class BuyinfoAdmin(admin.ModelAdmin):
     list_display = ( 'id', 'name', 'is_active')
     list_editable = ('is_active',)
+
+
+@register(RemoveReason)
+class RemoveReasonAdmin(admin.ModelAdmin):
+    list_display = ( 'id','packet','type_remove', 'description')
+
 
 
 

@@ -3,17 +3,19 @@ from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.db import IntegrityError
 from django.db import models
+from django.utils.functional import cached_property
 
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug, send_sms_publish
-from core.constant import TRAVEL_STATUS, PACKET_STATUS, Offer, DIMENSION
+from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices
 from chat.utils import send_to_chat
 import string, json
 from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
 
 
+# We can add type fild for future. For example gift type. TODO
 class Packet(BaseModel):
     title = models.CharField(max_length=50)
     owner = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -23,9 +25,9 @@ class Packet(BaseModel):
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name="category")
-    category_other = models.CharField(max_length=50, blank=True, null=True)
+    category_other = models.CharField(max_length=50, blank=True, null=True)  # Recheck TODO
     weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
-    dimension = models.IntegerField(choices=DIMENSION)
+    dimension = models.IntegerField(choices=Dimension)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
     phonenumber_visible = models.BooleanField(default=False) # should be removed TODO
@@ -34,10 +36,10 @@ class Packet(BaseModel):
     offer_count = models.PositiveIntegerField(default=0)
     description = models.CharField(max_length=1000)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    status = models.IntegerField(choices=PACKET_STATUS, default=0)
+    status = models.IntegerField(choices=PacketStatus, default=0)
  
     def __str__(self):
-        return str(self.id)
+        return '%s - %s - %s' %(self.id, self.slug, self.title)
     
     @property
     def owner_name(self):
@@ -114,7 +116,7 @@ class Travel(BaseModel):
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
-    status = models.IntegerField(choices=TRAVEL_STATUS, default=2)
+    status = models.IntegerField(choices=TravelStatus, default=2)
     
     def __str__(self):
         return str(self.id)
@@ -281,11 +283,13 @@ class Offer(BaseModel):
         return self.packet.owner.slug
     
     @property
+    @cached_property # Should be test TODO
     def sender_avatar(self):
         profile = Profile.objects.get(user=self.travel.owner)
         return str(profile.picture)
 
     @property
+    @cached_property # Should be test TODO
     def receiver_avatar(self):
         profile = Profile.objects.get(user=self.packet.owner)
         return str(profile.picture)
@@ -346,8 +350,8 @@ class Bookmark(BaseModel):
 class Report(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE)
-    title = models.CharField(max_length=15)
-    text = models.TextField()
+    title = models.IntegerField(choices=ReportChoices) # This needs choices TODO
+    text = models.TextField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
 
     def __str__(self):
@@ -389,3 +393,12 @@ class Category(BaseModel):
 
     def __str__(self):
         return str(self.name)
+
+
+class RemoveReason(BaseModel):
+    packet = models.ForeignKey(Packet, on_delete=models.Case)
+    type_remove = models.IntegerField(choices=RemoveChoices)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.packet.title
