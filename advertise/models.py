@@ -3,7 +3,6 @@ from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.db import IntegrityError
 from django.db import models
-from django.utils.functional import cached_property
 
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
@@ -283,13 +282,11 @@ class Offer(BaseModel):
         return self.packet.owner.slug
     
     @property
-    @cached_property # Should be test TODO
     def sender_avatar(self):
         profile = Profile.objects.get(user=self.travel.owner)
         return str(profile.picture)
 
     @property
-    @cached_property # Should be test TODO
     def receiver_avatar(self):
         profile = Profile.objects.get(user=self.packet.owner)
         return str(profile.picture)
