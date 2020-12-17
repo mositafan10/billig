@@ -231,7 +231,7 @@ def bookmark(request, slug):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=slug)
     if request.method == 'GET':
-        if Bookmark.objects.filter(owner=user, packet=packet).exists():
+        if Bookmark.objects.filter(owner=user, packet=packet).exists() is not True:
             return JsonResponse({"bookmark":True})
         else:
             return JsonResponse({"bookmark":False})
@@ -297,7 +297,7 @@ def offer(request):
 
     # between which of offers we should serach ? TODO
     # should be used "get" instead "filter" because there is just on offer between on packet and one travel. TODO
-    if Offer.objects.filter(travel=travel, packet=packet).exists():
+    if Offer.objects.filter(travel=travel, packet=packet).exists() is not True:
         if packet.owner != user :
             data = request.data
             serializer = OfferDeserializer(data=data)
@@ -404,7 +404,7 @@ def add_remove_reason(request, slug):
 def check_report(request, slug):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=slug)
-    if Report.objects.filter(owner=user, packet=packet).exists():
+    if Report.objects.filter(owner=user, packet=packet).exists() is not True:
         return JsonResponse({"report": True})
     else:
         return JsonResponse({"report": False})
