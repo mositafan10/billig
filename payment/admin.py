@@ -10,8 +10,9 @@ class TransactionReceiveAdmin(admin.ModelAdmin):
 
 @register(TransactionSend)
 class TransactionSendAdmin(admin.ModelAdmin):
-    list_display = ('id','user','travel','amount','status','create_at')
+    list_display = ('id','user','travel','amount','status','transaction_id','create_at')
     list_editable = ('status',)
+
 
 @register(Bank)
 class BankAdmin(admin.ModelAdmin):

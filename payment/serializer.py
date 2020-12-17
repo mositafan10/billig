@@ -10,7 +10,7 @@ class TransactionReceiveSerializer(serializers.ModelSerializer):
 class TransactionSendSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransactionSend
-        fields = ('transId','amount','create_at')
+        fields = ('transaction_id','amount','create_at','status')
 
 class BankSerializer(serializers.ModelSerializer):
     class Meta:

@@ -114,7 +114,6 @@ def pay_to_traveler(request):
     transaction.save()
     return HttpResponse(status=201)
     
-    
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])

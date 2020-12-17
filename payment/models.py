@@ -50,6 +50,7 @@ class TransactionSend(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_travel")
     travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel")
     amount = models.PositiveIntegerField()
+    transaction_id = models.CharField(max_length=15, null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     status = models.IntegerField(choices=pay_status, default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
@@ -59,9 +60,11 @@ class TransactionSend(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.status == 1:
-            state = pay_to_traveler(self.user, self.amount, self.travel, self.bank.number)
-            if state:
+            state = pay_to_traveler(self.user, self.amount, self.travel, self.bank.number, self.slug)
+            print("state", state)
+            if state['status']:
                 self.status = 2
+                self.transaction_id = state['transaction_id']
                 self.travel.status = 6
                 self.travel.save()
             else:
