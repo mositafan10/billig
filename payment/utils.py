@@ -2,7 +2,7 @@ from advertise.models import Travel
 import requests
 
 def pay_to_traveler(user, amount, payment_number, account_number):
-    business = Billlig
+    business = "Billlig"
     travel = Travel.objects.get(slug=payment_number)
     data = {
         "amount": amount,
