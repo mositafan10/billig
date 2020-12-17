@@ -415,6 +415,9 @@ def check_report(request, slug):
 def add_report(request):
     user = User.objects.get(pk=request.user.id)
     packet = Packet.objects.get(slug=request.data.get('packet'))
+    if user == packet.owner:
+        detail = _("این آگهی برای خودتان است")
+        raise JsonResponse({"detail":detail},status=400)
     data = request.data
     serializer = ReportSerializer(data=data)
     if serializer.is_valid():

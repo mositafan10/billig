@@ -21,7 +21,7 @@ class Bank(BaseModel):
     name = models.CharField(max_length=30)
     number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False) # How we want to active account TODO
 
     def __str__(self):
         return str(self.slug)
@@ -31,7 +31,7 @@ class Bank(BaseModel):
 # So it is better to remove packet and add offer TODO
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
-    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="travel")
+    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet")
     transId = models.BigIntegerField()
     amount = models.FloatField()
     status = models.BooleanField()

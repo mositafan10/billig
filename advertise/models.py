@@ -145,7 +145,7 @@ class Travel(BaseModel):
                 offer.delete()
             super().delete(*args, **kwargs)
         else:
-            raise PermissionDenied(detail=_(".امکان حذف این سفر نیست"))
+            raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد امکان حذف  سفر وجود ندارد."))
             
 
 class Offer(BaseModel):
