@@ -6,9 +6,6 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 from core.utils import generate_slug
 
-
-
-
 pay_status = [
     (0,'در انتظار تایید'),
     (1,'تایید پرداخت'),
