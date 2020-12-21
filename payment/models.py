@@ -39,6 +39,10 @@ class TransactionReceive(BaseModel):
     
     def __str__(self):
         return str(self.slug)
+    
+    @property
+    def packetTitle(self):
+        return self.packet.title
 
     def save(self, *args, **kwargs):
         self.packet.status = 3   # Change state to doing
@@ -57,6 +61,10 @@ class TransactionSend(BaseModel):
 
     def __str__(self):
         return str(self.slug)
+
+    @property
+    def travelTitle(self):
+        return '%s --> %s (%s)' %(self.travel.departure, self.travel.destination, self.travel.flight_date_start)
 
     def save(self, *args, **kwargs):
         if self.status == 1:

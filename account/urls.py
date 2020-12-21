@@ -20,6 +20,7 @@ urlpatterns = [
     path('rating/', views.rating, name="rate_user"),
     path('rate_user_list/<str:user>', views.rate_user_list, name="get_user_comment"),
     path('comments/', views.comment, name="get_user_comment"),
+    path('myComments/', views.myComment, name="get_my_comment"),
     path('comments_billlig/', views.comments_billlig, name="comments_billlig"),
     path('changepassword/', views.change_password, name="change_password"),
     path('newsletter/', views.newsletter, name='newsletter'),

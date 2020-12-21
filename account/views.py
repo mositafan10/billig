@@ -274,7 +274,7 @@ def get_user_info(request):
     total = 0
     for conversation in conversations:
         total += conversation.not_seen 
-    return JsonResponse({"data":serializer.data,"total":total})
+    return JsonResponse({"data":serializer.data ,"total":total})
 
 
 @permission_classes([IsAuthenticated])
@@ -353,7 +353,6 @@ def rate_user_list(request, user):
     serializer = ScoreSerializer(scores, many=True)
     return JsonResponse(serializer.data, safe=False)
 
-# These are same TODO
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -361,6 +360,16 @@ def comment(request):
     user = User.objects.get(pk=request.user.id)
     profile = Profile.objects.get(user=user) 
     comment = Score.objects.filter(reciever=profile)
+    serializer = ScoreSerializer(comment, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def myComment(request):
+    user = User.objects.get(pk=request.user.id)
+    profile = Profile.objects.get(user=user) 
+    comment = Score.objects.filter(owner=profile)
     serializer = ScoreSerializer(comment, many=True)
     return JsonResponse(serializer.data, safe=False)
 

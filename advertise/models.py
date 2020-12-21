@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug, send_sms_publish
-from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices
+from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, OfferChoices
 from chat.utils import send_to_chat
 import string, json
 from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
@@ -36,6 +36,7 @@ class Packet(BaseModel):
     description = models.CharField(max_length=1000)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
     status = models.IntegerField(choices=PacketStatus, default=0)
+    
  
     def __str__(self):
         return '%s - %s - %s' %(self.id, self.slug, self.title)
@@ -66,25 +67,21 @@ class Packet(BaseModel):
         if self._state.adding:
             send_admin_text(self.status, self.title, self.owner)
 
-        #chack same country when packet is created
+        # Check same country when packet is created
         if self.origin_country == self.destination_country:
             if self.origin_city == self.destination_city:
                 raise PermissionDenied(detail=_("امکان یکی بودن مبدا و مقصد وجود ندارد"))
         
         # Send admin text
         if self.status == 10 or self.status == 11:
-            send_admin_text(self.status, self.title, self.owner)
+            # send_admin_text(self.status, self.title, self.owner)
+            pass
         
         # Increase number of billlig_done by user
         if self.status == 7:
             profile = Profile.objects.get(user=self.owner)
             profile.billlig_done += 1
             profile.save()
-    
-        # defualt picture
-        if self.picture == 1:
-            picture = PacketPicture.objects.get(pk=1)
-            self.picture = picture.slug
 
         super().save(*args, **kwargs)
     
@@ -109,9 +106,9 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     flight_date_start = models.DateField()
     flight_date_end = models.DateField(blank=True, null=True)
-    visit_count = models.PositiveIntegerField(default=0) # This is useless. 
+    visit_count = models.PositiveIntegerField(default=0) # This is useless. TODO
     offer_count = models.PositiveIntegerField(default=0)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True) # This is useless. TODO
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
@@ -155,6 +152,7 @@ class Offer(BaseModel):
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
     status = models.IntegerField(choices=Offer, default=0)
+    offer_type = models.IntegerField(choices=OfferChoices, default=0)
 
     def __str__(self):
         return "%s --> %s" %(self.packet.owner,self.travel.owner)
@@ -384,6 +382,7 @@ class Buyinfo(BaseModel):
 
 class Category(BaseModel):
     name = models.CharField(max_length=30)
+    eng_name = models.CharField(max_length=30)
     picture = models.ImageField(upload_to='images/category')
     level = models.IntegerField()
     is_active = models.BooleanField(default=True)

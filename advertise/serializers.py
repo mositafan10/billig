@@ -6,7 +6,7 @@ from account.serializers import CountrySerializer, CitySerializer, UserSerialize
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id','name','picture')
+        fields = ('id','name','eng_name','picture')
 
 class PacketDeserializer(serializers.ModelSerializer):
     class Meta:

@@ -24,17 +24,19 @@ def send_admin_text(status, packet, receiver):
     switcher = {
         0 : "آگهی {} منتشر شد. این آگهی به مدت یک ماه بر روی سایت باقی خواهد ماند".format(packet),
         10 : "آگهی {} در انتظار تایید است. خواهشمندیم منتظر بمانید.".format(packet),
-        11 : "آگهی {} به دلیل عدم مطابقت با سیاست‌های بیلیگ منتشر نشد.".format(packet),
+        11 : "آگهی {} به دلیل عدم مطابقت با قوانین بیلیگ منتشر نشد.".format(packet),
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=0, text=text, owner=admin)
     if status == 0:
         try:
+            pass
             send_sms_publish(receiver.phone_number, packet)
         except:
             pass # What should we do here ? TODO
     elif status == 11:
         try:
+            pass
             send_sms_notpublish(receiver.phone_number, packet)
         except:
             pass # What should we do here ? TODO

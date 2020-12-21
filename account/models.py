@@ -31,7 +31,7 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, phone_number, password=None):
         if password is None :
-            raise TypeError("ایمیل خود را وارد کنید")
+            raise TypeError(_("ایمیل خود را وارد کنید"))
         user = self.create_user(phone_number, password)
         user.is_superuser = True
         user.is_staff = True
@@ -57,7 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Profile (BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m') 
+    picture = models.ImageField(blank=True, null=True, upload_to='images/profile_picture/%Y/%m', default='images/user.png') 
     country = models.ForeignKey('Country', on_delete=models.CASCADE, blank=True, null=True)
     city = models.ForeignKey('City', on_delete=models.CASCADE, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
@@ -100,14 +100,26 @@ class Score(BaseModel):
     @property
     def owner_avatar(self):
         return str(self.owner.picture)
+    
+    @property
+    def receiver_avatar(self):
+        return str(self.reciever.picture)
 
     @property
     def owner_name(self):
         return self.owner.user.name
 
     @property
+    def receiver_name(self):
+        return self.reciever.user.name
+
+    @property
     def owner_slug(self):
         return self.owner.user.slug
+
+    @property
+    def receiver_slug(self):
+        return self.reciever.user.slug
 
     def save(self, *args, **kwargs):
         if self.score: 

@@ -35,7 +35,8 @@ def chat_list(request):
 @permission_classes([permissions.IsAuthenticated])
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
-    massages = Massage.objects.filter(chat_id=chatid).order_by('-create_at') 
+    conversation = Conversation.objects.get(slug=chatid)
+    massages = Massage.objects.filter(chat_id=conversation).order_by('-create_at') 
     for massage in massages:
         if massage.owner != user and massage.is_seen == False:
             massage.is_seen = True
