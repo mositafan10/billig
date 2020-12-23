@@ -34,7 +34,7 @@ class Packet(BaseModel):
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.CharField(max_length=1000)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     status = models.IntegerField(choices=PacketStatus, default=0)
     
  
@@ -111,7 +111,7 @@ class Travel(BaseModel):
     description = models.TextField(blank=True, null=True) # This is useless. TODO
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True)
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True)
     status = models.IntegerField(choices=TravelStatus, default=2)
     
     def __str__(self):

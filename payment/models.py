@@ -17,7 +17,7 @@ class Bank(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=30)
     number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     is_active = models.BooleanField(default=False) # How we want to active account TODO
 
     def __str__(self):
@@ -35,7 +35,7 @@ class TransactionReceive(BaseModel):
     factorNumber = models.CharField(max_length=8)
     cardNumber = models.CharField(max_length=16)
     paymentDate = models.CharField(max_length=20)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     
     def __str__(self):
         return str(self.slug)
@@ -57,7 +57,7 @@ class TransactionSend(BaseModel):
     transaction_id = models.CharField(max_length=15, null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     status = models.IntegerField(choices=pay_status, default=0)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
 
     def __str__(self):
         return str(self.slug)

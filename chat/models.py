@@ -12,7 +12,7 @@ class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     not_seen = models.PositiveIntegerField(default=0)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True, db_index=True) 
+    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
