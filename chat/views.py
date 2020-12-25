@@ -46,6 +46,22 @@ def massage_list(request, chatid):
     result_page = paginator.paginate_queryset(massages, request)
     serializer = MassageSerializer(result_page, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def new_massage_list(request, chatid):
+    user = User.objects.get(pk=request.user.id)
+    conversation = Conversation.objects.get(slug=chatid)
+    massages = Massage.objects.filter(chat_id=conversation, is_seen=False).order_by('-create_at') 
+    for massage in massages:
+        if massage.owner != user and massage.is_seen == False:
+            massage.is_seen = True
+            massage.save()
+    paginator = PageNumberPagination()
+    paginator.page_size = request.GET.get('count',20)
+    result_page = paginator.paginate_queryset(massages, request)
+    serializer = MassageSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
     
 
 @api_view(['POST'])
