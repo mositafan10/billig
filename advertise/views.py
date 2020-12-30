@@ -103,7 +103,7 @@ def packet_list_user_completed(request):
 
 
 @permission_classes([AllowAny, IsAuthenticated])
-@api_view(['PUT','POST','GET'])
+@api_view(['PUT','DELETE','GET'])
 def packet_edit(request, slug):
     try:
         packet = Packet.objects.get(slug=slug)
@@ -115,6 +115,7 @@ def packet_edit(request, slug):
         packet.save()
         serilaizer = PacketSerializer(packet)
         return JsonResponse(serilaizer.data, safe=False)
+    print(request.user.id)
     user = User.objects.get(pk=request.user.id)
     if user == packet.owner:
         if request.method == 'PUT' and IsAuthenticated: 
@@ -141,7 +142,7 @@ def packet_edit(request, slug):
                     buyinfo, is_created = Buyinfo.objects.get_or_create(packet=packet, price=price, link=link)
                 return JsonResponse(serializer.data)
             return JsonResponse(serializer.errors, status=400)
-        elif request.method == 'POST' and IsAuthenticated:
+        elif request.method == 'DELETE' and IsAuthenticated:
             packet.status = 8
             packet.save()
             return HttpResponse(status=204)

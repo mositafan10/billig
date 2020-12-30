@@ -1,11 +1,12 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
-from account.models import User, BaseModel, Profile
 from advertise.models import Offer
+from account.models import User, BaseModel, Profile
 from datetime import datetime
 from core.utils import generate_slug
 from core.constant import Massage_TYPE
+import time
 
  
 class Conversation(BaseModel):
@@ -36,6 +37,8 @@ class Conversation(BaseModel):
 
     @property
     def sender_username(self):
+        offer = Offer.objects.get(slug=self.slug)
+        print(offer)
         return str(self.sender.username)
 
     @property
@@ -49,15 +52,6 @@ class Conversation(BaseModel):
         user = self.receiver
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
-
-    @property
-    def packet_title(self):
-        # slug = str(self.slug)
-        slug = self.slug
-        print(slug)
-        offer = Offer.objects.get(slug="KglOFRGA")
-        print(offer)
-        return str(offer)
 
 
 class Massage(BaseModel):
@@ -92,14 +86,9 @@ class Massage(BaseModel):
             last_massage_date = massages[0].create_at
             self.chat_id.updated_at = datetime.now()
             self.chat_id.save()
-            if (last_massage_date.date() != datetime.now().date()):
+            if (last_massage_date.date() != datetime.utcnow().date()):
                 self.first_day = True
         except:
             self.first_day = True
         super().save(*args, **kwargs)
-    
-  
-
-
-
 

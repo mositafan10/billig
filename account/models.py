@@ -133,7 +133,7 @@ class Score(BaseModel):
 class Country(BaseModel):
     name = models.CharField(max_length=15)
     eng_name = models.CharField(max_length=15)
-    icon = models.ImageField(blank=True, null=True, upload_to='images/country')
+    icon = models.FileField(blank=True, null=True, upload_to='images/country')
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

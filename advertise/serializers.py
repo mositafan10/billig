@@ -73,9 +73,10 @@ class TravelDeserializer(serializers.ModelSerializer):
 
 class OfferSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
+    packet_category = CategorySerializer()
     class Meta:
         model = Offer
-        fields = ('slug','price','parcel_price','parcel_price_offer','status','description','sender','sender_slug','sender_avatar','receiver_avatar','receiver','receiver_slug','packet_slug', 'packet_title', 'buy', 'travel_info')
+        fields = ('slug','price','parcel_price','parcel_price_offer','status','description','sender','sender_slug','sender_avatar','receiver_avatar','receiver','receiver_slug','packet_slug', 'packet_title', 'packet_picture', 'packet_category', 'buy', 'travel_info')
 
 
 class OfferDeserializer(serializers.ModelSerializer):

@@ -47,6 +47,7 @@ def massage_list(request, chatid):
     serializer = MassageSerializer(result_page, many=True)
     return paginator.get_paginated_response(serializer.data)
 
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def new_massage_list(request, chatid):
@@ -103,11 +104,12 @@ def add_massage(request, chatid):
         if request.FILES.get('billig') != None:
             newdoc = Massage(picture=request.FILES.get('billig'), owner=user, chat_id=conversation)
             newdoc.save()
+            serializer = MassageSerializer(newdoc)
             try:
                 send_chat_notification(receiver, 1)
             except:
                 pass
-            return HttpResponse(status=200)
+            return JsonResponse(serializer.data, safe=False)
         else :
             serializer = MassageDeserializer(data=data)
             if serializer.is_valid():

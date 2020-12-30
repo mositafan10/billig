@@ -34,7 +34,7 @@ class Packet(BaseModel):
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.CharField(max_length=1000)
-    slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
+    slug = models.CharField(default=generate_slug, max_length=10, editable=False, unique=True) 
     status = models.IntegerField(choices=PacketStatus, default=0)
     
  
@@ -66,6 +66,12 @@ class Packet(BaseModel):
         # Send admin text while create packet   
         if self._state.adding:
             send_admin_text(self.status, self.title, self.owner)
+
+             # Different slug for buy and post packet
+            if self.buy:
+                self.slug = 'b%s' %(self.slug)
+            else:
+                self.slug = 'p%s' %(self.slug)
 
         # Check same country when packet is created
         if self.origin_country == self.destination_country:
@@ -296,6 +302,18 @@ class Offer(BaseModel):
     @property
     def packet_title(self):
         return self.packet.title
+
+    @property
+    def packet_picture(self):
+        return self.packet.picture
+
+    @property
+    def packet_category(self):
+        # data = {
+        #     "name": self.packet.category.name,
+        #     "picture": str(self.packet.category.picture)
+        #     }
+        return (self.packet.category)                                                                      
 
     @property
     def parcel_price(self):
