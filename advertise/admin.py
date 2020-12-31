@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category, RemoveReason
+from .models import *
 from account.models import Country, City
 from django.utils.translation import ngettext
 from django.contrib import messages
@@ -113,6 +113,11 @@ class BuyinfoAdmin(admin.ModelAdmin):
 @register(RemoveReason)
 class RemoveReasonAdmin(admin.ModelAdmin):
     list_display = ( 'id','packet','type_remove', 'description')
+
+
+@register(TravelRemoveReason)
+class TravelRemoveReasonAdmin(admin.ModelAdmin):
+    list_display = ( 'id','travel','type_remove', 'description')
 
 
 

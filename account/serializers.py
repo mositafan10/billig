@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ('level','score','picture','name','travel_done','joined_at')
+        fields = ('level','score','picture','name','travel_done','billlig_done','joined_at')
 
 class PrivateProfileSerializer(serializers.ModelSerializer):
     country = CountrySerializer()

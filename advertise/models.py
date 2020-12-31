@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug, send_sms_publish
-from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, OfferChoices
+from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices
 from chat.utils import send_to_chat
 import string, json
 from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
@@ -94,14 +94,14 @@ class Packet(BaseModel):
     # Question is if a owner of packet wnats to delete it, what do we do ? TODO
     # Check the correct error on frontend
     # when travel could be deleted then the all its offers should be deleted
-    def delete(self, *args, **kwargs):
-        if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
-            raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد، امکان حذف وجود ندارد"))
-        else:
-            offers = Offer.objects.filter(packet=self)
-            for offer in offers :
-                offer.delete()
-            super().delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
+    #         raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد، امکان حذف وجود ندارد"))
+    #     else:
+    #         offers = Offer.objects.filter(packet=self)
+    #         for offer in offers :
+    #             offer.delete()
+    #         super().delete(*args, **kwargs)
 
         
 class Travel(BaseModel):
@@ -140,12 +140,16 @@ class Travel(BaseModel):
     def delete(self, *args, **kwargs):
         # Question is if a owner of travel wnats to delete it, what do we do ? TODO
         # when travel could be deleted then the all its offers should be deleted
-        # if self.status == 3 and self.status == 4 and self.status == 8:
         if self.status == 2:
-            offers = Offer.objects.filter(travel=self)
-            for offer in offers :
-                offer.delete()
-            super().delete(*args, **kwargs)
+            # travel = Travel.objects.get(slug=self.slug)
+            # try:
+            #     offers = Offer.objects.filter(travel=travel)
+            #     for offer in offers :
+            #         print(offer)
+            #         offer.delete()
+            # except expression as identifier:
+            #     pass
+            super().delete(args, **kwargs)
         else:
             raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد امکان حذف  سفر وجود ندارد."))
             
@@ -416,3 +420,12 @@ class RemoveReason(BaseModel):
 
     def __str__(self):
         return self.packet.title
+
+
+class TravelRemoveReason(BaseModel):
+    travel = models.ForeignKey(Travel, on_delete=models.Case)
+    type_remove = models.IntegerField(choices=TravelRemoveReason)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.travel.title

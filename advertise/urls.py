@@ -22,6 +22,7 @@ urlpatterns = [
     path('getuseroffer/<str:travel>/', views.get_user_offer, name='get_user_offer'),
     path('categoryList/<int:level>/', views.category_list, name='category-list'),
     path('removeReason/<str:slug>/', views.add_remove_reason, name='add_remove_reason'),
+    path('travelRemoveReason/<str:slug>/', views.add_travel_remove_reason, name='add_travel_remove_reason'),
     path('report/', views.add_report, name='add_report'),
     path('reports/<str:slug>/', views.check_report, name='check_report'),
 ]

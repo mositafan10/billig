@@ -204,14 +204,14 @@ def travel_detail(request, pk):
         travel = Travel.objects.get(slug=pk)
     except Travel.DoesNotExist:
         raise NotFound
-    if User.objects.get(pk=request.user.id) == travel.owner:
+    user = User.objects.get(pk=request.user.id)
+    if user == travel.owner:
         # For travel edit
         if request.method == 'GET':
             serializer = TravelDeserializer(travel)
             return JsonResponse(serializer.data)
         if request.method == 'PUT':
             if travel.status == 2 :
-                user = User.objects.get(pk=request.user.id)
                 data = request.data
                 serializer = TravelSerializer(data=data)
                 if serializer.is_valid():
@@ -227,7 +227,8 @@ def travel_detail(request, pk):
                 raise PermissionDenied(detail=_("امکان ویرایش این سفر وجود ندارد"))
         elif request.method == 'DELETE':
             if travel.status == 0 or travel.status == 2:
-                travel.delete()
+                travel.status = 5
+                travel.save()
                 return HttpResponse(status=204)
             else:
                 raise PermissionDenied(detail=_("امکان حذف این سفر وجود ندارد"))
@@ -410,6 +411,19 @@ def add_remove_reason(request, slug):
     serializer = RemoveReasonSerializer(data=data)
     if serializer.is_valid():
         serializer.save(packet=packet)
+        return JsonResponse(serializer.data, status=201)
+    return JsonResponse(serializer.errors, status=400)
+
+
+@permission_classes([IsOwnerPacketOrReadOnly])
+@api_view(['POST'])
+def add_travel_remove_reason(request, slug):
+    user = User.objects.get(pk=request.user.id)
+    travel = Travel.objects.get(slug=slug)
+    data = request.data
+    serializer = TravelRemoveReasonSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save(travel=travel)
         return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
 
