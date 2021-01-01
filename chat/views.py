@@ -50,6 +50,19 @@ def massage_list(request, chatid):
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
+def massage_seen(request, chatid):
+    user = User.objects.get(pk=request.user.id)
+    conversation = Conversation.objects.get(slug=chatid)
+    massages = Massage.objects.filter(chat_id=conversation).order_by('-create_at') 
+    for massage in massages:
+        if massage.owner != user and massage.is_seen == False:
+            massage.is_seen = True
+            massage.save()
+    return HttpResponse(status=200)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
 def new_massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(slug=chatid)

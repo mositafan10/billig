@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, Buyinfo, Category, RemoveReason
+from .models import *
 from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
@@ -119,5 +119,11 @@ class BuyinfoSerializer(serializers.ModelSerializer):
 class RemoveReasonSerializer(serializers.ModelSerializer):
     class Meta:
         model = RemoveReason
+        fields = ('type_remove','description')
+
+
+class TravelRemoveReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TravelRemoveReason
         fields = ('type_remove','description')
 
