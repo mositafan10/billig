@@ -8,11 +8,18 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('id','name','eng_name','picture')
 
+
+class SubCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id','name','eng_name')
+
+
 class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = (
-            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'category_other', 'buy',
+            'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'subcategory', 'buy',
             'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name', 'phonenumber_visible','no_matter_origin')
 
 
@@ -29,7 +36,7 @@ class PacketSerializer(serializers.ModelSerializer):
         model = Packet
         fields = (
             'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy', 'phonenumber_visible','no_matter_origin',
-            'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link','phonenumber'
+            'category', 'subcategory', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link','phonenumber'
         )
 
 class PacketSerializer1(serializers.ModelSerializer):
@@ -43,7 +50,7 @@ class PacketSerializer1(serializers.ModelSerializer):
         model = Packet
         fields = (
             'slug','title','owner_name', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy',
-            'category','dimension','weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status','no_matter_origin',
+            'category', 'subcategory','dimension','weight', 'suggested_price', 'description', 'offer_count', 'create_at', 'status','no_matter_origin',
         )
 
     
@@ -91,6 +98,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
         fields = ('packet',)
+
 
 class BookmarkDeserializer(serializers.ModelSerializer):
     class Meta:

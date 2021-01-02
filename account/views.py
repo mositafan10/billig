@@ -56,7 +56,7 @@ def signup(request):
         try:
             password_validation.validate_password(password)
         except:
-            detail=_("رمز عبور باید شامل یک حرف باشد")
+            detail=_("رمز انتخاب شده معتبر نیست")
             raise ValidationError({"detail": detail})
     try:
         user = User.objects.get(phone_number=new_phone_number)
@@ -64,7 +64,7 @@ def signup(request):
         return JsonResponse({"detail": detail},status=403)
     except:
         otp = generate_otp()
-        # print(otp)
+        print(otp)
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
         if setPhoneCache(new_phone_number):
             set_otp(new_phone_number, otp)
@@ -149,7 +149,7 @@ def login(request):
             token = Token.objects.get(user=user)
             return JsonResponse({"token": str(token.key), "user": user.slug, "first_time": first_time})
         else:
-            raise AuthenticationFailed(detail=_(".حساب کاربری غیرفعال شده است. موضوع را از پشتیبانی سایت پیگیری نمایید"))
+            raise AuthenticationFailed(detail=_(".حساب کاربری شما غیرفعال شده است."))
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_(".نام کاربری در سایت یافت نشد. ابتدا در سایت ثبت نام کنید"))        
 
@@ -458,7 +458,11 @@ def token_validation(request):
     token = request.data.get('token')
     try:
         token = Token.objects.get(key=token)
-        return JsonResponse({"valid":True})
+        if token.user.is_active:
+            return JsonResponse({"valid":True})
+        else:
+            detail = _("حساب کاربری شما غیر فعال شده است")
+            raise PermissionDenied(detail=detail)
     except Token.DoesNotExist:
         return JsonResponse({"valid":False})
 

@@ -110,6 +110,12 @@ class BuyinfoAdmin(admin.ModelAdmin):
     list_editable = ('is_active',)
 
 
+@register(SubCategory)
+class BuyinfoAdmin(admin.ModelAdmin):
+    list_display = ( 'id', 'name', 'is_active')
+    list_editable = ('is_active',)
+
+
 @register(RemoveReason)
 class RemoveReasonAdmin(admin.ModelAdmin):
     list_display = ( 'id','packet','type_remove', 'description')

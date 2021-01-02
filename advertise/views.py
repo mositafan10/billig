@@ -16,10 +16,11 @@ from rest_framework.pagination import PageNumberPagination
 
 from account.models import User, Country, City, Profile
 from core.constant import Expire_Date_Billlig
+from core.utils import send_chat_notification
 
-from .models import Packet, Travel, Offer, Bookmark, Report, PacketPicture, RemoveReason, Category
-from .utils import send_to_chat
+from .models import *
 from .serializers import *
+from .utils import send_to_chat
 from .permissions import IsOwnerPacketOrReadOnly
 
 import json
@@ -28,10 +29,9 @@ import json
 @permission_classes([AllowAny])
 def packet_list(request, country, category):
     # Send just last month orders ( one month expiration policy )
-    print("country",country)
-    print("category",category)
     packet = Packet.objects.all().filter(create_at__gte=datetime.now()-timedelta(days=Expire_Date_Billlig)).filter(Q(status='0') | Q(status='1') | Q(status='3')).order_by('-create_at')
     filter_packets = packet
+
     # Filter orders Based Country
     if (country == "all"):
         filter_packets = filter_packets
@@ -49,7 +49,6 @@ def packet_list(request, country, category):
             filter_packets = filter_packets.filter(category=request_category)
         except Category.DoesNotExist:
             pass
-    
     paginator = PageNumberPagination()
     paginator.page_size = 12
     result_page = paginator.paginate_queryset(filter_packets, request)
@@ -115,7 +114,6 @@ def packet_edit(request, slug):
         packet.save()
         serilaizer = PacketSerializer(packet)
         return JsonResponse(serilaizer.data, safe=False)
-    print(request.user.id)
     user = User.objects.get(pk=request.user.id)
     if user == packet.owner:
         if request.method == 'PUT' and IsAuthenticated: 
@@ -135,11 +133,16 @@ def packet_edit(request, slug):
                 packet.description = request.data.get('description')
                 packet.phonenumber_visible = request.data.get('phonenumber_visible')
                 packet.no_matter_origin = request.data.get('no_matter_origin')
+                packet.save()
                 if request.data.get('buy'):
                     link = request.data.get('parcel_link')
                     price = request.data.get('parcel_price')
-                    # Should be test TODO
-                    buyinfo, is_created = Buyinfo.objects.get_or_create(packet=packet, price=price, link=link)
+                    slug = packet.packet_info.get().slug
+                    salam = Buyinfo.objects.get(slug=slug)
+                    buyinfo, is_created = Buyinfo.objects.update_or_create(
+                        packet=packet, slug=packet.packet_info.get().slug,
+                        defaults={'price': price, 'link': link, 'packet': packet}
+                        )
                 return JsonResponse(serializer.data)
             return JsonResponse(serializer.errors, status=400)
         elif request.method == 'DELETE' and IsAuthenticated:
@@ -324,26 +327,33 @@ def offer(request):
         raise NotAcceptable(detail)
     
 
-# This should be update just by two user : traveler and billliger.
-# So we need a custom permission here not is_authenticated TODO
-# Should edit url and insert slug into it not in body TODO
 # Should write with try/expection not by if TODO
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
-def offer_update(request):
-    slug = request.data.get('slug')
-    offer = Offer.objects.get(slug=slug)
-    if (request.data.get('price')):
-        price = request.data.get('price')
-        offer.price = price
-    if (request.data.get('status')):
-        status = request.data.get('status')
-        offer.status = status
-    if (request.data.get('parcelPrice')):
-        parcelPrice = request.data.get('parcelPrice')
-        offer.parcelPrice = parcelPrice
-    offer.save()
-    return HttpResponse(status=200)
+def offer_update(request, slug):
+    user = User.objects.get(pk=request.user.id)
+    try:
+        offer = Offer.objects.get(slug=slug)
+        receiver = offer.packet.owner
+        if offer.packet.owner == user:
+            receiver = offer.travel.owner
+    except Offer.DoesNotExist:
+        raise NotFound(detail=_("پیشنهاد مورد نظر پیدا نشد"))
+    if offer.packet.owner == user or offer.travel.owner == user:
+        if (request.data.get('price')):
+            offer.price = request.data.get('price')
+        if (request.data.get('status')):
+            offer.status = request.data.get('status')
+        if (request.data.get('parcelPrice')):
+            offer.parcelPrice = request.data.get('parcelPrice')
+        offer.save()
+        try:
+            send_chat_notification(receiver, 2)
+        except expression as identifier:
+            pass
+        return HttpResponse(status=200)
+    else:
+        raise Exception(detail=_("انجام این عملیات این مقدور نیست"))
 
 
 @permission_classes([IsAuthenticated])
@@ -388,9 +398,17 @@ def get_user_offer(request,travel):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])  
-def category_list(request, level):
-    categories = Category.objects.filter(is_active=True, level=level)
+def category_list(request):
+    categories = Category.objects.filter(is_active=True)
     serializer = CategorySerializer(categories, many=True)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])  
+def subcategory_list(request, category):
+    categories = SubCategory.objects.filter(is_active=True, category=category)
+    serializer = SubCategorySerializer(categories, many=True)
     return JsonResponse(serializer.data, safe=False)
 
 

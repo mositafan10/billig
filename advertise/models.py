@@ -24,7 +24,7 @@ class Packet(BaseModel):
     destination_country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name="destination_country")
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name="category")
-    category_other = models.CharField(max_length=50, blank=True, null=True)  # Recheck TODO
+    subcategory = models.ForeignKey('SubCategory', on_delete=models.CASCADE, related_name="sub_category", null=True, blank=True)
     weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
     dimension = models.IntegerField(choices=Dimension)
     suggested_price = models.PositiveIntegerField(default=0)
@@ -397,6 +397,7 @@ class Buyinfo(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_info")
     link = models.CharField(max_length=100)
     price = models.PositiveIntegerField(default=0)
+    slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
         return str(self.packet.title)
@@ -405,8 +406,17 @@ class Buyinfo(BaseModel):
 class Category(BaseModel):
     name = models.CharField(max_length=30)
     eng_name = models.CharField(max_length=30)
-    picture = models.ImageField(upload_to='images/category')
-    level = models.IntegerField()
+    picture = models.FileField(upload_to='images/category')
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class SubCategory(BaseModel):
+    name = models.CharField(max_length=30)
+    eng_name = models.CharField(max_length=30)
+    categoty = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

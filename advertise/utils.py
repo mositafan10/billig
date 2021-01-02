@@ -13,6 +13,7 @@ def send_to_chat(status, chat_id):
         5:"وضعیت پیشنهاد به «در انتظار تایید خریدار» تبدیل شد.",
         6:"وضعیت پیشنهاد به «انجام شده» تبدیل شد.",
         7:"وضعیت پیشنهاد به «تمام شده» تبدیل شد.",
+        8:"پیشنهاد حذف شد.",
     }
     text = switcher.get(status," ")
     Massage.objects.create(chat_id=conversation, type_text=1, text=text, owner=user)
