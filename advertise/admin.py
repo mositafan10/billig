@@ -36,14 +36,16 @@ class PacketAdmin(admin.ModelAdmin):
 
 @register(City)
 class CityAdmin(admin.ModelAdmin):
-    list_display  = ('id','name','country')
+    list_display  = ('id','name','country','is_active')
     list_filter   = ('country',)
+    list_editable = ('is_active',)
     search_fields = ('name','country')
 
 
 @register(Country)
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('id','name','city')
+    list_display = ('id','name','city','is_active')
+    list_editable = ('is_active',)
     
     def city(self,obj):
         cities = []

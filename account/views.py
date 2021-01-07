@@ -249,7 +249,7 @@ def update_user(request):
 @permission_classes([permissions.AllowAny])
 @api_view(['GET'])
 def country_list(request):
-    countries = Country.objects.all().exclude(is_active=False)
+    countries = Country.objects.all().exclude(is_active=False).order_by('updated_at')
     serializer = CountrySerializer(countries, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -257,7 +257,7 @@ def country_list(request):
 @permission_classes([permissions.AllowAny])
 @api_view(['GET'])
 def city_list(request, pk):
-    cities = City.objects.filter(country=pk)
+    cities = City.objects.filter(country=pk).order_by('updated_at')
     serializer = CitySerializer(cities, many=True)
     return JsonResponse(serializer.data, safe=False)
 
