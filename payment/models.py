@@ -18,7 +18,7 @@ class Bank(BaseModel):
     name = models.CharField(max_length=30)
     number = models.CharField(max_length=24, blank=True, null=True, validators=[RegexValidator(regex=r'^\d{1,24}$', message=_("شماره شبا نامعتبر است")), RegexValidator(regex='^.{24}$',message=_("شماره شبا می‌بایست ۲۴ رقم باشد"))])
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
-    is_active = models.BooleanField(default=False) # How we want to active account TODO
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.slug)

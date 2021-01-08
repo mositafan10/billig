@@ -50,7 +50,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',  #TODO
+        'anon': '200/day',  #TODO
         'user': '1000/day'
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',

@@ -166,8 +166,11 @@ def reset_password(request):
     otp = generate_otp()
     if setPhoneCache(new_phone_number):
         set_otp(new_phone_number, otp)
-        # Maybe here need to use try/except when api of sms dose not work TODO
-        send_sms(phone_number, otp)
+        try:
+            send_sms(phone_number, otp)
+        except:
+            detail=_("لطفا چند دقیقه صبر نمایید")
+            raise Ex({"detail": detail})
         return HttpResponse(status=200)
     else:
         detail=_("لطفا چند دقیقه صبر نمایید")
@@ -249,7 +252,7 @@ def update_user(request):
 @permission_classes([permissions.AllowAny])
 @api_view(['GET'])
 def country_list(request):
-    countries = Country.objects.all().exclude(is_active=False).order_by('updated_at')
+    countries = Country.objects.all().exclude(is_active=False).order_by('name')
     serializer = CountrySerializer(countries, many=True)
     return JsonResponse(serializer.data, safe=False)
 

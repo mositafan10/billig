@@ -112,9 +112,9 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     flight_date_start = models.DateField()
     flight_date_end = models.DateField(blank=True, null=True)
-    visit_count = models.PositiveIntegerField(default=0) # This is useless. TODO
+    # visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
-    description = models.TextField(blank=True, null=True) # This is useless. TODO
+    # description = models.TextField(blank=True, null=True)
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True)
@@ -367,7 +367,7 @@ class Bookmark(BaseModel):
 class Report(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reporter")
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE)
-    title = models.IntegerField(choices=ReportChoices) # This needs choices TODO
+    title = models.IntegerField(choices=ReportChoices)
     text = models.TextField(null=True, blank=True)
     is_approved = models.BooleanField(default=False)
 
@@ -395,7 +395,7 @@ class PacketPicture(BaseModel):
 
 class Buyinfo(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_info")
-    link = models.CharField(max_length=100)
+    link = models.CharField(max_length=200)
     price = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
