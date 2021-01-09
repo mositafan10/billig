@@ -395,7 +395,7 @@ class PacketPicture(BaseModel):
 
 class Buyinfo(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_info")
-    link = models.CharField(max_length=200)
+    link = models.CharField(max_length=200, null=True, blank=True)
     price = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 

@@ -398,7 +398,7 @@ def get_user_offer(request,travel):
 @api_view(['GET'])
 @permission_classes([AllowAny])  
 def category_list(request):
-    categories = Category.objects.filter(is_active=True)
+    categories = Category.objects.filter(is_active=True).order_by('name')
     serializer = CategorySerializer(categories, many=True)
     return JsonResponse(serializer.data, safe=False)
 
