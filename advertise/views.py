@@ -310,7 +310,7 @@ def offer(request):
     travel = Travel.objects.get(slug=request.data.get("travel"))
 
     # between which of offers we should serach ? TODO
-    if Offer.objects.get(travel=travel, packet=packet).exists() is not True:
+    if Offer.objects.filter(travel=travel, packet=packet).exists() is not True:
         if packet.owner != user :
             data = request.data
             serializer = OfferDeserializer(data=data)
