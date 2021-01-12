@@ -1,6 +1,6 @@
 from django.db import models
 from account.models import BaseModel, User
-from advertise.models import Packet, Travel
+from advertise.models import Offer
 from .utils import pay_to_traveler
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
@@ -28,7 +28,7 @@ class Bank(BaseModel):
 # So it is better to remove packet and add offer TODO
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
-    packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet")
+    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer_packet")
     transId = models.BigIntegerField()
     amount = models.FloatField()
     status = models.BooleanField()
@@ -42,17 +42,17 @@ class TransactionReceive(BaseModel):
     
     @property
     def packetTitle(self):
-        return self.packet.title
+        return self.offer.packet.title
 
     def save(self, *args, **kwargs):
-        self.packet.status = 3   # Change state to doing
-        self.packet.save()
+        self.offer.packet.status = 3   # Change state to doing
+        self.offer.packet.save()
         super().save(*args, **kwargs)
 
 
 class TransactionSend(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_travel")
-    travel = models.ForeignKey(Travel, on_delete=models.CASCADE, related_name="travel")
+    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer_travel")
     amount = models.PositiveIntegerField()
     transaction_id = models.CharField(max_length=15, null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
@@ -64,20 +64,20 @@ class TransactionSend(BaseModel):
 
     @property
     def travelTitle(self):
-        return '%s --> %s (%s)' %(self.travel.departure, self.travel.destination, self.travel.flight_date_start)
+        return '%s --> %s (%s)' %(self.offer.travel.departure, self.offer.travel.destination, self.offer.travel.flight_date_start)
 
     def save(self, *args, **kwargs):
         if self.status == 1:
-            state = pay_to_traveler(self.user, self.amount, self.travel, self.bank.number, self.slug)
-            print("state", state)
+            state = pay_to_traveler(self.user, self.amount, self.offer, self.bank.number, self.slug)
+            # print("state", state)
             if state['status']:
                 self.status = 2
                 self.transaction_id = state['transaction_id']
-                self.travel.status = 6
-                self.travel.save()
+                # self.travel.status = 6
+                # self.travel.save()
             else:
                 self.status = 3
-                self.travel.status = 7
-                self.travel.save()
+                # self.travel.status = 7
+                # self.travel.save()
         super().save(*args, **kwargs)
 

@@ -8,7 +8,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug, send_sms_publish
-from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices
+from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices, Weight
 from chat.utils import send_to_chat
 import string, json
 from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
@@ -25,7 +25,7 @@ class Packet(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="destination_city")
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name="category")
     subcategory = models.ForeignKey('SubCategory', on_delete=models.CASCADE, related_name="sub_category", null=True, blank=True)
-    weight = models.DecimalField(validators=[MaxValueValidator(30.0),MinValueValidator(0.0)], max_digits=3, decimal_places=1)
+    weight = models.IntegerField(choices=Weight)
     dimension = models.IntegerField(choices=Dimension)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
@@ -112,9 +112,7 @@ class Travel(BaseModel):
     destination_city = models.ForeignKey(City, on_delete=models.PROTECT, related_name="dest_city")
     flight_date_start = models.DateField()
     flight_date_end = models.DateField(blank=True, null=True)
-    # visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
-    # description = models.TextField(blank=True, null=True)
     income = models.PositiveIntegerField(default=0)
     approved_packet = models.PositiveIntegerField(default=0)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True)
@@ -407,6 +405,7 @@ class Category(BaseModel):
     name = models.CharField(max_length=30)
     eng_name = models.CharField(max_length=30)
     picture = models.FileField(upload_to='images/category')
+    fee = models.PositiveIntegerField(default=5)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

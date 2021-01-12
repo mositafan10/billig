@@ -101,15 +101,15 @@ def pay_to_traveler(request):
     user = User.objects.get(pk=request.user.id)
     amount = request.data.get('amount')
     bank = Bank.objects.get(slug=request.data.get('account'))
-    travel = Travel.objects.get(slug=request.data.get('travel'))
+    offer = Offer.objects.get(slug=request.data.get('offer'))
     data = {
         "user" : user,
-        "travel": travel,
+        "offer": offer,
         "amount" : amount,
         "bank": bank
     }
-    travel.status = 8
-    travel.save()
+    # travel.status = 8
+    # travel.save()
     transaction = TransactionSend.objects.create(**data)
     transaction.save()
     return HttpResponse(status=201)

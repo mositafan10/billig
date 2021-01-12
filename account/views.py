@@ -341,7 +341,7 @@ def rating(request):
     serializer = ScoreSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(owner=owner, reciever=receiver)
-        offer.status = '7'
+        offer.status = 7
         offer.save()
         return HttpResponse(status=200)
     return JsonResponse(serializer.errors, status=400)

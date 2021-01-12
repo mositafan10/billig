@@ -31,7 +31,7 @@ class PacketSerializer(serializers.ModelSerializer):
     status = serializers.CharField(source='get_status_display')
     category = CategorySerializer()
     dimension = serializers.CharField(source='get_dimension_display')
-    
+    weight = serializers.CharField(source='get_weight_display')
     class Meta:
         model = Packet
         fields = (

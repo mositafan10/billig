@@ -5,12 +5,12 @@ from .models import TransactionReceive, TransactionSend, Bank
 
 @register(TransactionReceive)
 class TransactionReceiveAdmin(admin.ModelAdmin):
-    list_display = ('id','user','packet','amount','transId','factorNumber','create_at')
+    list_display = ('id','user','offer','amount','transId','factorNumber','create_at')
 
 
 @register(TransactionSend)
 class TransactionSendAdmin(admin.ModelAdmin):
-    list_display = ('id','user','travel','amount','status','transaction_id','create_at')
+    list_display = ('id','user','offer','amount','status','transaction_id','create_at')
     list_editable = ('status',)
 
 

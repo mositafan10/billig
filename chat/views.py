@@ -36,7 +36,9 @@ def chat_list(request):
 def massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(slug=chatid)
-    massages = Massage.objects.filter(chat_id=conversation).order_by('-create_at') 
+
+    # should be test TODO
+    massages = Massage.objects.select_related("owner").filter(chat_id=conversation).order_by('-create_at') 
     for massage in massages:
         if massage.owner != user and massage.is_seen == False:
             massage.is_seen = True
@@ -53,7 +55,8 @@ def massage_list(request, chatid):
 def massage_seen(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(slug=chatid)
-    massages = Massage.objects.filter(chat_id=conversation).order_by('-create_at') 
+    # should be test TODO
+    massages = Massage.objects.select_related("owner").filter(chat_id=conversation).order_by('-create_at') 
     for massage in massages:
         if massage.owner != user and massage.is_seen == False:
             massage.is_seen = True
@@ -66,7 +69,8 @@ def massage_seen(request, chatid):
 def new_massage_list(request, chatid):
     user = User.objects.get(pk=request.user.id)
     conversation = Conversation.objects.get(slug=chatid)
-    massages = Massage.objects.filter(chat_id=conversation, is_seen=False).order_by('-create_at') 
+    # should be test TODO
+    massages = Massage.objects.select_related("owner").filter(chat_id=conversation, is_seen=False).order_by('-create_at') 
     for massage in massages:
         if massage.owner != user and massage.is_seen == False:
             massage.is_seen = True

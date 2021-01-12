@@ -70,6 +70,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Basteh.urls'
 
+# Is this needed ? TODO
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -119,15 +120,18 @@ USE_TZ = True
 
 
 STATIC_URL = '/dstatic/'
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'dstatic/')
+
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'), 
 )
 
 MEDIA_URL = '/media/'
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'dstatic/media/')
 
-
+# Check this TODO
 CORS_ORIGIN_ALLOW_ALL = True
 
 CACHES = {
@@ -170,12 +174,12 @@ vandar_api = env('vandar_api')
 
 CSRF_COOKIE_SECURE = True
 
-    # #to avoid transmitting the session cookie over HTTP accidentally.
-# SESSION_COOKIE_SECURE = True
+# To avoid transmitting the session cookie over HTTP accidentally.
+SESSION_COOKIE_SECURE = True
 
-#     # SECURE_BROWSER_XSS_FILTER = True
+SECURE_BROWSER_XSS_FILTER = True
 
-#     # SECURE_CONTENT_TYPE_NOSNIFF = True
+# SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # SECURE_SSL_REDIRECT = True
 

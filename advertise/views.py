@@ -267,7 +267,7 @@ def bookmark_list(request):
         serializer = BookmarkDeserializer(bookmark, many=True)
         return JsonResponse(serializer.data, safe=False)
     elif request.method == 'POST':
-        packet = Packet.objects.get(slug=request.data.get('packet'))
+        packet = Packet.objects.select_related("owner").get(slug=request.data.get('packet'))
         # check for owner of bookmark
         if packet.owner != user :
             bookmark = Bookmark.objects.filter(owner=user, packet=packet)
@@ -306,7 +306,7 @@ def offer_list(request, slug):
 @permission_classes([IsAuthenticated])
 def offer(request):
     user = User.objects.get(pk=request.user.id)
-    packet = Packet.objects.get(slug=request.data.get("packet"))
+    packet = Packet.objects.select_related("owner").get(slug=request.data.get("packet"))
     travel = Travel.objects.get(slug=request.data.get("travel"))
 
     # between which of offers we should serach ? TODO
@@ -332,7 +332,7 @@ def offer(request):
 def offer_update(request, slug):
     user = User.objects.get(pk=request.user.id)
     try:
-        offer = Offer.objects.get(slug=slug)
+        offer = Offer.objects.select_related("packet").get(slug=slug)
         receiver = offer.packet.owner
         if offer.packet.owner == user:
             receiver = offer.travel.owner
@@ -460,7 +460,8 @@ def check_report(request, slug):
 @api_view(['POST'])
 def add_report(request):
     user = User.objects.get(pk=request.user.id)
-    packet = Packet.objects.get(slug=request.data.get('packet'))
+    # should be test TODO
+    packet = Packet.objects.select_related("owner").get(slug=request.data.get('packet'))
     if user == packet.owner:
         detail = _("این آگهی برای خودتان است")
         return JsonResponse({"detail":detail},status=400)
