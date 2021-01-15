@@ -68,11 +68,11 @@ def signup(request):
         return JsonResponse({"detail": detail},status=403)
     except:
         otp = generate_otp()
-        print(otp)
+        # print(otp)
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
         if setPhoneCache(new_phone_number):
             set_otp(new_phone_number, otp)
-            # send_sms(new_phone_number, otp)
+            send_sms(new_phone_number, otp)
             return HttpResponse(status=200)
         else:
             detail=_("لطفا چند دقیقه صبر نمایید")
