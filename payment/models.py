@@ -24,11 +24,9 @@ class Bank(BaseModel):
         return str(self.slug)
 
 
-# We need offer field instead of packet because the offer has the packet plus travel
-# So it is better to remove packet and add offer TODO
 class TransactionReceive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_packet")
-    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer_packet")
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer_packet")
     transId = models.BigIntegerField()
     amount = models.FloatField()
     status = models.BooleanField()
@@ -52,7 +50,7 @@ class TransactionReceive(BaseModel):
 
 class TransactionSend(BaseModel):
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_travel")
-    offer = models.ForeignKey(Offer, on_delete=models.PROTECT, related_name="offer_travel")
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer_travel")
     amount = models.PositiveIntegerField()
     transaction_id = models.CharField(max_length=15, null=True, blank=True)
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
@@ -73,11 +71,11 @@ class TransactionSend(BaseModel):
             if state['status']:
                 self.status = 2
                 self.transaction_id = state['transaction_id']
-                # self.travel.status = 6
-                # self.travel.save()
+                self.offer.travel.status = 6
+                self.offer.travel.save()
             else:
                 self.status = 3
-                # self.travel.status = 7
-                # self.travel.save()
+                self.offer.travel.status = 7
+                self.offer.travel.save()
         super().save(*args, **kwargs)
 

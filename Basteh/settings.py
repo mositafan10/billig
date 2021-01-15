@@ -119,15 +119,15 @@ USE_L10N = True
 USE_TZ = True
 
 
-STATIC_URL = '/dstatic/'
+STATIC_URL = '/dstatic/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'dstatic/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'dstatic/static/')
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static/'), 
+    os.path.join(BASE_DIR, 'dstatic/'), 
 )
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'dstatic/media/')
 
@@ -152,6 +152,7 @@ CACHES = {
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 SITE_ID = 1 
+
 AUTH_USER_MODEL='account.User'
 
 
@@ -171,6 +172,8 @@ FCM_DJANGO_SETTINGS = {
 
 kavenegar_api = env('kavenegar_api')
 vandar_api = env('vandar_api')
+vandar_mobile = env('vandar_mobile')
+vandar_password = env('vandar_password')
 
 CSRF_COOKIE_SECURE = True
 

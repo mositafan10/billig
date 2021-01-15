@@ -20,7 +20,7 @@ PacketStatus = [
         (2, "در انتظار پرداخت"),
         (3, "در انتظار خرید"),
         (4, "در انتظار تحویل"),
-        (5, "در انتظار تایید خریدار"),
+        (5, "در انتظار تایید بیلیگر"),
         (6, "انجام شده"),
         (7, "تمام شده"),
         (8, "حذف شده"),
@@ -29,13 +29,13 @@ PacketStatus = [
         (11, "عدم تایید"),
 ] 
 
-Offer = [
+OfferStatus = [
         (0, "در انتظار پاسخ"), # default state
         (1, "در انتظار تایید مسافر"),# done by packet owner when accept offer : offer_update in advertise.view
         (2, "در انتظار پرداخت"), # done by traveler after confirm the price : offer_update in advertise.view
         (3, "در انتظار خرید"), # done after payment : verify function in payment.view
         (4, "در انتظار تحویل"),# done by traveler after buy parcel : offer_update function in advertise.view
-        (5, "در انتظار تایید خریدار"), # done by traveler after get parcel in destination : offer_update function in advertise.view
+        (5, "در انتظار تایید بیلیگر"), # done by traveler after get parcel in destination : offer_update function in advertise.view
         (6, "انجام شده"),# done by packet owner when receive parcel in destination : offer_update in advertise.view
         (7, "تمام شده"), # done after rating by packet owner in account.view
         (8, "حذف شده"), # done by offer owner : offer_update in advertise.view        
@@ -97,6 +97,7 @@ Social_Type = [
     ('3','Twitter')
 ]
 
+Prohibited_name = ['ادمین بیلیگ','ادمین','ادمین سایت']
 
 #chat_constant
 

@@ -6,7 +6,7 @@ from account.serializers import CountrySerializer, CitySerializer, UserSerialize
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id','name','eng_name','picture')
+        fields = ('id','name','eng_name','picture','fee')
 
 
 class SubCategorySerializer(serializers.ModelSerializer):

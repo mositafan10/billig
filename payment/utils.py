@@ -1,14 +1,14 @@
 from advertise.models import Travel
+from Basteh.settings import vandar_mobile, vandar_password
 from django.http import JsonResponse, HttpResponse
 import requests, json
 
 def pay_to_traveler(user, amount, travel, account_number, slug):
     travel = travel
     number = "IR"+(account_number)
-    # this should be placed in setting TODO
     data = {
-        "mobile": "09128161004",
-        "password": "Baranbenyamin161191",
+        "mobile": vandar_mobile,
+        "password": vandar_password,
     }
     r = requests.post('https://api.vandar.io/v2/login', data=data).json()
     token = r['data']['token']

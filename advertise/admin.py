@@ -5,9 +5,12 @@ from account.models import Country, City
 from django.utils.translation import ngettext
 from django.contrib import messages
 
-
+@register(PacketPicture)
+class PacketPictureAdmin(admin.ModelAdmin):
+    list_display = ('id', 'slug' ,'image_file','packet')
+    
 @register(Packet)
-class PacketAdmin(admin.ModelAdmin):
+class PacketAdmin(admin.ModelAdmin):  
     list_display  = ('id','slug','title','owner_user','origin_country','destination_country',
                     'category','buy','get_pictures','weight','dimension','description','create_at','offer_count','visit_count','status')
     list_editable = ('status',)
@@ -94,12 +97,6 @@ class BookmarkAdmin(admin.ModelAdmin):
 @register(Report)
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('id','owner','packet','title','text','create_at')
-
-
-@register(PacketPicture)
-class PacketPictureAdmin(admin.ModelAdmin):
-    list_display = ('id', 'slug' ,'image_file','packet')
-    
 
 @register(Buyinfo)
 class BuyinfoAdmin(admin.ModelAdmin):

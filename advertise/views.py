@@ -20,7 +20,7 @@ from core.utils import send_chat_notification
 
 from .models import *
 from .serializers import *
-from .utils import send_to_chat
+from chat.utils import send_to_chat
 from .permissions import IsOwnerPacketOrReadOnly
 
 import json
@@ -61,6 +61,11 @@ def packet_list(request, country, category):
 def packet_add(request):
     user = User.objects.get(pk=request.user.id)
     buy = request.data.get('buy')
+    picture_slug = request.data.get('picture')
+    # check uploaded picture or not
+    picture_set = False
+    if picture_slug != '1':
+        picture_set = True
     data = request.data
     serializer = PacketDeserializer(data=data)
     if serializer.is_valid():
@@ -75,10 +80,20 @@ def packet_add(request):
             if serializer1.is_valid():  
                 packet = serializer.save(owner=user)
                 serializer1.save(packet=packet)
+                if picture_set:
+                    picture = PacketPicture.objects.select_related('packet').get(slug=picture_slug)
+                    picture.packet = packet
+                    picture.save()
+                    picture_set = False
                 return JsonResponse([serializer.data, serializer1.data], status=201, safe=False)
             return JsonResponse(serializer1.errors, status=400)
         else:
-            serializer.save(owner=user)
+            packet = serializer.save(owner=user)
+            if picture_set:
+                picture = PacketPicture.objects.select_related('packet').get(slug=picture_slug)
+                picture.packet = packet
+                picture.save()
+                picture_set = False
         return JsonResponse(serializer.data, status=201)
     return JsonResponse(serializer.errors, status=400)
 

@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
-from advertise.models import Offer
 from account.models import User, BaseModel, Profile
 from datetime import datetime
 from core.utils import generate_slug
@@ -13,6 +12,7 @@ class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")
     not_seen = models.PositiveIntegerField(default=0)
+    offer = models.ForeignKey('advertise.Offer', on_delete=models.SET_NULL, related_name="offer", null=True)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     is_active = models.BooleanField(default=True)
 
@@ -38,7 +38,6 @@ class Conversation(BaseModel):
     @property
     def sender_username(self):
         offer = Offer.objects.get(slug=self.slug)
-        print(offer)
         return str(self.sender.username)
 
     @property
@@ -46,6 +45,10 @@ class Conversation(BaseModel):
         user = self.sender
         profile = Profile.objects.get(user=user)
         return str(profile.picture)
+
+    @property
+    def packetTitle(self):
+        return str(self.offer.packet.title)
 
     @property
     def receiver_avatar(self):

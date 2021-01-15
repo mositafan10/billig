@@ -21,7 +21,7 @@ from advertise.models import Offer
 from chat.models import Conversation, Massage
 from datetime import datetime
 
-from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip, setPhoneCache
+from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip, setPhoneCache, validate_name
 from core.constant import WelcomeText, WelcomeText1, WelcomeText2, WelcomeText3
 
 
@@ -52,6 +52,10 @@ def signup(request):
     phone_number = request.data.get('phone_number')
     new_phone_number = validate_phonenumber(phone_number)
     password = request.data.get('password','')
+    name = request.data.get('name','')
+    if validate_name(name):
+        detail = _("نام دیگری انتخاب کنید")
+        raise ValidationError({"detail": detail})
     if password != '':
         try:
             password_validation.validate_password(password)
@@ -68,7 +72,7 @@ def signup(request):
         # Here is good in set_otp we check that a how many time the user is insert the phone number :
         if setPhoneCache(new_phone_number):
             set_otp(new_phone_number, otp)
-            send_sms(new_phone_number, otp)
+            # send_sms(new_phone_number, otp)
             return HttpResponse(status=200)
         else:
             detail=_("لطفا چند دقیقه صبر نمایید")
@@ -83,6 +87,7 @@ def signup_complete(request):
     password = request.data.get('password')
     name = request.data.get('name', '')
     otp = request.data.get('otp', '')
+
     # For showing the welcome page in client side 
     first_time = False
     if otp != '':
@@ -341,8 +346,8 @@ def rating(request):
     serializer = ScoreSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(owner=owner, reciever=receiver)
-        offer.status = 7
-        offer.save()
+        # offer.status = 7
+        # offer.save()
         return HttpResponse(status=200)
     return JsonResponse(serializer.errors, status=400)
 

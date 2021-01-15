@@ -1,4 +1,4 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, FileExtensionValidator
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from django.db import IntegrityError
@@ -8,10 +8,9 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from account.models import User, BaseModel, Country, City, Profile
 from core.utils import generate_slug, send_sms_publish
-from core.constant import TravelStatus, PacketStatus, Offer, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices, Weight
-from chat.utils import send_to_chat
+from core.constant import TravelStatus, PacketStatus, OfferStatus, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices, Weight
 import string, json
-from .utils import send_to_chat, send_admin_text, disable_chat, create_chat
+from chat.utils import send_to_chat, send_admin_text, disable_chat, create_chat
 
 
 # We can add type fild for future. For example gift type. TODO
@@ -159,7 +158,7 @@ class Offer(BaseModel):
     parcelPrice = models.PositiveIntegerField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
-    status = models.IntegerField(choices=Offer, default=0)
+    status = models.IntegerField(choices=OfferStatus, default=0)
     offer_type = models.IntegerField(choices=OfferChoices, default=0)
 
     def __str__(self):
@@ -183,7 +182,6 @@ class Offer(BaseModel):
 
         super().delete(*args, **kwargs)
 
-    # What is defference between != and is not ? TODO
     def save(self, *args, **kwargs):
         # Check the new offer and increase offer_count of packet and travel by one due to packet status
         if self._state.adding:
@@ -203,16 +201,16 @@ class Offer(BaseModel):
                 super().save(*args, **kwargs)
         else:
             # Send the state of offer into chat, This is done for all state except new offer
-            send_to_chat(self.status, self.slug)
+            send_to_chat(self.status, self.slug, self.packet.status, self.packet.buy)
 
             # Update packet state due to offer state
             if self.packet.status == 1:
-                if (self.status != 1 and self.status is not 0): 
+                if (self.status != 1 and self.status != 0): 
                     self.packet.status = self.status
                     self.packet.save()
                 super().save(*args, **kwargs)
             else:
-                if self.status != 1 and self.status is not 0: 
+                if self.status != 1 and self.status != 0: 
                     self.packet.status = self.status
                     self.packet.save()
                     super().save(*args, **kwargs)
@@ -374,13 +372,13 @@ class Report(BaseModel):
 
 
 class PacketPicture(BaseModel):
-    image_file = models.FileField(upload_to='images/%Y/%m',)
+    image_file = models.FileField(upload_to='images/%Y/%m',validators=[FileExtensionValidator(allowed_extensions=['png,jpg'])])
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, blank=True, null=True)
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):
         return str(self.id)
-    
+     
     # Compress the pic is done in frontend, is this here needed ? we can change the number to 200kb due to frontend TODO 
     def save(self, *args, **kwargs):
         MAX_FILE_SIZE = 10485760
