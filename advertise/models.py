@@ -188,9 +188,6 @@ class Offer(BaseModel):
             if self.packet.status == 3 or self.packet.status == 4 or self.packet.status == 5 or self.packet.status == 6 or self.packet.status == 7 :
                 raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان ثبت پیشنهاد وجود ندارد"))
             else:
-                # Create chat when the offer is created.
-                create_chat(self.slug, self.travel.owner, self.packet.owner, self.description)
-
                 self.packet.offer_count += 1
                 if self.packet.status == 0 :
                     self.packet.status = 1
@@ -199,6 +196,9 @@ class Offer(BaseModel):
                 self.travel.status = 3
                 self.travel.save()
                 super().save(*args, **kwargs)
+
+                # Create chat when the offer is created.
+                create_chat(self, self.travel.owner, self.packet.owner, self.description)
         else:
             # Send the state of offer into chat, This is done for all state except new offer
             send_to_chat(self.status, self.slug, self.packet.status, self.packet.buy)
