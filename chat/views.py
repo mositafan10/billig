@@ -87,7 +87,7 @@ def new_massage_list(request, chatid):
 def create_conversation(request):
     offer = Offer.objects.get(slug=request.data.get('offer'))
     conversation, is_created = Conversation.objects.get_or_create(
-        slug=offer.slug,
+        offer=offer,
         sender=offer.travel.owner,
         receiver=offer.packet.owner
         )
