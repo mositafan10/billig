@@ -198,7 +198,7 @@ class Offer(BaseModel):
                 super().save(*args, **kwargs)
 
                 # Create chat when the offer is created.
-                create_chat(self, self.slug self.travel.owner, self.packet.owner, self.description)
+                create_chat(self, self.slug, self.travel.owner, self.packet.owner, self.description)
         else:
             # Send the state of offer into chat, This is done for all state except new offer
             send_to_chat(self.status, self.slug, self.packet.status, self.packet.buy)
