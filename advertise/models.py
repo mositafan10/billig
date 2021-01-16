@@ -338,6 +338,10 @@ class Offer(BaseModel):
         }
         return data
     
+    @property
+    def conversationSlug(self):
+        return self.offer.get().slug
+    
 
 class Bookmark(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.PROTECT, related_name="bookmark_owner")
