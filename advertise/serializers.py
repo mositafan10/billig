@@ -1,6 +1,8 @@
+from account.serializers import (CitySerializer, CountrySerializer,
+                                 ProfileSerializer, UserSerializer)
 from rest_framework import serializers
+
 from .models import *
-from account.serializers import CountrySerializer, CitySerializer, UserSerializer, ProfileSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,12 +17,18 @@ class SubCategorySerializer(serializers.ModelSerializer):
         fields = ('id','name','eng_name')
 
 
+class BuyinfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Buyinfo
+        fields = ('link','price','currency')
+
+
 class PacketDeserializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = (
             'slug','title', 'origin_country', 'origin_city', 'destination_country', 'destination_city', 'category', 'subcategory', 'buy',
-            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name', 'phonenumber_visible','no_matter_origin')
+            'weight','dimension', 'suggested_price', 'description','picture', 'status', 'owner_name','no_matter_origin','topic')
 
 
 class PacketSerializer(serializers.ModelSerializer):
@@ -35,9 +43,10 @@ class PacketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Packet
         fields = (
-            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy', 'phonenumber_visible','no_matter_origin',
-            'category', 'subcategory', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','parcel_price','parcel_link','phonenumber'
+            'slug','title','owner_name','owner_slug','origin_country', 'origin_city', 'destination_country', 'destination_city', 'buy','no_matter_origin',
+            'category', 'dimension' ,'weight', 'suggested_price', 'description', 'picture', 'offer_count', 'create_at', 'status','buyinfo'
         )
+
 
 class PacketSerializer1(serializers.ModelSerializer):
     destination_country = serializers.StringRelatedField()
@@ -115,12 +124,6 @@ class PictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = PacketPicture
         fields = ('slug','image_file',)
-
-
-class BuyinfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Buyinfo
-        fields = ('link','price')
 
 
 class RemoveReasonSerializer(serializers.ModelSerializer):

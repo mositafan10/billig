@@ -1,9 +1,10 @@
-from django.contrib import admin
+from account.models import City, Country
+from django.contrib import admin, messages
 from django.contrib.admin.decorators import register
-from .models import *
-from account.models import Country, City
 from django.utils.translation import ngettext
-from django.contrib import messages
+
+from .models import *
+
 
 @register(PacketPicture)
 class PacketPictureAdmin(admin.ModelAdmin):
@@ -98,21 +99,10 @@ class BookmarkAdmin(admin.ModelAdmin):
 class ReportAdmin(admin.ModelAdmin):
     list_display = ('id','owner','packet','title','text','create_at')
 
+
 @register(Buyinfo)
 class BuyinfoAdmin(admin.ModelAdmin):
-    list_display = ( 'id', 'packet', 'link', 'price')
-
-
-@register(Category)
-class BuyinfoAdmin(admin.ModelAdmin):
-    list_display = ( 'id', 'name', 'is_active')
-    list_editable = ('is_active',)
-
-
-@register(SubCategory)
-class BuyinfoAdmin(admin.ModelAdmin):
-    list_display = ( 'id', 'name', 'is_active')
-    list_editable = ('is_active',)
+    list_display = ( 'id', 'packet','price','currency','link')
 
 
 @register(RemoveReason)

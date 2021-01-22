@@ -1,13 +1,13 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
-from django.core.exceptions import ValidationError, PermissionDenied
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import PermissionsMixin
-
+from core.constant import Level, Social_Type
 from core.utils import generate_slug
-from core.constant import Social_Type, Level
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class BaseModel (models.Model):
@@ -46,6 +46,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    is_real = models.BooleanField(default=True)
+    is_premium = models.BooleanField(default=False)
     slug = models.CharField(default=generate_slug, max_length=8, editable=False, unique=True) 
     USERNAME_FIELD = 'phone_number'
 

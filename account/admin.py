@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.decorators import register
-from .models import Profile, Score, User, Newsletter, Social, CommentUser
+
+from .models import CommentUser, Newsletter, Profile, Score, Social, User
+
 
 @register(User)
 class UserAdmin(admin.ModelAdmin):

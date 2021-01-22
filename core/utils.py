@@ -52,30 +52,30 @@ def send_sms(phone_number, otp):
         pass
 
 
-def send_sms_publish(phone_number, packet):
+def send_sms(phone_number, packet, template):
     try:
         data = {
             'receptor': phone_number,
             'token20' : packet,
             'token': "عنوان",
-            'template' : "publish"
+            'template' : template
         }
         r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
     except: 
-        pass
+        pass # TODO
     
 
-def send_sms_notpublish(phone_number, packet):
-    try:
-        data = {
-            'receptor': phone_number,
-            'token20' : packet,
-            'token': "عنوان",
-            'template' : "Notpublish"
-        }
-        r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
-    except: 
-        pass
+# def send_sms_notpublish(phone_number, packet):
+#     try:
+#         data = {
+#             'receptor': phone_number,
+#             'token20' : packet,
+#             'token': "عنوان",
+#             'template' : "Notpublish"
+#         }
+#         r = requests.post('https://api.kavenegar.com/v1/{}/verify/lookup.json'.format(kavenegar_api), data=data).json()
+#     except: 
+#         pass
 
 
 def validate_picture(fieldfile_obj):

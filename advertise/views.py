@@ -1,29 +1,28 @@
-from django.http import JsonResponse, HttpRequest
-from django.db.models import Q
-from django.shortcuts import HttpResponse
-from django.core.cache import cache
-from django.core.mail import send_mail
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.translation import gettext_lazy as _
-from datetime import timedelta, datetime
+import json
+from datetime import datetime, timedelta
 
-from rest_framework import status, permissions
-from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.exceptions import NotAcceptable, NotFound, PermissionDenied
-from rest_framework.pagination import PageNumberPagination
-
-from account.models import User, Country, City, Profile
+from account.models import City, Country, Profile, User
+from chat.utils import send_to_chat
 from core.constant import Expire_Date_Billlig
 from core.utils import send_chat_notification
+from django.core.cache import cache
+from django.core.mail import send_mail
+from django.db.models import Q
+from django.http import HttpRequest, JsonResponse
+from django.shortcuts import HttpResponse
+from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import NotAcceptable, NotFound, PermissionDenied
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import *
-from .serializers import *
-from chat.utils import send_to_chat
 from .permissions import IsOwnerPacketOrReadOnly
+from .serializers import *
 
-import json
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -64,7 +63,7 @@ def packet_add(request):
     picture_slug = request.data.get('picture')
     # check uploaded picture or not
     picture_set = False
-    if picture_slug != '1':
+    if picture_slug != 1:
         picture_set = True
     data = request.data
     serializer = PacketDeserializer(data=data)
@@ -72,9 +71,11 @@ def packet_add(request):
         if buy:
             link = request.data.get('link')
             price = request.data.get('price')
+            currency = request.data.get('currency')
             data1 = {
                 "link" : link,
                 "price" : price,
+                "currency": currency
             }
             serializer1 = BuyinfoSerializer(data=data1)
             if serializer1.is_valid():  
@@ -151,18 +152,18 @@ def packet_edit(request, slug):
                 packet.save()
                 if request.data.get('buy'):
                     link = request.data.get('parcel_link')
+                    currency = request.data.get('currency')
                     price = request.data.get('parcel_price')
                     slug = packet.packet_info.get().slug
-                    salam = Buyinfo.objects.get(slug=slug)
                     buyinfo, is_created = Buyinfo.objects.update_or_create(
                         packet=packet, slug=packet.packet_info.get().slug,
-                        defaults={'price': price, 'link': link, 'packet': packet}
+                        defaults={'price': price, 'link': link, 'packet': packet, 'currency': currency}
                         )
                 return JsonResponse(serializer.data)
             return JsonResponse(serializer.errors, status=400)
         elif request.method == 'DELETE' and IsAuthenticated:
             packet.status = 8
-            packet.save()
+            packet.delete()
             return HttpResponse(status=204)
     else:
         raise PermissionDenied(detail=_("انجام این عملیات برای شما ممکن نیست"))
@@ -380,7 +381,7 @@ def offer_delete(request, slug):
         raise NotFound
     if offer.travel.owner == user:
         offer.status = 8
-        offer.save()
+        offer.delete()
         return HttpResponse(status=204)
     else:
         raise PermissionDenied(detail=_("امکان حذف توسط شما وجود ندارد"))

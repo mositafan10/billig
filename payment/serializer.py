@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import TransactionReceive, TransactionSend, Bank
+
+from .models import Bank, TransactionReceive, TransactionSend
+
 
 class TransactionReceiveSerializer(serializers.ModelSerializer):
     class Meta:

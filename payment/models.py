@@ -1,17 +1,11 @@
-from django.db import models
 from account.models import BaseModel, User
 from advertise.models import Offer
-from .utils import pay_to_traveler
-from django.core.validators import RegexValidator
-from django.utils.translation import gettext_lazy as _
 from core.utils import generate_slug
+from django.core.validators import RegexValidator
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
-pay_status = [
-    (0,'در انتظار تایید'),
-    (1,'تایید پرداخت'),
-    (2,'انجام شده'),
-    (3,'انجام نشده'),
-]
+from .utils import pay_to_traveler
 
 class Bank(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,6 +43,14 @@ class TransactionReceive(BaseModel):
 
 
 class TransactionSend(BaseModel):
+
+    pay_status = [
+    (0,'در انتظار تایید'),
+    (1,'تایید پرداخت'),
+    (2,'انجام شده'),
+    (3,'انجام نشده'),
+]
+
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="user_travel")
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="offer_travel")
     amount = models.PositiveIntegerField()

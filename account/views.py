@@ -1,28 +1,33 @@
-from django.http import JsonResponse
-from django.db.models import Q
-from django.shortcuts import HttpResponse
-from django.contrib.auth import authenticate, password_validation
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.translation import gettext_lazy as _
-
-from rest_framework import status, permissions, generics
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_200_OK
-from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.exceptions import PermissionDenied, ValidationError, AuthenticationFailed, APIException, NotFound
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authtoken.models import Token
-
-from .models import Profile, Score, City, Country, User, Social
-from .serializers import *
-from .permissions import IsOwnerProfileOrReadOnly
-from advertise.models import Offer 
-from chat.models import Conversation, Massage
 from datetime import datetime
 
-from core.utils import validate_phonenumber ,validate_socailaddress ,generate_otp, verify_otp, set_otp, send_sms, locate_ip, setPhoneCache, validate_name
+from advertise.models import Offer
+from chat.models import Conversation, Massage
 from core.constant import WelcomeText, WelcomeText1, WelcomeText2, WelcomeText3
+from core.utils import (generate_otp, locate_ip, send_sms, set_otp,
+                        setPhoneCache, validate_name, validate_phonenumber,
+                        validate_socailaddress, verify_otp)
+from django.contrib.auth import authenticate, password_validation
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import HttpResponse
+from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics, permissions, status
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes)
+from rest_framework.exceptions import (APIException, AuthenticationFailed,
+                                       NotFound, PermissionDenied,
+                                       ValidationError)
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.status import (HTTP_200_OK, HTTP_400_BAD_REQUEST,
+                                   HTTP_404_NOT_FOUND)
+
+from .models import City, Country, Profile, Score, Social, User
+from .permissions import IsOwnerProfileOrReadOnly
+from .serializers import *
 
 
 @api_view(['GET'])
@@ -117,7 +122,7 @@ def signup_complete(request):
 
                 # Create a chat conversation between admin and the user and send user welcome text
                 admin = User.objects.get(pk=1)
-                conversation, is_created = Conversation.objects.get_or_create(sender=admin, receiver=user)
+                conversation, is_created = Conversation.objects.get_or_create(sender=admin, receiver=user, slug=user.slug)
                 Massage.objects.create(chat_id=conversation, text='{} {}'.format(WelcomeText,user.name), owner=admin)
                 Massage.objects.create(chat_id=conversation, text=(WelcomeText1), owner=admin)
                 Massage.objects.create(chat_id=conversation, text=(WelcomeText2), owner=admin)
@@ -169,10 +174,12 @@ def reset_password(request):
     except User.DoesNotExist:
         raise AuthenticationFailed(detail=_("شماره در سایت یافت نشد"))
     otp = generate_otp()
+    # print(otp)
     if setPhoneCache(new_phone_number):
         set_otp(new_phone_number, otp)
         try:
             send_sms(phone_number, otp)
+            pass
         except:
             detail=_("لطفا چند دقیقه صبر نمایید")
             raise Ex({"detail": detail})

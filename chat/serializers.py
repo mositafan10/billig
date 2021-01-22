@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Massage, Conversation
+
+from .models import Conversation, Massage
 
 
 class MassageSerializer(serializers.ModelSerializer):

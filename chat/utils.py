@@ -1,7 +1,12 @@
 import random
 import string
-from .models import Massage, Conversation
+
 from account.models import User
+
+from .models import Conversation, Massage
+from core.utils import send_chat_notification, send_sms_packet
+
+
 
 def generate_slug():
     return ''.join(str(random.randint(0,9)) for _ in range(6))
@@ -50,13 +55,13 @@ def send_admin_text(status, packet, receiver):
     if status == 0:
         try:
             pass
-            send_sms_publish(receiver.phone_number, packet)
+            send_sms_packet(receiver.phone_number, packet, "publish")
         except:
             pass # What should we do here ? TODO
     elif status == 11:
         try:
             pass
-            send_sms_notpublish(receiver.phone_number, packet)
+            send_sms_packet(receiver.phone_number, packet, "Notpublish")
         except:
             pass # What should we do here ? TODO
 

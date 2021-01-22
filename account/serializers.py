@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Profile, Score, Country, City, User, Newsletter, Social, CommentUser
+
+from .models import (City, CommentUser, Country, Newsletter, Profile, Score,
+                     Social, User)
 
 
 class CountrySerializer(serializers.ModelSerializer):

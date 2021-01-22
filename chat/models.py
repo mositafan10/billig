@@ -1,13 +1,14 @@
-from django.db import models
-from django.utils import timezone
-from django.db.models import Q
-from account.models import User, BaseModel, Profile
-from datetime import datetime
-from core.utils import generate_slug
-from core.constant import Massage_TYPE
 import time
+from datetime import datetime
 
- 
+from account.models import BaseModel, Profile, User
+from core.constant import Massage_TYPE
+from core.utils import generate_slug
+from django.db import models
+from django.db.models import Q
+from django.utils import timezone
+
+
 class Conversation(BaseModel):
     sender = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.PROTECT, related_name="receiver")

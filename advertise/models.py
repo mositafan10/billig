@@ -1,16 +1,19 @@
-from django.core.validators import MaxValueValidator, MinValueValidator, FileExtensionValidator
+import json
+import string
+
+from account.models import BaseModel, City, Country, Profile, User
+from chat.utils import create_chat, disable_chat, send_admin_text, send_to_chat
+from core.constant import (Currency, Dimension, OfferChoices, OfferStatus,
+                           PacketStatus, PacketType, RemoveChoices,
+                           ReportChoices, TravelRemoveReason, TravelStatus,
+                           Weight)
+from core.utils import generate_slug, send_sms_packet
+from django.core.validators import (FileExtensionValidator, MaxValueValidator,
+                                    MinValueValidator)
+from django.db import IntegrityError, models
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
-from django.db import IntegrityError
-from django.db import models
-
 from rest_framework.exceptions import PermissionDenied, ValidationError
-
-from account.models import User, BaseModel, Country, City, Profile
-from core.utils import generate_slug, send_sms_publish
-from core.constant import TravelStatus, PacketStatus, OfferStatus, Dimension, RemoveChoices, ReportChoices, TravelRemoveReason, OfferChoices, Weight
-import string, json
-from chat.utils import send_to_chat, send_admin_text, disable_chat, create_chat
 
 
 # We can add type fild for future. For example gift type. TODO
@@ -28,12 +31,13 @@ class Packet(BaseModel):
     dimension = models.IntegerField(choices=Dimension)
     suggested_price = models.PositiveIntegerField(default=0)
     buy = models.BooleanField(default=False)
-    phonenumber_visible = models.BooleanField(default=False) # should be removed TODO
     picture = models.CharField(default=1, max_length=8)
     visit_count = models.PositiveIntegerField(default=0)
     offer_count = models.PositiveIntegerField(default=0)
     description = models.CharField(max_length=1000)
-    slug = models.CharField(default=generate_slug, max_length=10, editable=False, unique=True) 
+    slug = models.CharField(default=generate_slug, max_length=10, editable=False, unique=True)
+    is_real = models.BooleanField(default=True)
+    topic = models.IntegerField(choices=PacketType, default=0)
     status = models.IntegerField(choices=PacketStatus, default=0)
     
  
@@ -49,17 +53,14 @@ class Packet(BaseModel):
         return str(self.owner.slug)
 
     @property
-    def parcel_price(self):
-        return self.packet_info.get().price   
-         
-    @property
-    def parcel_link(self):
-        return self.packet_info.get().link   
+    def buyinfo(self):
+        data = {
+            "currency":self.packet_info.get().currency,
+            "link":self.packet_info.get().link,
+            "price":self.packet_info.get().price
+        }
+        return data
 
-    @property
-    def phonenumber(self):
-        return self.owner.phone_number
-    
     def save(self, *args, **kwargs):
         
         # Send admin text while create packet   
@@ -92,15 +93,15 @@ class Packet(BaseModel):
     
     # Question is if a owner of packet wnats to delete it, what do we do ? TODO
     # Check the correct error on frontend
-    # when travel could be deleted then the all its offers should be deleted
-    # def delete(self, *args, **kwargs):
-    #     if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
-    #         raise PermissionDenied(detail=_("تا زمانی که سفر شما پیشنهاد دارد، امکان حذف وجود ندارد"))
-    #     else:
-    #         offers = Offer.objects.filter(packet=self)
-    #         for offer in offers :
-    #             offer.delete()
-    #         super().delete(*args, **kwargs)
+    # when packet could be deleted then the all its offers should be deleted
+    def delete(self, *args, **kwargs):
+        if self.status == 3 or self.status == 4 or self.status == 5 or self.status == 6 :
+            raise PermissionDenied(detail=_("تا زمانی که آگهی شما پیشنهاد دارد، امکان حذف وجود ندارد"))
+        else:
+            offers = Offer.objects.filter(packet=self).exclude(status=8)
+            for offer in offers :
+                offer.delete()
+            super().save(*args, **kwargs)
 
         
 class Travel(BaseModel):
@@ -180,7 +181,8 @@ class Offer(BaseModel):
             self.travel.status = 2
             self.travel.save()
 
-        super().delete(*args, **kwargs)
+        super().save(*args, **kwargs)
+        # super().delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         # Check the new offer and increase offer_count of packet and travel by one due to packet status
@@ -188,6 +190,7 @@ class Offer(BaseModel):
             if self.packet.status == 3 or self.packet.status == 4 or self.packet.status == 5 or self.packet.status == 6 or self.packet.status == 7 :
                 raise PermissionDenied(detail=_("با توجه به وضعیت آگهی امکان ثبت پیشنهاد وجود ندارد"))
             else:
+                send_sms_packet(self.packet.owner.phone_number, self.packet, "offer")
                 self.packet.offer_count += 1
                 if self.packet.status == 0 :
                     self.packet.status = 1
@@ -240,7 +243,7 @@ class Offer(BaseModel):
                     self.travel.save()
                     super().save(*args, **kwargs)
 
-                    # Here we check all the offers for a specific travel.
+                # Here we check all the offers for a specific travel.
                 # When an offer is done, we check others and
                 # if all the others were done the state of travel should change to done.
                 elif self.status == 6:
@@ -309,10 +312,6 @@ class Offer(BaseModel):
 
     @property
     def packet_category(self):
-        # data = {
-        #     "name": self.packet.category.name,
-        #     "picture": str(self.packet.category.picture)
-        #     }
         return (self.packet.category)                                                                      
 
     @property
@@ -393,6 +392,7 @@ class Buyinfo(BaseModel):
     packet = models.ForeignKey(Packet, on_delete=models.CASCADE, related_name="packet_info")
     link = models.CharField(max_length=200, null=True, blank=True)
     price = models.PositiveIntegerField(default=0)
+    currency = models.CharField(max_length=5, choices=Currency, default="تومان")
     slug = models.CharField(default=generate_slug, max_length=8, unique=True, editable=False)
 
     def __str__(self):

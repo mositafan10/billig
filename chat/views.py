@@ -1,20 +1,22 @@
-from django.http import JsonResponse
-from django.shortcuts import HttpResponse
-from django.db.models import Q
-from django.core.paginator import Paginator
-from rest_framework import status, permissions
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.pagination import PageNumberPagination, CursorPagination
-from fcm_django.models import FCMDevice
-from datetime import datetime
 import json
+from datetime import datetime
 
-from .models import Massage, Conversation
-from .serializers import MassageSerializer, ConversationSerializer, ConversationDeserializer, MassageDeserializer
 from account.models import User
 from advertise.models import Offer
 from core.utils import send_chat_notification
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import HttpResponse
+from fcm_django.models import FCMDevice
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import CursorPagination, PageNumberPagination
+
+from .models import Conversation, Massage
+from .serializers import (ConversationDeserializer, ConversationSerializer,
+                          MassageDeserializer, MassageSerializer)
 
 
 @api_view(['GET'])
