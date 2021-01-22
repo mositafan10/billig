@@ -52,7 +52,7 @@ def send_sms(phone_number, otp):
         pass
 
 
-def send_sms(phone_number, packet, template):
+def send_sms_packet(phone_number, packet, template):
     try:
         data = {
             'receptor': phone_number,
